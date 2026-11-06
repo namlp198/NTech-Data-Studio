@@ -1,0 +1,43 @@
+# Backlog
+
+## Module
+
+- [x] Module 1 Prepare: import, audit, làm sạch, chuẩn hóa, hình học
+- [x] Module 2 Annotate: canvas, công cụ vẽ, undo/redo, class, tự động lưu
+- [ ] Module 3 Dataset: split, preprocessing, augmentation, preview
+- [ ] Module 4 Export: YOLO26, COCO, validator, nhập nhãn có sẵn
+
+## Module 1: còn lại
+
+- [ ] Chạy nghiệm thu 1.000 ảnh BMP 20MP trên ảnh thật
+- [ ] Áp dụng ICC profile nhúng trong ảnh; hiện mọi ảnh được coi là sRGB
+- [ ] Audit tính cả xoay EXIF khi hiển thị độ phân giải
+- [ ] Tinh chỉnh hệ số ước tính dung lượng ở Audit bằng số liệu ảnh thật
+
+## Module 2: còn lại
+
+- [ ] Tay cầm xoay cho rotated box, và ô kéo ở giữa cạnh box
+- [ ] Chọn nhiều hình, Ctrl+C nhiều hình
+- [ ] Đổi thứ tự và phím tắt của class (hiện tự gán, class thứ 10 trở đi không có phím)
+- [ ] Giữ lịch sử undo khi rời màn hình Annotate
+- [ ] Project test cho Desktop: `AnnotateViewModel.HandleKey`, lọc ảnh, đồng bộ chọn nhãn (hiện chỉ kiểm tra bằng chạy app)
+- [ ] Thử zoom/pan trên ảnh thật, GPU yếu (render tier 0 hoặc 1), ảnh có cạnh trên 16.384 px
+- [ ] Nếu ghi đồng bộ gây giật khi vẽ liên tục trên ổ chậm: hàng đợi ghi có thứ tự (xem quyết định 0006)
+- [ ] Ảnh nằm một phần dưới các panel nổi khi vừa khung; cân nhắc vừa khung theo vùng không bị che
+
+## Cần làm rõ
+
+
+- [ ] Lộ trình 6 bước và 2 cổng: sơ đồ nhúng không có trong bản xuất Markdown của tài liệu thiết kế
+- [ ] Đối chiếu `imgsz` và `stride` của profile RF-DETR và PatchCore với phiên bản sẽ dùng; giá trị hiện tại là giả định
+- [ ] Đối chiếu `imgsz` của các profile YOLO26 ngoài detect; thiết kế chỉ cho mẫu của detect
+- [ ] Thiết kế nêu profile Mask R-CNN ở Module 1 nhưng không có trong danh sách file `profiles/`
+
+## Đóng gói
+
+- [ ] Icon ứng dụng `Assets/AppIcon.ico`
+- [x] `scripts/` build, package, deploy và `installer/NTech-DataStudio.iss`
+- [ ] Ký số installer (cần chứng chỉ)
+- [ ] Thử cài lên máy sạch chưa có .NET để xác nhận bản self-contained; mới thử trên máy dev
+- [ ] `samples/` và `tests/TestData/`
+- [ ] `docs/formats/`, `docs/product/SCREEN_REQUIREMENTS.md`, các file còn lại trong `docs/design/screens/`: viết khi làm module tương ứng

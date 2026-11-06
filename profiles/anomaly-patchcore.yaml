@@ -1,0 +1,9 @@
+# Giá trị imgsz/stride là giả định ban đầu; MVP chưa có exporter riêng cho anomaly.
+id: anomaly-patchcore
+family: patchcore
+task: anomaly
+imgsz_default: 256
+imgsz_options: [224, 256, 320]
+stride: 8
+min_object_px: 0
+export_formats: []

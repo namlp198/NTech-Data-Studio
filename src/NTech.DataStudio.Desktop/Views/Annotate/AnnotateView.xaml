@@ -1,0 +1,332 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Annotate.AnnotateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NTech.DataStudio.Desktop.Controls"
+             xmlns:converters="clr-namespace:NTech.DataStudio.Desktop.Converters"
+             xmlns:vmAnnotate="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Annotate"
+             Focusable="True">
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrush" />
+        <converters:StatusBrushConverter x:Key="StatusBrush" />
+        <converters:ThumbnailConverter x:Key="Thumbnail" />
+        <converters:EqualsToVisibilityConverter x:Key="EqualsToVisibility" />
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Empty states -->
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding HasProject, Converter={StaticResource InverseBoolToVisibility}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" HorizontalAlignment="Center" Text="Annotate" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}"
+                       AutomationProperties.AutomationId="AnnotateNoProject"
+                       Text="Hãy tạo hoặc mở một project trước." />
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding ShowNoImages, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" HorizontalAlignment="Center" Text="Annotate" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}"
+                       AutomationProperties.AutomationId="AnnotateNoImages"
+                       Text="Project chưa có ảnh master. Hãy nhập và chuẩn hóa ảnh ở bước Prepare." />
+        </StackPanel>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                   Style="{StaticResource Text.Body}" Foreground="{StaticResource Brush.Status.Error}"
+                   AutomationProperties.AutomationId="AnnotateError"
+                   Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}"
+                   Text="{Binding ErrorMessage}" />
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Style="{StaticResource Text.Secondary}" Text="Đang tải..."
+                   Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
+
+        <Grid Visibility="{Binding ShowEditor, Converter={StaticResource BoolToVisibility}}">
+            <!-- The canvas is the background; everything else floats over it. -->
+            <Border Background="{StaticResource Brush.Background.App}">
+                <controls:AnnotationCanvas x:Name="Canvas"
+                                           Editor="{Binding Editor}"
+                                           Image="{Binding CurrentBitmap}"
+                                           ClassStyles="{Binding ClassStyles}"
+                                           LabelOpacity="{Binding LabelOpacity}"
+                                           AutomationProperties.AutomationId="AnnotationCanvas"
+                                           AutomationProperties.Name="Vùng gán nhãn" />
+            </Border>
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                       Style="{StaticResource Text.Body}" Foreground="{StaticResource Brush.Status.Error}"
+                       AutomationProperties.AutomationId="AnnotateImageError"
+                       Visibility="{Binding ImageError, Converter={StaticResource NullToCollapsed}}"
+                       Text="{Binding ImageError}" />
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Style="{StaticResource Text.Secondary}" Text="Đang mở ảnh..."
+                       Visibility="{Binding IsImageLoading, Converter={StaticResource BoolToVisibility}}" />
+
+            <!-- Tool rail -->
+            <Border Style="{StaticResource Overlay.ToolRail}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Margin="{StaticResource Layout.AnnotateRailMargin}">
+                <StackPanel Margin="{StaticResource Inset.XS}">
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Select}" ToolTip="Chọn và sửa (V)"
+                                 AutomationProperties.Name="Công cụ Chọn" IsChecked="{Binding IsSelectTool}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Box}" ToolTip="Bounding box (B)"
+                                 AutomationProperties.Name="Công cụ Box" IsChecked="{Binding IsBoxTool}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Polygon}" ToolTip="Polygon (P)"
+                                 AutomationProperties.Name="Công cụ Polygon" IsChecked="{Binding IsPolygonTool}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Obb}" ToolTip="Rotated box (R)"
+                                 AutomationProperties.Name="Công cụ OBB" IsChecked="{Binding IsObbTool}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Tag}" ToolTip="Tag cả ảnh (T)"
+                                 AutomationProperties.Name="Công cụ Tag" IsChecked="{Binding IsTagTool}" />
+
+                    <Border Height="{StaticResource Layout.DividerThickness}" Margin="{StaticResource Inset.SM}" Background="{StaticResource Brush.Border.Default}" />
+
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Undo}" ToolTip="Hoàn tác (Ctrl+Z)"
+                            AutomationProperties.Name="Hoàn tác" Command="{Binding UndoCommand}" />
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Redo}" ToolTip="Làm lại (Ctrl+Y)"
+                            AutomationProperties.Name="Làm lại" Command="{Binding RedoCommand}" />
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Delete}" ToolTip="Xóa nhãn đang chọn (Delete)"
+                            AutomationProperties.Name="Xóa nhãn" Command="{Binding DeleteSelectedCommand}" />
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Visibility}" ToolTip="Ẩn/hiện mọi nhãn (H)"
+                            AutomationProperties.Name="Ẩn hiện nhãn" Command="{Binding ToggleHideAllCommand}" />
+
+                    <Border Height="{StaticResource Layout.DividerThickness}" Margin="{StaticResource Inset.SM}" Background="{StaticResource Brush.Border.Default}" />
+
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.FitFrame}" ToolTip="Vừa khung (F)"
+                            AutomationProperties.Name="Vừa khung" Command="{Binding FitCommand}" />
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomIn}" ToolTip="Phóng to"
+                            AutomationProperties.Name="Phóng to" Command="{Binding ZoomInCommand}" />
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomOut}" ToolTip="Thu nhỏ"
+                            AutomationProperties.Name="Thu nhỏ" Command="{Binding ZoomOutCommand}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Image info -->
+            <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Margin="{StaticResource Layout.AnnotateInfoMargin}">
+                <StackPanel Margin="{StaticResource Inset.SM}">
+                    <TextBlock Style="{StaticResource Text.Secondary}" AutomationProperties.AutomationId="AnnotateImageInfo"
+                               Text="{Binding ImageInfoText}" />
+                    <TextBlock Style="{StaticResource Text.Caption}" AutomationProperties.AutomationId="AnnotateTags"
+                               Text="{Binding TagsText}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Hint or error from the editor -->
+            <Border Style="{StaticResource Badge.Pill}" HorizontalAlignment="Center" VerticalAlignment="Top"
+                    Margin="{StaticResource Layout.AnnotateHintMargin}"
+                    Visibility="{Binding EditorMessage, Converter={StaticResource NullToCollapsed}}">
+                <TextBlock Style="{StaticResource Text.Body}" Foreground="{StaticResource Brush.Status.Warning}"
+                           AutomationProperties.AutomationId="AnnotateMessage" Text="{Binding EditorMessage}" />
+            </Border>
+
+            <!-- Right panel: classes and the labels of this image -->
+            <Border Style="{StaticResource Overlay.FloatingPanel}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="{StaticResource Layout.AnnotatePanelMargin}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="{StaticResource Inset.MD}">
+                        <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Class" />
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="AnnotateNoClasses"
+                                   Visibility="{Binding HasClasses, Converter={StaticResource InverseBoolToVisibility}}"
+                                   Text="Chưa có class. Nhập tên rồi bấm Thêm để bắt đầu gán nhãn." />
+
+                        <ListBox Margin="{StaticResource Gap.Top.SM}" MaxHeight="{StaticResource Layout.ClassListMaxHeight}"
+                                 AutomationProperties.Name="Danh sách class"
+                                 ItemsSource="{Binding Classes}" SelectedItem="{Binding ActiveClass}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid AutomationProperties.Name="{Binding Name}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{StaticResource Layout.HotkeyGridWidth}" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                                                   Text="{Binding HotkeyText}" />
+                                        <Rectangle Grid.Column="1" Width="{StaticResource Layout.SwatchSize}" Height="{StaticResource Layout.SwatchSize}"
+                                                   VerticalAlignment="Center" RadiusX="2" RadiusY="2"
+                                                   Fill="{Binding ColorHex, Converter={StaticResource HexToBrush}}" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource Text.Body}" VerticalAlignment="Center"
+                                                   Margin="{StaticResource Gap.Left.SM}" TextTrimming="CharacterEllipsis"
+                                                   Text="{Binding Name}" />
+                                        <TextBlock Grid.Column="3" Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                                                   Text="{Binding Count}" />
+                                        <CheckBox Grid.Column="4" Margin="{StaticResource Gap.Left.SM}" VerticalAlignment="Center"
+                                                  AutomationProperties.Name="Tag lớp này cho ảnh"
+                                                  IsChecked="{Binding IsTagged}"
+                                                  Visibility="{Binding DataContext.IsTagTool, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibility}}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.SM}"
+                                 AutomationProperties.Name="Tên class"
+                                 Text="{Binding ClassNameInput, UpdateSourceTrigger=PropertyChanged}" />
+                        <WrapPanel Margin="{StaticResource Gap.Top.SM}">
+                            <Button Style="{StaticResource Button.Primary}" Content="Thêm" Margin="{StaticResource Inset.XS}"
+                                    Command="{Binding AddClassCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Content="Đổi tên" Margin="{StaticResource Inset.XS}"
+                                    Command="{Binding RenameClassCommand}" />
+                            <Button Style="{StaticResource Button.Danger}" Content="Xóa" Margin="{StaticResource Inset.XS}"
+                                    Command="{Binding DeleteClassCommand}" />
+                        </WrapPanel>
+
+                        <ItemsControl Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding PaletteColors}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Cursor="Hand" ToolTip="{Binding}"
+                                            Command="{Binding DataContext.RecolorClassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Width="{StaticResource Layout.PaletteSwatchSize}" Height="{StaticResource Layout.PaletteSwatchSize}"
+                                                        Margin="{StaticResource Inset.XS}" CornerRadius="{StaticResource Radius.SM}"
+                                                        Background="{Binding Converter={StaticResource HexToBrush}}" />
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Grid Margin="{StaticResource Gap.Top.SM}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Style="{StaticResource Input.Combo}" AutomationProperties.Name="Gộp vào class"
+                                      ItemsSource="{Binding MergeTargets}" DisplayMemberPath="Name"
+                                      SelectedItem="{Binding MergeTarget}" />
+                            <Button Grid.Column="1" Style="{StaticResource Button.Secondary}" Content="Gộp vào"
+                                    Margin="{StaticResource Gap.Left.SM}" Command="{Binding MergeClassCommand}" />
+                        </Grid>
+
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                   Foreground="{StaticResource Brush.Status.Error}"
+                                   AutomationProperties.AutomationId="AnnotateClassError"
+                                   Visibility="{Binding ClassError, Converter={StaticResource NullToCollapsed}}"
+                                   Text="{Binding ClassError}" />
+
+                        <TextBlock Style="{StaticResource Text.SectionHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Nhãn của ảnh" />
+                        <ListBox Margin="{StaticResource Gap.Top.SM}" MaxHeight="{StaticResource Layout.LabelListMaxHeight}"
+                                 AutomationProperties.Name="Danh sách nhãn"
+                                 ItemsSource="{Binding Labels}" SelectedItem="{Binding SelectedLabel}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Width="{StaticResource Layout.SwatchSize}" Height="{StaticResource Layout.SwatchSize}"
+                                                   VerticalAlignment="Center" RadiusX="2" RadiusY="2"
+                                                   Fill="{Binding ColorHex, Converter={StaticResource HexToBrush}}" />
+                                        <TextBlock Grid.Column="1" Style="{StaticResource Text.Body}" VerticalAlignment="Center"
+                                                   Margin="{StaticResource Gap.Left.SM}" TextTrimming="CharacterEllipsis"
+                                                   Text="{Binding ClassName}" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource Text.Caption}" VerticalAlignment="Center"
+                                                   Margin="{StaticResource Gap.Left.SM}" Text="{Binding KindText}" />
+                                        <CheckBox Grid.Column="3" Content="Ẩn" Margin="{StaticResource Gap.Left.SM}" VerticalAlignment="Center"
+                                                  IsChecked="{Binding IsHidden}" />
+                                        <CheckBox Grid.Column="4" Content="Khóa" Margin="{StaticResource Gap.Left.SM}" VerticalAlignment="Center"
+                                                  IsChecked="{Binding IsLocked}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Độ trong suốt của nhãn" />
+                        <Slider Minimum="0.2" Maximum="1" Value="{Binding LabelOpacity}" AutomationProperties.Name="Độ trong suốt" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Finish / undo point / cancel while a shape is being drawn -->
+            <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                    Margin="{StaticResource Layout.AnnotateActionMargin}"
+                    Visibility="{Binding IsDrawing, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Orientation="Horizontal" Margin="{StaticResource Inset.SM}">
+                    <Button Style="{StaticResource Button.Primary}" Content="Kết thúc (Enter)" Command="{Binding FinishCommand}" />
+                    <Button Style="{StaticResource Button.Secondary}" Content="Bỏ đỉnh (Backspace)"
+                            Margin="{StaticResource Gap.Left.SM}" Command="{Binding UndoPointCommand}" />
+                    <Button Style="{StaticResource Button.Secondary}" Content="Hủy (Esc)"
+                            Margin="{StaticResource Gap.Left.SM}" Command="{Binding CancelDrawingCommand}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Filters, image actions and the thumbnail strip -->
+            <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                    Height="{StaticResource Layout.ThumbnailStripHeight}" Margin="{StaticResource Layout.AnnotateStripMargin}">
+                <DockPanel Margin="{StaticResource Inset.SM}">
+                    <DockPanel DockPanel.Dock="Top">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Style="{StaticResource Button.Secondary}" Content="Chép nhãn ảnh trước"
+                                    ToolTip="Chép nhãn và tag từ ảnh đứng trước" Command="{Binding CopyFromPreviousCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    ToolTip="Ảnh không có vật thể (N)" Content="{Binding NullButtonText}"
+                                    Command="{Binding ToggleNullCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    Content="{Binding ReviewButtonText}" Command="{Binding ToggleReviewedCommand}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                                       AutomationProperties.AutomationId="AnnotateImageIndex"
+                                       Text="{Binding ImageIndexText}" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Left.MD}"
+                                      Width="{StaticResource Layout.FilterWidth}" AutomationProperties.Name="Lọc theo trạng thái"
+                                      ItemsSource="{x:Static vmAnnotate:AnnotateViewModel.StatusFilters}"
+                                      DisplayMemberPath="Label" SelectedItem="{Binding StatusFilter}" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Left.SM}"
+                                      Width="{StaticResource Layout.FilterWidth}" AutomationProperties.Name="Lọc theo class"
+                                      ItemsSource="{Binding ClassFilters}"
+                                      DisplayMemberPath="Label" SelectedItem="{Binding ClassFilter}" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <ListBox x:Name="ThumbList" Margin="{StaticResource Gap.Top.SM}" AutomationProperties.Name="Danh sách ảnh"
+                             ItemsSource="{Binding Images}" SelectedItem="{Binding SelectedImage}"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                             SelectionChanged="OnThumbSelectionChanged">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Width="{StaticResource Layout.ThumbnailItemWidth}">
+                                    <Grid Height="{StaticResource Layout.ThumbnailImageHeight}">
+                                        <Image Stretch="Uniform" Source="{Binding ThumbnailPath, Converter={StaticResource Thumbnail}}" />
+                                        <Ellipse Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}"
+                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
+                                                 Fill="{Binding Status, Converter={StaticResource StatusBrush}}" />
+                                        <Ellipse Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}"
+                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
+                                                 Fill="{StaticResource Brush.Background.Surface}" StrokeThickness="1"
+                                                 Stroke="{StaticResource Brush.Status.Neutral}" StrokeDashArray="1.5,1.5"
+                                                 Visibility="{Binding Status, Converter={StaticResource EqualsToVisibility}, ConverterParameter=Null}" />
+                                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
+                                                   Style="{StaticResource Text.MetricSmall}" Text="{Binding LabelCount}" />
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis"
+                                               Text="{Binding FileName}" ToolTip="{Binding FileName}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

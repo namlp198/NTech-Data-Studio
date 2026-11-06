@@ -1,0 +1,8 @@
+id: yolo26-obb
+family: ultralytics-yolo
+task: obb
+imgsz_default: 1024
+imgsz_options: [640, 1024, 1280]
+stride: 32
+min_object_px: 12
+export_formats: [yolo]

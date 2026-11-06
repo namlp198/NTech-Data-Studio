@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NTech.DataStudio.Domain/NTech.DataStudio.Domain.csproj" />
+    <Project Path="src/NTech.DataStudio.Application/NTech.DataStudio.Application.csproj" />
+    <Project Path="src/NTech.DataStudio.Imaging/NTech.DataStudio.Imaging.csproj" />
+    <Project Path="src/NTech.DataStudio.Storage/NTech.DataStudio.Storage.csproj" />
+    <Project Path="src/NTech.DataStudio.Exporters/NTech.DataStudio.Exporters.csproj" />
+    <Project Path="src/NTech.DataStudio.Desktop/NTech.DataStudio.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NTech.DataStudio.Domain.Tests/NTech.DataStudio.Domain.Tests.csproj" />
+    <Project Path="tests/NTech.DataStudio.Application.Tests/NTech.DataStudio.Application.Tests.csproj" />
+    <Project Path="tests/NTech.DataStudio.Imaging.Tests/NTech.DataStudio.Imaging.Tests.csproj" />
+    <Project Path="tests/NTech.DataStudio.Exporters.Tests/NTech.DataStudio.Exporters.Tests.csproj" />
+  </Folder>
+</Solution>

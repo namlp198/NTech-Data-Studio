@@ -1,0 +1,104 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Prepare.CleanStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:NTech.DataStudio.Desktop.Converters"
+             x:Name="root">
+    <UserControl.Resources>
+        <converters:ThumbnailConverter x:Key="Thumbnail" />
+    </UserControl.Resources>
+
+    <DockPanel Margin="{StaticResource Inset.Page}">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Làm sạch" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
+                       Text="Ảnh bị loại chỉ được đánh dấu, không file nào bị xóa hay di chuyển. Lý do được ghi vào rejected/rejected.csv." />
+
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}"
+                       Visibility="{Binding HasImages, Converter={StaticResource InverseBoolToVisibility}}"
+                       Text="Chưa có ảnh nào. Hãy nhập ảnh ở bước Import." />
+
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.LG}"
+                    Visibility="{Binding HasImages, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="{StaticResource Layout.NumberFieldGridWidth}" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <CheckBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Content="Trùng hoàn toàn (SHA-256)" IsChecked="{Binding RejectExactDuplicates}" />
+
+                        <CheckBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Content="Gần trùng, khoảng cách Hamming tối đa" IsChecked="{Binding RejectNearDuplicates}" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Left.MD}"
+                                 AutomationProperties.Name="Khoảng cách gần trùng" Text="{Binding NearDuplicateDistance}" />
+
+                        <CheckBox Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Content="Mờ, độ nét dưới" IsChecked="{Binding RejectBlurry}"
+                                  AutomationProperties.Name="Lọc ảnh mờ" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Left.MD}"
+                                 AutomationProperties.Name="Ngưỡng độ nét" Text="{Binding BlurThreshold}" />
+                        <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource Text.Caption}" VerticalAlignment="Center"
+                                   Margin="{StaticResource Gap.Left.MD}" TextWrapping="Wrap"
+                                   Text="Gợi ý theo phân vị thứ 5 của bộ ảnh. Mặc định tắt, vì bật lên thì luôn loại khoảng 5% ảnh, kể cả khi cả bộ đều nét." />
+
+                        <CheckBox Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Content="Quá tối, % điểm ảnh tối từ" IsChecked="{Binding RejectDark}" />
+                        <TextBox Grid.Row="3" Grid.Column="1" Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Left.MD}"
+                                 AutomationProperties.Name="Ngưỡng tối" Text="{Binding DarkPercent}" />
+
+                        <CheckBox Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Content="Cháy sáng, % điểm ảnh cháy từ" IsChecked="{Binding RejectBright}" />
+                        <TextBox Grid.Row="4" Grid.Column="1" Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Left.MD}"
+                                 AutomationProperties.Name="Ngưỡng cháy sáng" Text="{Binding BrightPercent}" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
+                        <Button Style="{StaticResource Button.Primary}" Content="Phân tích và lọc" Command="{Binding AnalyzeAndApplyCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Áp dụng lại ngưỡng"
+                                Margin="{StaticResource Gap.Left.SM}" Command="{Binding ApplyCommand}"
+                                IsEnabled="{Binding HasAnalysis}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource Text.SectionHeader}" Margin="{StaticResource Gap.Top.LG}"
+                       AutomationProperties.AutomationId="CleanSummary"
+                       Visibility="{Binding HasImages, Converter={StaticResource BoolToVisibility}}"
+                       Text="{Binding SummaryText}" />
+        </StackPanel>
+
+        <DataGrid Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding Rejected}"
+                  AutomationProperties.Name="Ảnh bị loại"
+                  AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                  EnableRowVirtualization="True" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Ảnh" Width="{StaticResource Layout.ThumbnailColumnWidth}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Height="{StaticResource Layout.ThumbnailCellHeight}" Stretch="Uniform"
+                                   Source="{Binding ThumbnailPath, Converter={StaticResource Thumbnail}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="File" Width="2*" Binding="{Binding FileName}" />
+                <DataGridTextColumn Header="Lý do" Width="*" Binding="{Binding ReasonText}" />
+                <DataGridTextColumn Header="Chi tiết" Width="3*" Binding="{Binding Detail}" />
+                <DataGridTemplateColumn Header="" Width="{StaticResource Layout.ActionColumnWidth}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource Button.Secondary}" Content="Khôi phục"
+                                    Visibility="{Binding CanRestore, Converter={StaticResource BoolToVisibility}}"
+                                    Command="{Binding DataContext.RestoreCommand, ElementName=root}"
+                                    CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

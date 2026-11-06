@@ -1,0 +1,154 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Prepare.NormalizeStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Inset.Page}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource Button.Primary}" Content="Chuẩn hóa"
+                        VerticalAlignment="Center" Command="{Binding RunNormalizeCommand}"
+                        Visibility="{Binding HasImages, Converter={StaticResource BoolToVisibility}}" />
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.PageTitle}" Text="Chuẩn hóa" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
+                               Text="Xoay theo EXIF, bỏ metadata và alpha, đưa về 8-bit. Ảnh gốc không bị sửa." />
+                </StackPanel>
+            </DockPanel>
+
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}"
+                       AutomationProperties.AutomationId="NormalizeEmpty"
+                       Visibility="{Binding HasImages, Converter={StaticResource InverseBoolToVisibility}}"
+                       Text="Chưa có ảnh nào để chuẩn hóa. Hãy nhập ảnh ở bước Import." />
+
+            <Grid Margin="{StaticResource Gap.Top.LG}"
+                  Visibility="{Binding HasImages, Converter={StaticResource BoolToVisibility}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{StaticResource Layout.FloatingPanelGridWidth}" />
+                    <ColumnDefinition Width="{StaticResource Spacing.LG.Grid}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Settings -->
+                <Border Grid.Column="0" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Label}" Text="Model profile" />
+                        <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                  AutomationProperties.Name="Model profile"
+                                  ItemsSource="{Binding Profiles}" DisplayMemberPath="Id"
+                                  SelectedItem="{Binding SelectedProfile}" />
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Vật thể nhỏ nhất (px trên ảnh gốc)" />
+                        <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.XS}"
+                                 AutomationProperties.Name="Vật thể nhỏ nhất"
+                                 Text="{Binding MinObjectPxText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="NormalizeRecommendation"
+                                   Text="{Binding RecommendationText}" />
+                        <ItemsControl ItemsSource="{Binding Warnings}" AutomationProperties.AutomationId="NormalizeWarnings">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                               Foreground="{StaticResource Brush.Status.Warning}" Text="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cách xử lý hình học" />
+                        <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                  AutomationProperties.Name="Cách xử lý hình học"
+                                  ItemsSource="{Binding Methods}" DisplayMemberPath="Label"
+                                  SelectedItem="{Binding SelectedMethod}" />
+
+                        <StackPanel Visibility="{Binding IsDownscale, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cạnh dài master tối đa" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                      AutomationProperties.Name="Cạnh dài master tối đa"
+                                      ItemsSource="{Binding MaxEdges}" SelectedItem="{Binding SelectedMaxEdge}" />
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsTile, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Kích thước tile (px)" />
+                            <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.XS}"
+                                     AutomationProperties.Name="Kích thước tile" Text="{Binding TileSize}" />
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Độ chồng lấn (px)" />
+                            <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.XS}"
+                                     AutomationProperties.Name="Độ chồng lấn" Text="{Binding TileOverlap}" />
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsRoi, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="NormalizeRoiText"
+                                       Text="{Binding RoiText}" />
+                            <Button Style="{StaticResource Button.Secondary}" Content="Xóa vùng" HorizontalAlignment="Left"
+                                    Margin="{StaticResource Gap.Top.SM}" Command="{Binding ClearRoiCommand}" />
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Định dạng master" />
+                        <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                  AutomationProperties.Name="Định dạng master"
+                                  ItemsSource="{Binding Formats}" DisplayMemberPath="Label"
+                                  SelectedItem="{Binding SelectedFormat}" />
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Ảnh mono" />
+                        <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                  AutomationProperties.Name="Ảnh mono"
+                                  ItemsSource="{Binding MonoModes}" DisplayMemberPath="Label"
+                                  SelectedItem="{Binding SelectedMono}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Before / after preview -->
+                <Border Grid.Column="2" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" VerticalAlignment="Top">
+                    <StackPanel>
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Style="{StaticResource Button.Secondary}" Content="Ảnh trước" Command="{Binding PreviousPreviewCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Content="Ảnh sau" Margin="{StaticResource Gap.Left.SM}" Command="{Binding NextPreviewCommand}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       AutomationProperties.AutomationId="PreviewCaption"
+                                       Text="{Binding PreviewCaption}" />
+                        </DockPanel>
+
+                        <Grid Margin="{StaticResource Gap.Top.MD}" Height="{StaticResource Layout.PreviewHeight}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="{StaticResource Spacing.LG.Grid}" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Column="0" Style="{StaticResource Text.Caption}" Text="Trước" />
+                            <TextBlock Grid.Column="2" Style="{StaticResource Text.Caption}" Text="Sau" />
+
+                            <!-- Dragging here sets the ROI; code-behind only converts mouse to image pixels. -->
+                            <Grid x:Name="BeforeHost" Grid.Row="1" Grid.Column="0" Margin="{StaticResource Gap.Top.XS}" Background="Transparent"
+                                  MouseLeftButtonDown="OnRoiMouseDown" MouseMove="OnRoiMouseMove" MouseLeftButtonUp="OnRoiMouseUp">
+                                <Image x:Name="BeforeImage" Stretch="Uniform" Source="{Binding PreviewBefore}"
+                                       AutomationProperties.Name="Ảnh trước khi chuẩn hóa" />
+                                <Canvas x:Name="RoiLayer" IsHitTestVisible="False" ClipToBounds="True">
+                                    <Rectangle x:Name="RoiBox" Stroke="{StaticResource Brush.Brand.Primary}"
+                                               StrokeThickness="{StaticResource Annotation.StrokeSelected}" />
+                                </Canvas>
+                            </Grid>
+                            <Image Grid.Row="1" Grid.Column="2" Margin="{StaticResource Gap.Top.XS}" Stretch="Uniform" Source="{Binding PreviewAfter}"
+                                   AutomationProperties.Name="Ảnh sau khi chuẩn hóa" />
+                        </Grid>
+
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="PreviewNote"
+                                   Text="{Binding PreviewNote}" />
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" Text="Đang tạo preview..."
+                                   Visibility="{Binding IsPreviewLoading, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                   Foreground="{StaticResource Brush.Status.Error}"
+                                   Visibility="{Binding PreviewError, Converter={StaticResource NullToCollapsed}}"
+                                   Text="{Binding PreviewError}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

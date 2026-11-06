@@ -1,0 +1,10 @@
+# Giá trị imgsz/stride là giả định ban đầu, cần đối chiếu với phiên bản RF-DETR
+# sẽ dùng trước khi bản xuất COCO được nghiệm thu (xem tasks/backlog.md).
+id: rf-detr-segment
+family: rf-detr
+task: segment
+imgsz_default: 560
+imgsz_options: [384, 512, 560, 704]
+stride: 14
+min_object_px: 12
+export_formats: [coco]

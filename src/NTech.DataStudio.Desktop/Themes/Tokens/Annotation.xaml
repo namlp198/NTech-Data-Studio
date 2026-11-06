@@ -1,0 +1,58 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        Annotation tokens — docs/design/DESIGN_SYSTEM.md. Merged after Colors.xaml
+        by _Tokens.xaml, so it can reference status and text colors, but it must
+        merge those itself for StaticResource to resolve while it is parsed.
+    -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Tokens/Colors.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Default color of class 1..10; class 11 onward cycles. Users can change it. -->
+    <Color x:Key="Color.Class.1">#4A90E2</Color>
+    <Color x:Key="Color.Class.2">#E25D5D</Color>
+    <Color x:Key="Color.Class.3">#34C3A0</Color>
+    <Color x:Key="Color.Class.4">#C77DFF</Color>
+    <Color x:Key="Color.Class.5">#FF9F43</Color>
+    <Color x:Key="Color.Class.6">#2EC4E6</Color>
+    <Color x:Key="Color.Class.7">#F05FB8</Color>
+    <Color x:Key="Color.Class.8">#9BC53D</Color>
+    <Color x:Key="Color.Class.9">#FFD166</Color>
+    <Color x:Key="Color.Class.10">#7E8CE0</Color>
+
+    <SolidColorBrush x:Key="Brush.Class.1" Color="{StaticResource Color.Class.1}" />
+    <SolidColorBrush x:Key="Brush.Class.2" Color="{StaticResource Color.Class.2}" />
+    <SolidColorBrush x:Key="Brush.Class.3" Color="{StaticResource Color.Class.3}" />
+    <SolidColorBrush x:Key="Brush.Class.4" Color="{StaticResource Color.Class.4}" />
+    <SolidColorBrush x:Key="Brush.Class.5" Color="{StaticResource Color.Class.5}" />
+    <SolidColorBrush x:Key="Brush.Class.6" Color="{StaticResource Color.Class.6}" />
+    <SolidColorBrush x:Key="Brush.Class.7" Color="{StaticResource Color.Class.7}" />
+    <SolidColorBrush x:Key="Brush.Class.8" Color="{StaticResource Color.Class.8}" />
+    <SolidColorBrush x:Key="Brush.Class.9" Color="{StaticResource Color.Class.9}" />
+    <SolidColorBrush x:Key="Brush.Class.10" Color="{StaticResource Color.Class.10}" />
+
+    <!-- Screen-pixel values: they do not change with canvas zoom. -->
+    <sys:Double x:Key="Annotation.Stroke">1.5</sys:Double>
+    <sys:Double x:Key="Annotation.StrokeSelected">2.5</sys:Double>
+    <sys:Double x:Key="Annotation.FillOpacity">0.16</sys:Double>
+    <sys:Double x:Key="Annotation.FillOpacitySelected">0.28</sys:Double>
+    <sys:Double x:Key="Annotation.HandleSize">8</sys:Double>
+    <sys:Double x:Key="Annotation.CrosshairOpacity">0.6</sys:Double>
+
+    <SolidColorBrush x:Key="Brush.Annotation.HandleFill" Color="{StaticResource Color.Text.Primary}" />
+    <SolidColorBrush x:Key="Brush.Annotation.HandleBorder" Color="{StaticResource Color.Brand.Primary}" />
+    <SolidColorBrush x:Key="Brush.Annotation.Crosshair" Color="{StaticResource Color.Text.Secondary}"
+                     Opacity="{StaticResource Annotation.CrosshairOpacity}" />
+
+    <!-- Status dot on a thumbnail. Null differs from New by its dashed outline. -->
+    <SolidColorBrush x:Key="Brush.ImageStatus.New" Color="{StaticResource Color.Status.Neutral}" />
+    <SolidColorBrush x:Key="Brush.ImageStatus.Labeled" Color="{StaticResource Color.Status.Info}" />
+    <SolidColorBrush x:Key="Brush.ImageStatus.Reviewed" Color="{StaticResource Color.Status.Success}" />
+    <SolidColorBrush x:Key="Brush.ImageStatus.Null" Color="{StaticResource Color.Status.Neutral}" />
+    <SolidColorBrush x:Key="Brush.ImageStatus.Rejected" Color="{StaticResource Color.Status.Error}" />
+
+</ResourceDictionary>

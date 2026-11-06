@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>NTech.DataStudio.Desktop</RootNamespace>
+    <AssemblyName>NTech.DataStudio.Desktop</AssemblyName>
+    <AssemblyTitle>NTech Data Studio</AssemblyTitle>
+    <!-- Skip the WPF framework's translated resource folders (cs, de, tr, ...): the UI is not localized through them. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WPF projects leave System.IO out of the implicit usings. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NTech.DataStudio.Application\NTech.DataStudio.Application.csproj" />
+    <ProjectReference Include="..\NTech.DataStudio.Domain\NTech.DataStudio.Domain.csproj" />
+    <ProjectReference Include="..\NTech.DataStudio.Imaging\NTech.DataStudio.Imaging.csproj" />
+    <ProjectReference Include="..\NTech.DataStudio.Storage\NTech.DataStudio.Storage.csproj" />
+    <ProjectReference Include="..\NTech.DataStudio.Exporters\NTech.DataStudio.Exporters.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Model profiles ship next to the executable. -->
+    <Content Include="..\..\profiles\*.yaml">
+      <Link>profiles\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

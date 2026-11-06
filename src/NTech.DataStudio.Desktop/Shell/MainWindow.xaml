@@ -1,0 +1,76 @@
+<Window x:Class="NTech.DataStudio.Desktop.Shell.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:projectVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Project"
+        xmlns:annotateVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Annotate"
+        xmlns:annotateView="clr-namespace:NTech.DataStudio.Desktop.Views.Annotate"
+        xmlns:prepareVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Prepare"
+        xmlns:prepareView="clr-namespace:NTech.DataStudio.Desktop.Views.Prepare"
+        xmlns:sharedVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Shared"
+        xmlns:projectView="clr-namespace:NTech.DataStudio.Desktop.Views.Project"
+        xmlns:sharedView="clr-namespace:NTech.DataStudio.Desktop.Views.Shared"
+        Title="NTech Data Studio"
+        Width="1280" Height="800" MinWidth="960" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Brush.Background.App}"
+        FontFamily="{StaticResource Font.Primary}"
+        Foreground="{StaticResource Brush.Text.Primary}">
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type projectVm:ProjectViewModel}">
+            <projectView:ProjectView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type prepareVm:PrepareViewModel}">
+            <prepareView:PrepareView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type annotateVm:AnnotateViewModel}">
+            <annotateView:AnnotateView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type sharedVm:PendingModuleViewModel}">
+            <sharedView:PendingModuleView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Style="{StaticResource Overlay.TopBar}">
+            <DockPanel>
+                <!-- StatusIconStrip -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                            Margin="{StaticResource Inset.TopBarGroup}" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Text.Secondary}" VerticalAlignment="Center"
+                               AutomationProperties.AutomationId="ProjectNameStatus"
+                               Text="{Binding ProjectName}" />
+                    <TextBlock Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                               Margin="{StaticResource Gap.Left.LG}"
+                               AutomationProperties.AutomationId="ProgressStatus"
+                               Visibility="{Binding HasProject, Converter={StaticResource BoolToVisibility}}"
+                               Text="{Binding ProgressText}" />
+                </StackPanel>
+
+                <!-- ViewSelector -->
+                <ItemsControl ItemsSource="{Binding Views}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton Style="{StaticResource ViewSelector.Item}" GroupName="views"
+                                         Height="{StaticResource Layout.TopBarHeight}"
+                                         AutomationProperties.Name="{Binding Label}"
+                                         IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
+        </Border>
+
+        <ContentControl Grid.Row="1" Focusable="False" Content="{Binding CurrentView}" />
+    </Grid>
+</Window>

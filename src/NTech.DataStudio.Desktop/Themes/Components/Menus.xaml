@@ -1,0 +1,125 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Tokens/_Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        Context menus: dark elevated card, rounded, shadowed,
+        an icon column, a hover highlight, dimmed disabled items, and a red
+        "danger" item. Implicit, so every ContextMenu in the app takes it.
+        Items have no sub-menus; none is used.
+    -->
+    <!-- A menu icon in XAML: drawn in its item's colour. -->
+    <Style x:Key="MenuItem.IconPath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeThickness" Value="1.6" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" />
+    </Style>
+
+    <!-- One icon per menu item (x:Shared="False"), set by command below. -->
+    <Path x:Key="MenuIcon.Cut" x:Shared="False" Style="{StaticResource MenuItem.IconPath}" Data="{StaticResource Icon.Cut}" />
+    <Path x:Key="MenuIcon.Copy" x:Shared="False" Style="{StaticResource MenuItem.IconPath}" Data="{StaticResource Icon.Copy}" />
+    <Path x:Key="MenuIcon.Paste" x:Shared="False" Style="{StaticResource MenuItem.IconPath}" Data="{StaticResource Icon.Paste}" />
+    <Path x:Key="MenuIcon.Undo" x:Shared="False" Style="{StaticResource MenuItem.IconPath}" Data="{StaticResource Icon.Undo}" />
+    <Path x:Key="MenuIcon.SelectAll" x:Shared="False" Style="{StaticResource MenuItem.IconPath}" Data="{StaticResource Icon.SelectAll}" />
+
+    <Style TargetType="ContextMenu">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <!-- The margin leaves room for the shadow inside the popup. -->
+                    <Border Margin="0,0,8,8" Padding="4" MinWidth="200"
+                            Background="{StaticResource Brush.Background.Elevated}"
+                            BorderBrush="{StaticResource Brush.Overlay.PanelBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource Radius.MD}"
+                            Effect="{StaticResource Elevation.Overlay}">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Text-box menus WPF builds (Cut, Copy, Paste) get their icons by command. -->
+    <Style TargetType="MenuItem">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="root" Background="Transparent" CornerRadius="{StaticResource Radius.SM}"
+                            Padding="8,0,14,0" MinHeight="32">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter x:Name="icon" ContentSource="Icon" Width="16" Height="16"
+                                              HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True"
+                                              VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="24,0,0,0"
+                                       Foreground="{StaticResource Brush.Text.Muted}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="root" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Command" Value="{x:Static ApplicationCommands.Cut}">
+                <Setter Property="Icon" Value="{DynamicResource MenuIcon.Cut}" />
+            </Trigger>
+            <Trigger Property="Command" Value="{x:Static ApplicationCommands.Copy}">
+                <Setter Property="Icon" Value="{DynamicResource MenuIcon.Copy}" />
+            </Trigger>
+            <Trigger Property="Command" Value="{x:Static ApplicationCommands.Paste}">
+                <Setter Property="Icon" Value="{DynamicResource MenuIcon.Paste}" />
+            </Trigger>
+            <Trigger Property="Command" Value="{x:Static ApplicationCommands.Undo}">
+                <Setter Property="Icon" Value="{DynamicResource MenuIcon.Undo}" />
+            </Trigger>
+            <Trigger Property="Command" Value="{x:Static ApplicationCommands.SelectAll}">
+                <Setter Property="Icon" Value="{DynamicResource MenuIcon.SelectAll}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- A dangerous item, e.g. Delete: red text and icon. -->
+    <Style x:Key="MenuItem.Danger" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
+    </Style>
+
+
+    <Style TargetType="Separator" x:Key="{x:Static MenuItem.SeparatorStyleKey}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Margin="8,4" Background="{StaticResource Brush.Border.Default}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

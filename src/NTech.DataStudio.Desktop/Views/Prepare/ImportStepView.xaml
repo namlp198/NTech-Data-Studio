@@ -1,0 +1,46 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Prepare.ImportStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AllowDrop="True" Drop="OnDrop" Background="Transparent">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Inset.Page}" HorizontalAlignment="Left"
+                    Width="{StaticResource Layout.PageContentMaxWidth}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Import" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
+                       Text="Kéo thả một thư mục vào đây hoặc chọn thư mục. Quét cả thư mục con; hỗ trợ BMP, TIFF, PNG, JPEG, WebP." />
+
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.XL}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.Label}" Text="Thư mục ảnh" />
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}">
+                        <TextBox Style="{StaticResource Input.Text}" Width="{StaticResource Layout.FormFieldWidth}"
+                                 AutomationProperties.Name="Thư mục ảnh"
+                                 Text="{Binding Folder, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Chọn..."
+                                Margin="{StaticResource Gap.Left.SM}" Command="{Binding BrowseCommand}" />
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cách lưu ảnh gốc" />
+                    <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                              HorizontalAlignment="Left" Width="{StaticResource Layout.FormFieldWidth}"
+                              AutomationProperties.Name="Cách lưu ảnh gốc"
+                              ItemsSource="{Binding Modes}" DisplayMemberPath="Label"
+                              SelectedItem="{Binding SelectedMode}" />
+
+                    <Button Style="{StaticResource Button.Primary}" Content="Nhập ảnh" HorizontalAlignment="Left"
+                            Margin="{StaticResource Gap.Top.LG}" Command="{Binding ImportCommand}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.LG}">
+                <TextBlock Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Text="Project đang có" />
+                <TextBlock Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                           Margin="{StaticResource Gap.Left.SM}"
+                           AutomationProperties.AutomationId="ImportSourceCount"
+                           Text="{Binding SourceCount}" />
+                <TextBlock Style="{StaticResource Text.Secondary}" VerticalAlignment="Center"
+                           Margin="{StaticResource Gap.Left.SM}" Text="ảnh gốc." />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

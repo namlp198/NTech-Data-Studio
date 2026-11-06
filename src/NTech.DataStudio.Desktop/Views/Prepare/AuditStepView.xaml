@@ -1,0 +1,84 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Prepare.AuditStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <DataTemplate x:Key="BucketRow">
+            <DockPanel Margin="{StaticResource Gap.Top.XS}">
+                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Text.MetricSmall}" Text="{Binding Count}" />
+                <TextBlock Style="{StaticResource Text.Secondary}" Text="{Binding Label}" />
+            </DockPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Inset.Page}" HorizontalAlignment="Left"
+                    Width="{StaticResource Layout.PageContentMaxWidth}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Audit" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
+                       Text="Tổng hợp từ header của file, chưa giải nén ảnh nên chạy nhanh." />
+
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}"
+                       AutomationProperties.AutomationId="AuditEmpty"
+                       Visibility="{Binding HasImages, Converter={StaticResource InverseBoolToVisibility}}"
+                       Text="Chưa có ảnh nào. Hãy nhập ảnh ở bước Import." />
+
+            <StackPanel Visibility="{Binding HasImages, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.XL}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Style="{StaticResource Text.Metric}" AutomationProperties.AutomationId="AuditTotal" Text="{Binding Report.TotalFiles}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Text="File ảnh" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Style="{StaticResource Text.Metric}" AutomationProperties.AutomationId="AuditCorrupt" Text="{Binding Report.CorruptFiles}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Text="File hỏng" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Style="{StaticResource Text.Metric}" Text="{Binding TotalSizeText}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Text="Tổng dung lượng" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Style="{StaticResource Text.Metric}" Text="{Binding LargestFileText}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Text="File lớn nhất" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Style="{StaticResource Text.Metric}" Text="{Binding EstimatedSizeText}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Text="Master JPEG, chưa thu nhỏ (ước tính)" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Margin="{StaticResource Gap.Top.LG}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="{StaticResource Spacing.LG.Grid}" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.XL}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Độ phân giải" />
+                            <ItemsControl Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding TopResolutions}" ItemTemplate="{StaticResource BucketRow}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.XL}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Định dạng" />
+                            <ItemsControl Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding Report.Formats}" ItemTemplate="{StaticResource BucketRow}" />
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Độ sâu bit" />
+                            <ItemsControl Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding Report.BitDepths}" ItemTemplate="{StaticResource BucketRow}" />
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Số kênh" />
+                            <ItemsControl Margin="{StaticResource Gap.Top.SM}" ItemsSource="{Binding Report.ChannelCounts}" ItemTemplate="{StaticResource BucketRow}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

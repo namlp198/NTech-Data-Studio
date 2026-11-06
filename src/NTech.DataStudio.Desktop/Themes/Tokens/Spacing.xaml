@@ -1,0 +1,48 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Spacing scale (multiples of 4) — docs/design/DESIGN_SYSTEM.md. -->
+
+    <sys:Double x:Key="Spacing.XS">4</sys:Double>
+    <sys:Double x:Key="Spacing.SM">8</sys:Double>
+    <sys:Double x:Key="Spacing.MD">12</sys:Double>
+    <sys:Double x:Key="Spacing.LG">16</sys:Double>
+    <sys:Double x:Key="Spacing.XL">24</sys:Double>
+    <sys:Double x:Key="Spacing.XXL">32</sys:Double>
+
+    <!-- The same scale as Thickness, so views never hard-code a margin or padding. -->
+    <Thickness x:Key="Inset.XS">4</Thickness>
+    <Thickness x:Key="Inset.SM">8</Thickness>
+    <Thickness x:Key="Inset.MD">12</Thickness>
+    <Thickness x:Key="Inset.LG">16</Thickness>
+    <Thickness x:Key="Inset.XL">24</Thickness>
+    <Thickness x:Key="Inset.Page">32,24</Thickness>
+    <Thickness x:Key="Inset.TopBarGroup">16,0</Thickness>
+    <Thickness x:Key="Gap.Top.XS">0,4,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.SM">0,8,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.MD">0,12,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.LG">0,16,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.XL">0,24,0,0</Thickness>
+    <Thickness x:Key="Gap.Left.SM">8,0,0,0</Thickness>
+    <Thickness x:Key="Gap.Left.MD">12,0,0,0</Thickness>
+    <Thickness x:Key="Gap.Left.LG">16,0,0,0</Thickness>
+
+    <Thickness x:Key="Border.Bottom">0,0,0,1</Thickness>
+
+    <!-- Annotate: floating panels sit over the canvas, clear of the thumbnail strip below. -->
+    <Thickness x:Key="Layout.AnnotateRailMargin">16,0,0,0</Thickness>
+    <Thickness x:Key="Layout.AnnotatePanelMargin">0,16,16,168</Thickness>
+    <Thickness x:Key="Layout.AnnotateStripMargin">88,0,16,16</Thickness>
+    <Thickness x:Key="Layout.AnnotateActionMargin">0,0,0,168</Thickness>
+    <Thickness x:Key="Layout.AnnotateInfoMargin">88,16,0,0</Thickness>
+    <Thickness x:Key="Layout.AnnotateHintMargin">0,16,0,0</Thickness>
+
+    <!-- Corner radii -->
+    <CornerRadius x:Key="Radius.SM">4</CornerRadius>
+    <CornerRadius x:Key="Radius.MD">8</CornerRadius>
+    <CornerRadius x:Key="Radius.LG">12</CornerRadius>
+    <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
+
+</ResourceDictionary>

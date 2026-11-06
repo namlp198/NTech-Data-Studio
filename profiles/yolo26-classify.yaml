@@ -1,0 +1,8 @@
+id: yolo26-classify
+family: ultralytics-yolo
+task: classify
+imgsz_default: 224
+imgsz_options: [224, 320, 640]
+stride: 32
+min_object_px: 0
+export_formats: [yolo]

@@ -1,0 +1,24 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        NTech Data Studio dark theme. Tokens are aggregated in _Tokens.xaml and each
+        component dictionary self-merges them, so token StaticResources resolve
+        regardless of merge nesting. docs/design/DESIGN_SYSTEM.md.
+    -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Tokens/_Tokens.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Text.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Overlay.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Buttons.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Inputs.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/DataGrid.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/ScrollBars.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Menus.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Progress.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Lists.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Slider.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>
