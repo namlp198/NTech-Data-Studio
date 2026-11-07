@@ -84,6 +84,9 @@ public sealed class AnnotationCanvas : FrameworkElement
         ClipToBounds = true;
         Focusable = true;
         FocusVisualStyle = null;
+        // The canvas takes single-letter shortcuts. A Vietnamese IME (Telex) would turn "ee" into a Backspace
+        // plus "ê" and swallow every other press, so it must not see keys while the canvas has the focus.
+        InputMethod.SetIsInputMethodEnabled(this, false);
     }
 
     public AnnotationEditor? Editor
@@ -151,6 +154,27 @@ public sealed class AnnotationCanvas : FrameworkElement
     }
 
     private Point Center() => new(ActualWidth / 2, ActualHeight / 2);
+
+    /// <summary>The picture is larger on screen than in the fitted view, so part of it is out of sight.</summary>
+    private bool IsZoomedIn =>
+        Image is not null && ActualWidth > 0 && ActualHeight > 0
+        && _scale > Math.Min(ActualWidth / Image.PixelWidth, ActualHeight / Image.PixelHeight) * FitMargin * 1.001;
+
+    /// <summary>
+    /// Where a left press may drag the picture instead of the editor: with the Select tool when nothing
+    /// is under the pointer, and with the Tag tool, which has nothing to do on the canvas. A drawing tool
+    /// needs the drag for drawing; there Space or the middle button pans.
+    /// </summary>
+    private bool StartsOnBarePicture(Point screen)
+    {
+        if (Editor is null) return false;
+        return Editor.Tool switch
+        {
+            AnnotateTool.Select => !Editor.IsOverLabel(ToImage(screen), Tolerance),
+            AnnotateTool.Tag => true,
+            _ => false
+        };
+    }
 
     private void ZoomAt(Point anchor, double factor)
     {
@@ -417,7 +441,12 @@ public sealed class AnnotationCanvas : FrameworkElement
         var position = e.GetPosition(this);
         var wantsPan = e.ChangedButton == MouseButton.Middle
                        || (e.ChangedButton == MouseButton.Left && Keyboard.IsKeyDown(Key.Space));
-        if (wantsPan)
+        // Zoomed in past the fitted view, a drag that starts on bare picture moves the picture.
+        // The press still reaches the editor, so a plain click on bare picture deselects as before.
+        var dragsPicture = !wantsPan && e.ChangedButton == MouseButton.Left && IsZoomedIn && StartsOnBarePicture(position);
+        if (dragsPicture && Editor is not null)
+            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount);
+        if (wantsPan || dragsPicture)
         {
             _panning = true;
             _panStart = position;

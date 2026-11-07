@@ -54,6 +54,65 @@ public class AnnotationEditorTests : IDisposable
     }
 
     [Fact]
+    public void CycleTool_StepsThroughTheRailInBothDirectionsAndWraps()
+    {
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+
+        _editor.CycleTool(1);
+        Assert.Equal(AnnotateTool.Box, _editor.Tool);
+        _editor.CycleTool(-1);
+        _editor.CycleTool(-1);
+        Assert.Equal(AnnotateTool.Tag, _editor.Tool);
+        _editor.CycleTool(1);
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+    }
+
+    [Fact]
+    public void CycleTool_DropsAShapeThatIsHalfDrawn()
+    {
+        _editor.SetTool(AnnotateTool.Polygon);
+        Click(10, 10);
+        Assert.NotNull(_editor.Drawing);
+
+        _editor.CycleTool(1);
+
+        Assert.Null(_editor.Drawing);
+        Assert.Equal(AnnotateTool.RotatedBox, _editor.Tool);
+        Assert.Empty(Document.Annotations);
+    }
+
+    [Fact]
+    public void IsOverLabel_IsTrueOnALabel_AndFalseOnEmptyPicture()
+    {
+        DrawBox(20, 20, 80, 60);
+        _editor.Select(null);
+
+        Assert.True(_editor.IsOverLabel(new PixelPoint(50, 40), Tolerance));
+        Assert.False(_editor.IsOverLabel(new PixelPoint(150, 90), Tolerance));
+    }
+
+    [Fact]
+    public void IsOverLabel_ASelectedLabelsVertexCountsEvenJustOutsideTheShape()
+    {
+        DrawBox(20, 20, 80, 60);
+
+        // Two pixels outside the corner, inside the handle tolerance of the selected box.
+        Assert.True(_editor.IsOverLabel(new PixelPoint(18, 18), Tolerance));
+        _editor.Select(null);
+        Assert.False(_editor.IsOverLabel(new PixelPoint(10, 10), Tolerance));
+    }
+
+    [Fact]
+    public void IsOverLabel_HiddenLabelsAreNotGrabbed()
+    {
+        DrawBox(20, 20, 80, 60);
+        _editor.Select(null);
+        _editor.ToggleShapesVisible();
+
+        Assert.False(_editor.IsOverLabel(new PixelPoint(50, 40), Tolerance));
+    }
+
+    [Fact]
     public void Box_DragAddsASavedLabelOfTheActiveClassAndSelectsIt()
     {
         _editor.SetTool(AnnotateTool.Box);

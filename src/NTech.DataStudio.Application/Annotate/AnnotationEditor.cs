@@ -73,6 +73,14 @@ public sealed class AnnotationEditor
         RaiseChanged();
     }
 
+    /// <summary>The next tool (+1) or the previous one (-1) in rail order, wrapping around.</summary>
+    public void CycleTool(int step)
+    {
+        var tools = Enum.GetValues<AnnotateTool>();
+        var index = Array.IndexOf(tools, Tool);
+        SetTool(tools[((index + step) % tools.Length + tools.Length) % tools.Length]);
+    }
+
     public void Select(Guid? id)
     {
         SelectedId = id is { } value && Document?.Find(value) is not null ? value : null;
@@ -313,6 +321,21 @@ public sealed class AnnotationEditor
         SelectedId = hit?.Id;
         if (hit is not null && !_locked.Contains(hit.Id))
             BeginDrag(new Drag(hit, -1, point));
+    }
+
+    /// <summary>
+    /// Whether a press here would grab something with the Select tool: a label, or a vertex of the
+    /// selected one. The canvas pans instead when it would not.
+    /// </summary>
+    public bool IsOverLabel(PixelPoint point, double tolerance)
+    {
+        if (Document is null) return false;
+
+        if (Selected is { } selected && selected.Kind != ShapeKind.Point
+            && ShapeEditing.HitVertex(selected.Points, point, tolerance) >= 0)
+            return true;
+
+        return HitTest(point, tolerance) is not null;
     }
 
     private Annotation? HitTest(PixelPoint point, double tolerance)

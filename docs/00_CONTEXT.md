@@ -13,7 +13,7 @@ Cập nhật: 2026-11-07
 - Module 4 Export: `DatasetValidator` (lỗi chặn xuất, cảnh báo không chặn), `ExportService` (dựng ảnh song song bằng đúng `RenderPlan` của Dataset, ghi vào `.partial` rồi đổi tên, README, `version.json`, zip), `LabelShapes` (box, polygon, OBB co về tâm cho vừa ảnh); `NTech.DataStudio.Exporters` có YOLO detect, segment, OBB, classify và COCO; bộ đọc `YoloLabelParser`, `CocoLabelParser`; màn hình Export. Xem `docs/design/screens/EXPORT.md` và [quyết định 0008](../decisions/0008_export-format-choices.md).
 - Imaging: đọc header không giải nén, SHA-256, pHash, dHash, phương sai Laplacian, phơi sáng, stretch 16-bit về 8-bit, resize, tile, crop ROI.
 - Desktop: Themes port từ robo-station, TopBar, màn hình Project, wizard Prepare 4 bước, Annotate, Dataset, Export.
-- 7 model profile trong `profiles/`.
+- 8 model profile trong `profiles/` (gồm segmentation: yolo26-segment, rf-detr-segment, maskrcnn-segment).
 - Build và phát hành: `scripts\build`, `package`, `deploy` (mỗi lệnh có `.ps1` và `.bat`), `installer\NTech-DataStudio.iss`. Xem README. Đã chạy thật: installer 70 MB, cài vào thư mục tạm, chạy app đã cài, gỡ sạch.
 
 ## Chưa có
@@ -50,4 +50,4 @@ Máy 8 luồng, RAM 16 GB. 67 file 5472 × 3648 tổng hợp có nhiễu kiểu 
 
 Bộ đo lẫn cả PNG, TIFF và JPEG vốn đã nén, nên tỉ lệ thấp hơn bộ toàn BMP. Trung bình một master JPEG giữ nguyên cỡ nặng 5,6 MB, so với 60 MB của một BMP 20MP, tức khoảng 10,7 lần; đây là phép tính, chưa đo trực tiếp trên bộ toàn BMP. Ảnh thật có thể nén khác ảnh tổng hợp. Suy ra 1.000 ảnh mất khoảng 9 phút phân tích và 5–8 phút chuẩn hóa.
 
-Toàn bộ test: 486 (Domain 134, Imaging 72, Exporters 23, Application và Storage 257). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, ExportViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.
+Toàn bộ test: 492 (Domain 134, Imaging 72, Exporters 23, Application và Storage 263). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, ExportViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.

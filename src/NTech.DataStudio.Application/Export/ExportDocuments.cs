@@ -194,7 +194,7 @@ internal static class ExportDocuments
         text.AppendLine("```");
         text.AppendLine();
         text.AppendLine(kind is ExportKind.CocoDetect or ExportKind.CocoSegment
-            ? "Lệnh trên chỉ là mẫu: đối chiếu tên lớp và tham số với phiên bản `rfdetr` bạn dùng."
+            ? "Lệnh trên chỉ là mẫu: đối chiếu tên lớp và tham số với phiên bản framework bạn dùng (`rfdetr`, torchvision, Detectron2)."
             : "Chạy lệnh từ bên trong thư mục này. Đổi `yolo26s` thành cỡ model bạn muốn.");
         return text.ToString();
     }
@@ -205,6 +205,8 @@ internal static class ExportDocuments
         ExportKind.YoloSegment => $"yolo segment train model=yolo26s-seg.pt data=data.yaml imgsz={request.Imgsz}",
         ExportKind.YoloObb => $"yolo obb train model=yolo26s-obb.pt data=data.yaml imgsz={request.Imgsz}",
         ExportKind.YoloClassify => $"yolo classify train model=yolo26s-cls.pt data=. imgsz={request.Imgsz}",
+        ExportKind.CocoSegment when request.Profile.Family == "mask-rcnn" =>
+            "# Mask R-CNN: đọc từng thư mục bằng torchvision (CocoDetection) hoặc Detectron2 (register_coco_instances(name, {}, \"train/_annotations.coco.json\", \"train\"))",
         ExportKind.CocoSegment => "model = RFDETRSegPreview(); model.train(dataset_dir=\".\", epochs=50, batch_size=4)",
         _ => "model = RFDETRBase(); model.train(dataset_dir=\".\", epochs=50, batch_size=4)"
     };

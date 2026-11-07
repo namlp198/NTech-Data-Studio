@@ -399,6 +399,40 @@ public sealed class ExportServiceTests : IDisposable
     }
 
     [Fact]
+    public void MaskRcnnProfile_ExportsCocoSegmentationWithItsOwnTrainNote()
+    {
+        var versionId = CreateVersion(Config());
+        var polygon = DetectProfile with { Id = "maskrcnn-segment", Family = "mask-rcnn", Task = TaskKind.Segment, ExportFormats = new[] { "coco" } };
+
+        // The fixture only drew boxes, and segmentation needs polygons: blocked, as for any segmentation profile.
+        Assert.Throws<ExportBlockedException>(() => _export.Export(Request(versionId, profile: polygon)));
+
+        // Replace every box by a polygon of the same outline.
+        using (var store = _fixture.OpenStore())
+        {
+            var service = _fixture.Service(store);
+            for (var id = 1; id <= ImageCount; id++)
+            {
+                var document = _fixture.OpenImage(service, id);
+                var box = document.Annotations.Single();
+                var triangle = new Annotation(Guid.NewGuid(), id, box.ClassId, ShapeKind.Polygon,
+                    new[] { new PixelPoint(60, 30), new PixelPoint(100, 30), new PixelPoint(80, 60) },
+                    AnnotationSource.Manual, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+                store.Apply(new StoreChange(id, new[] { box.Id }, new[] { triangle }, Array.Empty<long>(), Array.Empty<long>(), ImageStatus.Labeled));
+            }
+        }
+
+        var result = _export.Export(Request(versionId, profile: polygon));
+
+        Assert.EndsWith("v001_coco_segment", result.Folder);
+        var coco = CocoLabelParser.Parse(File.ReadAllText(Path.Combine(result.Folder, "train", "_annotations.coco.json")));
+        Assert.All(coco.Images.SelectMany(image => image.Labels), label => Assert.Equal(ShapeKind.Polygon, label.Kind));
+        var readme = File.ReadAllText(Path.Combine(result.Folder, "README.dataset.md"));
+        Assert.Contains("Mask R-CNN", readme);
+        Assert.DoesNotContain("RFDETR", readme);
+    }
+
+    [Fact]
     public void Classify_SortsPicturesByTheirTag()
     {
         var versionId = CreateVersion(Config());

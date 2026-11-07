@@ -16,16 +16,16 @@ Số file, file hỏng, dung lượng, file lớn nhất, ước tính dung lư�
 
 | Luật | Mặc định | Ghi chú |
 | --- | --- | --- |
-| Trùng hoàn toàn | bật | SHA-256; giữ ảnh nhập trước |
-| Gần trùng | bật, khoảng cách ≤ 5 | Chỉ cần pHash hoặc dHash đạt ngưỡng; giữ ảnh nét nhất |
+| Trùng hoàn toàn | **bật** (luật duy nhất bật sẵn) | SHA-256; giữ ảnh nhập trước |
+| Gần trùng | **tắt**, khoảng cách ≤ 5 khi bật | Chỉ cần pHash hoặc dHash đạt ngưỡng; giữ ảnh nét nhất |
 | Mờ | **tắt** | Phương sai Laplacian trên ảnh thu về cạnh dài 2048. Ngưỡng gợi ý là phân vị thứ 5 |
-| Quá tối | bật, ≥ 90% điểm ảnh dưới 30 | |
-| Cháy sáng | bật, ≥ 50% điểm ảnh từ 250 | |
+| Quá tối | **tắt**, ≥ 90% điểm ảnh dưới 30 khi bật | |
+| Cháy sáng | **tắt**, ≥ 50% điểm ảnh từ 250 khi bật | |
 
 - Phân tích giải mã mỗi ảnh một lần và lưu ngay; hủy rồi chạy lại sẽ làm tiếp.
 - "Áp dụng lại ngưỡng" chỉ tính lại, không đọc lại ảnh.
 - Danh sách ảnh bị loại có thumbnail, lý do, chi tiết và nút Khôi phục. File hỏng không khôi phục được.
-- Camera tĩnh cho nhiều ảnh gần giống nhau, nên có thể bị loại nhiều ở luật gần trùng. Khi đó hãy giảm ngưỡng hoặc tắt luật này.
+- Camera tĩnh cho nhiều ảnh gần giống nhau, nên có thể bị loại nhiều ở luật gần trùng. Luật này đang tắt sẵn; nếu bật thì hãy giảm ngưỡng.
 
 ## 4. Chuẩn hóa
 

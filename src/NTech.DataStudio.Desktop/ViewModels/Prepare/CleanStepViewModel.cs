@@ -18,7 +18,7 @@ public sealed partial class CleanStepViewModel : PrepareStepViewModel
     private bool _rejectExactDuplicates = true;
 
     [ObservableProperty]
-    private bool _rejectNearDuplicates = true;
+    private bool _rejectNearDuplicates;
 
     [ObservableProperty]
     private int _nearDuplicateDistance = 5;
@@ -30,13 +30,13 @@ public sealed partial class CleanStepViewModel : PrepareStepViewModel
     private double _blurThreshold;
 
     [ObservableProperty]
-    private bool _rejectDark = true;
+    private bool _rejectDark;
 
     [ObservableProperty]
     private double _darkPercent = 90;
 
     [ObservableProperty]
-    private bool _rejectBright = true;
+    private bool _rejectBright;
 
     [ObservableProperty]
     private double _brightPercent = 50;

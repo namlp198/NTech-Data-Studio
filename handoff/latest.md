@@ -36,3 +36,14 @@ Ngày: 2026-11-07
 ## Tiếp theo
 
 Xem `tasks/active.md`. Chưa push, repo không có remote.
+
+## Phiên sau Module 4: bốn yêu cầu bổ sung (2026-11-07)
+
+- **Pan khi zoom:** khi ảnh đã zoom lớn hơn vừa khung, giữ chuột trái trên chỗ trống rồi kéo thì pan (công cụ Chọn và Tag). Bấm vào nhãn thì vẫn chọn và kéo nhãn; công cụ vẽ vẫn dùng Space hoặc chuột giữa để pan. Cuộn chuột vẫn zoom. `AnnotationEditor.IsOverLabel` quyết định có bấm trúng nhãn không (3 test).
+- **Làm sạch:** chỉ "Trùng hoàn toàn (SHA-256)" bật sẵn; gần trùng, mờ, quá tối, cháy sáng tắt. Chỉ đổi mặc định ở màn hình; `CleanOptions` ở Application giữ mặc định cũ.
+- **Phím tắt đổi công cụ:** Q (công cụ kế) và Shift+Q (công cụ trước), S như V (Chọn), + và - để zoom. `AnnotationEditor.CycleTool` (2 test).
+- **Segmentation:** vốn đã có (công cụ Polygon, YOLO segment, COCO segment, profile `yolo26-segment` và `rf-detr-segment`). Đã thêm profile `maskrcnn-segment` (COCO segment), kèm ghi chú train riêng trong README bản xuất, và mục Segmentation ở `EXPORT.md`. Chưa có mặt nạ điểm ảnh (PNG), RLE hay segmentation ngữ nghĩa.
+- Test: 492 (Domain 134, Imaging 72, Exporters 23, Application và Storage 263). Build 0 cảnh báo.
+- **Chạy app thật:** mặc định làm sạch đọc lại đúng (chỉ SHA-256 bật); `maskrcnn-segment` có trong danh sách profile; kéo chuột trái khi đã zoom làm ảnh dịch đúng, công cụ Box không pan; Q và Shift+Q đi hết 5 công cụ hai chiều.
+- **Lỗi tìm được khi chạy app:** máy kiểm có bộ gõ tiếng Việt Telex bật, nên gõ `e` lặp thành `ê` làm app nhận Backspace và bỏ mất phím. Vì vậy dùng Q thay E. Phím chữ đơn có sẵn (A, D, S, R...) vẫn có thể bị Telex làm hỏng khi bật tiếng Việt; tắt IME ở WPF không chặn được. Ghi ở `ANNOTATE.md` và `CLAUDE.md`. Cần cân nhắc phím tắt không phải chữ nếu người dùng thường gõ tiếng Việt khi gán nhãn.
+- **Chưa kiểm tra:** pan khi kéo trên polygon lõm hoặc khi nhiều nhãn chồng nhau (chỉ kiểm tra vùng trống); pan trên màn hình cảm ứng; `maskrcnn-segment` chưa train thật (imgsz 800 và stride 32 là giả định).

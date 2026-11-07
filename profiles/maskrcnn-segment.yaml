@@ -1,0 +1,11 @@
+# Giá trị imgsz/stride là giả định ban đầu (cạnh ngắn 800 là mặc định của Mask R-CNN
+# trong torchvision/Detectron2); cần đối chiếu với framework sẽ dùng
+# trước khi bản xuất COCO được nghiệm thu (xem tasks/backlog.md).
+id: maskrcnn-segment
+family: mask-rcnn
+task: segment
+imgsz_default: 800
+imgsz_options: [640, 800, 1024]
+stride: 32
+min_object_px: 12
+export_formats: [coco]

@@ -26,7 +26,7 @@ public class YamlModelProfileCatalogTests : IDisposable
         Assert.Equal(
             new[]
             {
-                "anomaly-patchcore", "rf-detr-detect", "rf-detr-segment",
+                "anomaly-patchcore", "maskrcnn-segment", "rf-detr-detect", "rf-detr-segment",
                 "yolo26-classify", "yolo26-detect", "yolo26-obb", "yolo26-segment"
             },
             profiles.Select(profile => profile.Id));

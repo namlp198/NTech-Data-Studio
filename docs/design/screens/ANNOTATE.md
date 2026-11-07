@@ -27,7 +27,9 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 
 | Phím | Chức năng |
 | --- | --- |
-| V / B / P / R / T | Chọn / Box / Polygon / Rotated box / Tag |
+| V (hoặc S), B, P, R, T | Chọn, Box, Polygon, Rotated box, Tag |
+| Q, Shift+Q | Công cụ kế, công cụ trước trong thanh công cụ (Chọn, Box, Polygon, Rotated box, Tag, rồi quay vòng); đang vẽ dở thì bỏ hình dở |
+| + và - | Phóng to, thu nhỏ quanh tâm khung |
 | 1–9 | Chọn class. Công cụ Tag: gắn hoặc bỏ tag. Công cụ Chọn đang chọn một hình: đổi class của hình |
 | A, D hoặc ←, → | Ảnh trước, ảnh sau (theo bộ lọc đang bật) |
 | Enter, Backspace, Esc | Kết thúc, bỏ đỉnh vừa vẽ, hủy (không vẽ thì bỏ chọn) |
@@ -38,6 +40,7 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 | H | Ẩn/hiện mọi nhãn |
 | F | Vừa khung |
 | Space + kéo, chuột giữa kéo | Pan |
+| Kéo chuột trái trên chỗ trống khi đã zoom lớn hơn vừa khung | Pan. Chỉ với công cụ Chọn (bấm vào nhãn thì vẫn chọn và kéo nhãn) và công cụ Tag; công cụ vẽ cần cú kéo để vẽ nên dùng Space hoặc chuột giữa. Bấm không kéo vẫn bỏ chọn |
 | Cuộn chuột | Zoom quanh con trỏ |
 
 Phím tắt không chạy khi đang gõ trong ô tên class hay mở combobox.
@@ -82,3 +85,7 @@ Chép cả nhãn và tag của ảnh đứng trước trong toàn project (khôn
 | 50 MP (8192 × 6144) | 269 ms | 192 MB | 59 fps, 5 khung trên 33 ms, tối đa 56 ms | 60 fps, 0 khung trên 33 ms |
 
 Kết luận: chưa cần ảnh pyramid ở mức này. Giới hạn của phép đo: ảnh tổng hợp nén rất nhỏ (1 MB và 4 MB), nên thời gian giải mã ảnh chụp thật có nhiễu sẽ lâu hơn; chỉ đo trên GPU phần cứng; cạnh ảnh trên 16.384 px vượt giới hạn texture của GPU và chưa thử.
+
+### Bộ gõ tiếng Việt
+
+Phím tắt là chữ đơn, nên bộ gõ tiếng Việt kiểu Telex (Unikey, EVKey) làm hỏng chúng: gõ `e` hai lần thành `ê` nghĩa là app nhận Backspace thay vì `e`, và `a`, `d`, `w`, `s`, `r` cũng bị biến đổi khi đứng sau một nguyên âm. Tắt tiếng Việt (chuyển về gõ tiếng Anh) khi gán nhãn. App đã tắt IME của Windows trên canvas, nhưng bộ gõ chạy ở mức hệ điều hành thì app không chặn được; vì vậy Q (không thuộc phím nào của Telex) được chọn cho việc đổi công cụ, không dùng E. Đã gặp lỗi này khi chạy app trên máy có Telex bật.

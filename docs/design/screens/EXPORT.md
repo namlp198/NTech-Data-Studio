@@ -23,7 +23,7 @@ Danh sách profile lấy từ `profiles/*.yaml`, lọc những cái có bộ xu�
 | yolo26-segment | YOLO txt | như trên; `cls x1 y1 x2 y2 …` |
 | yolo26-obb | YOLO txt | như trên; `cls x1 y1 … x4 y4` |
 | yolo26-classify | thư mục | `train/<class>/*.jpg`, `val/<class>/…`; không có file nhãn |
-| rf-detr-detect, rf-detr-segment | COCO json | `train/`, `valid/`, `test/`, mỗi thư mục có `_annotations.coco.json` |
+| rf-detr-detect, rf-detr-segment, maskrcnn-segment | COCO json | `train/`, `valid/`, `test/`, mỗi thư mục có `_annotations.coco.json` |
 
 Mọi bản xuất có thêm `version.json` (config đúng như lưu, seed, danh sách class kèm số nhãn) và `README.dataset.md` (số lượng, preprocessing, tăng cường, cảnh báo, lệnh train mẫu). Thư mục đích mặc định là `<project>/exports/<version>_<định dạng>`; có thể chọn thư mục khác, và nén thêm thành `.zip` cạnh nó.
 
@@ -59,3 +59,7 @@ Bảng gộp class của version được áp trước khi kiểm tra: nhãn c�
 
 - Nhập nhãn có sẵn (YOLO txt, COCO json) vào project: đã có bộ đọc (`YoloLabelParser`, `CocoLabelParser`) và test vòng đọc lại, nhưng chưa có màn hình hay service ghép nhãn vào ảnh của project. Xem `tasks/backlog.md`.
 - Chưa chạy `yolo train` hay train RF-DETR bằng bản xuất.
+
+## Segmentation
+
+Ba profile segmentation: `yolo26-segment` (YOLO txt, polygon chuẩn hóa), `rf-detr-segment` và `maskrcnn-segment` (COCO json, trường `segmentation` là polygon pixel kèm `bbox` và `area` của polygon). Nhãn polygon vẽ bằng công cụ Polygon ở Annotate. Ảnh chỉ có box bị chặn xuất ở profile này (xem Kiểm tra); polygon bị biên ảnh cắt được cắt lại bằng Sutherland–Hodgman. Chưa có mặt nạ điểm ảnh (PNG), RLE hay segmentation ngữ nghĩa. `maskrcnn-segment` chỉ khác `rf-detr-segment` ở `imgsz` mặc định và ghi chú train trong README.

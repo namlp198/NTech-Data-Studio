@@ -794,7 +794,12 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
         switch (key)
         {
-            case Key.V: Editor.SetTool(AnnotateTool.Select); return true;
+            case Key.V or Key.S: Editor.SetTool(AnnotateTool.Select); return true;
+            // Q steps to the next tool in the rail and Shift+Q back, so one hand can flip between tools. Not E:
+            // a Vietnamese Telex IME turns a repeated "e" into "ê" (a Backspace plus a letter) and eats the press.
+            case Key.Q: Editor.CycleTool(modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1); return true;
+            case Key.OemPlus or Key.Add: ZoomInRequested?.Invoke(); return true;
+            case Key.OemMinus or Key.Subtract: ZoomOutRequested?.Invoke(); return true;
             case Key.B: Editor.SetTool(AnnotateTool.Box); return true;
             case Key.P: Editor.SetTool(AnnotateTool.Polygon); return true;
             case Key.R: Editor.SetTool(AnnotateTool.RotatedBox); return true;

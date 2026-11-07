@@ -51,7 +51,7 @@
 - [ ] Lộ trình 6 bước và 2 cổng: sơ đồ nhúng không có trong bản xuất Markdown của tài liệu thiết kế
 - [ ] Đối chiếu `imgsz` và `stride` của profile RF-DETR và PatchCore với phiên bản sẽ dùng; giá trị hiện tại là giả định
 - [ ] Đối chiếu `imgsz` của các profile YOLO26 ngoài detect; thiết kế chỉ cho mẫu của detect
-- [ ] Thiết kế nêu profile Mask R-CNN ở Module 1 nhưng không có trong danh sách file `profiles/`
+- [x] Profile Mask R-CNN: đã thêm `maskrcnn-segment` (COCO segment). `imgsz` 800 và stride 32 là giả định, cần đối chiếu với framework sẽ dùng
 
 ## Đóng gói
 
