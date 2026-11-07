@@ -6,6 +6,8 @@
         xmlns:annotateView="clr-namespace:NTech.DataStudio.Desktop.Views.Annotate"
         xmlns:datasetVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Dataset"
         xmlns:datasetView="clr-namespace:NTech.DataStudio.Desktop.Views.Dataset"
+        xmlns:exportVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Export"
+        xmlns:exportView="clr-namespace:NTech.DataStudio.Desktop.Views.Export"
         xmlns:prepareVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Prepare"
         xmlns:prepareView="clr-namespace:NTech.DataStudio.Desktop.Views.Prepare"
         xmlns:sharedVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Shared"
@@ -30,6 +32,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type datasetVm:DatasetViewModel}">
             <datasetView:DatasetView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type exportVm:ExportViewModel}">
+            <exportView:ExportView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type sharedVm:PendingModuleViewModel}">
             <sharedView:PendingModuleView />

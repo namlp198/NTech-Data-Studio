@@ -12,7 +12,7 @@ import → audit → analyze + clean → normalize → annotate → split → pr
 | Normalize | Ảnh gốc không bị loại, model profile | `images`, `master/`, `thumbs/` | có |
 | Annotate | Ảnh master | `annotations`, `image_tags`, trạng thái ảnh | có |
 | Split, preprocess, augment | Ảnh master và nhãn | `versions`, `version_items` (chỉ config và danh sách; không ghi ảnh) | có |
-| Validate, export | Một version và một model profile | `exports/<version>_<format>/` | chưa làm |
+| Validate, export | Một version và một model profile | `exports/<version>_<format>/` | có |
 
 Ảnh tăng cường và dataset xuất ra luôn sinh lại được từ master, config và `seed` ([quyết định 0007](../../decisions/0007_version-freezes-membership-and-config-not-pixels.md)).
 
@@ -36,3 +36,14 @@ Analyze và normalize chạy `Parallel.ForEach`. Số luồng là số nhỏ hơ
 ## Đọc ghi ảnh
 
 Mọi file đi qua `byte[]`, vì `Cv2.ImRead` và `ImWrite` không mở được đường dẫn tiếng Việt trên Windows. Đừng đổi sang hai hàm đó.
+
+## Xuất dataset (Module 4)
+
+```
+version + profile → kiểm tra → (mỗi ảnh, mỗi bản sao) RenderPlan → ảnh + nhãn → exporter ghi nhãn, yaml/json → README, version.json → đổi tên .partial → (zip)
+```
+
+- `ExportService.Validate` chạy `DatasetValidator` trên nhãn gốc của master (sau bảng gộp class); không ghi gì. Có lỗi thì `Export` ném `ExportBlockedException` trước khi tạo thư mục.
+- Mỗi ảnh xuất ra là một `RenderPlan` từ `RenderPlanner.Plan(preprocess, AugmentSampler.Sample(seed, imageId, copy))`, giống hệt preview ở Dataset. Bản 0 và ảnh val, test không bị tăng cường. Ảnh không bị chỉnh gì thì chép nguyên file master; còn lại engine warp một lần rồi mã hóa. Nhãn đi qua `LabelTransformer` với cùng `RenderPlan`.
+- Ảnh dựng song song (`Parallel.ForEach`, số luồng theo `ParallelismPolicy`); nhãn đọc từ DB trước, tuần tự. Mỗi exporter (`IDatasetExporter`) chỉ quyết định đường dẫn ảnh và ghi file nhãn; `LabelShapes` quyết định hình (box, polygon, OBB) để các định dạng không lệch nhau.
+- Ghi vào `<thư mục>.partial`, xong mới đổi tên; hủy hoặc lỗi thì xóa bản dở. Xem [quyết định 0008](../../decisions/0008_export-format-choices.md).

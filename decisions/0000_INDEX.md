@@ -9,3 +9,4 @@
 | [0005](0005_reject-marks-never-moves.md) | Loại ảnh chỉ đánh dấu, không di chuyển file | 2026-11-06 |
 | [0006](0006_annotate-saves-first-then-updates-memory.md) | Mỗi sửa nhãn ghi DB trước, rồi mới đổi bộ nhớ | 2026-11-06 |
 | [0007](0007_version-freezes-membership-and-config-not-pixels.md) | Version đóng băng danh sách ảnh, split và config, không đóng băng điểm ảnh | 2026-11-07 |
+| [0008](0008_export-format-choices.md) | Lựa chọn khi ghi YOLO và COCO: không `path` trong data.yaml, OBB co về tâm, tên ASCII, ghi vào .partial | 2026-11-07 |

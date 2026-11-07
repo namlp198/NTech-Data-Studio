@@ -59,6 +59,9 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - `Mat.SetArray` chỉ nhận Mat một kênh; muốn nhiều kênh thì tạo Mat `cols * channels` rồi `Reshape(channels)`. `Cv2.SetRNGSeed` không có trong OpenCvSharp.
 - Mở thêm màn hình dùng `ComboBox` với `Option<T>`: UI Automation đọc tên mục qua `ToString`, nên `Option<T>.ToString` trả về `Label`. Giữ như vậy.
 - Panel và dải nổi trên canvas che mất click: điểm thử bằng chuột trong kịch bản UI phải nằm ngoài chúng.
+- Xuất dataset: ảnh và nhãn của mỗi bản sao phải đọc cùng một `RenderPlan` (như preview); đừng dựng nhãn riêng. Hình nhãn (box, polygon, OBB) chỉ quyết định ở `LabelShapes` để mọi định dạng cùng một cách; OBB nhô ra ngoài ảnh phải co về tâm, đừng kẹp góc (quyết định 0008). Ghi vào `.partial` rồi đổi tên; ghi đè chỉ áp cho thư mục có `version.json`.
+- `Parallel.ForEach` bọc lỗi của worker trong `AggregateException`; `ExportService` mở nó ra, nên người gọi bắt `ImageReadException` hay `InvalidOperationException` trực tiếp. Giữ nguyên khi sửa.
+- Test cần nhiều tập (train, val, test) thì mỗi ảnh phải có `source_image_id` riêng: ảnh cùng nguồn luôn cùng một tập, nên `AnnotateFixture` mặc định (một nguồn cho mọi ảnh) cho ra toàn train.
 
 ## Kiểm tra
 

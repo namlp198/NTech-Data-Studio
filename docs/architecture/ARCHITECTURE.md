@@ -10,7 +10,7 @@
 | `NTech.DataStudio.Application` | net10.0 | Use case và abstraction | Domain |
 | `NTech.DataStudio.Imaging` | net10.0 | Đọc ảnh, chất lượng, biến đổi, tăng cường (OpenCvSharp4) | Application |
 | `NTech.DataStudio.Storage` | net10.0 | SQLite, thư mục project, đọc YAML profile | Application |
-| `NTech.DataStudio.Exporters` | net10.0 | YOLO26, COCO | Application |
+| `NTech.DataStudio.Exporters` | net10.0 | YOLO26 (detect, segment, OBB, classify) và COCO | Application |
 | `NTech.DataStudio.Desktop` | net10.0-windows | WPF, ViewModel, composition root | tất cả |
 
 Hướng phụ thuộc: `Desktop → Application → Domain`. Imaging, Storage và Exporters hiện thực các abstraction của Application và chỉ được nối với nhau ở `Bootstrap/AppComposition.cs`.

@@ -1,0 +1,165 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Export.ExportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="{StaticResource Inset.Page}">
+        <!-- No project -->
+        <StackPanel Visibility="{Binding HasProject, Converter={StaticResource InverseBoolToVisibility}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}"
+                       AutomationProperties.AutomationId="ExportNoProject"
+                       Text="Chưa mở project. Hãy mở hoặc tạo project ở màn hình Project." />
+        </StackPanel>
+
+        <!-- Loading -->
+        <StackPanel Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}"
+                       AutomationProperties.AutomationId="ExportLoading" Text="Đang tải các version của project..." />
+        </StackPanel>
+
+        <!-- Load error -->
+        <StackPanel Visibility="{Binding LoadError, Converter={StaticResource NullToCollapsed}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}" TextWrapping="Wrap"
+                       AutomationProperties.AutomationId="ExportLoadError"
+                       Foreground="{StaticResource Brush.Status.Error}" Text="{Binding LoadError}" />
+            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Top.MD}" HorizontalAlignment="Left"
+                    Content="Thử lại" Command="{Binding ReloadCommand}" />
+        </StackPanel>
+
+        <!-- No versions -->
+        <StackPanel Visibility="{Binding ShowNoVersions, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
+            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.LG}" TextWrapping="Wrap"
+                       AutomationProperties.AutomationId="ExportNoVersions"
+                       Text="Project chưa có version nào. Hãy chia tập và tạo version ở màn hình Dataset." />
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Visibility="{Binding ShowForm, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Style="{StaticResource Button.Primary}" VerticalAlignment="Center"
+                            Content="Xuất dataset" AutomationProperties.AutomationId="ExportRun"
+                            IsEnabled="{Binding CanExport}" Command="{Binding ExportCommand}" />
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   Text="Chọn một version và một model profile. Dataset được kiểm tra rồi ghi ra thư mục train được ngay. Có lỗi thì không xuất; chỉ có cảnh báo thì vẫn xuất được." />
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- Progress, result, error -->
+                <StackPanel Margin="{StaticResource Gap.Top.MD}" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Secondary}" Content="Hủy"
+                                Margin="{StaticResource Gap.Left.MD}" AutomationProperties.AutomationId="ExportCancel"
+                                Command="{Binding CancelCommand}" />
+                        <TextBlock Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="ExportProgressText" Text="{Binding ProgressText}" />
+                    </DockPanel>
+                    <ProgressBar Margin="{StaticResource Gap.Top.SM}" Maximum="100" Value="{Binding ProgressPercent}" />
+                </StackPanel>
+                <DockPanel Margin="{StaticResource Gap.Top.MD}" Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
+                    <Button DockPanel.Dock="Right" Style="{StaticResource Button.Secondary}" Content="Mở thư mục"
+                            Margin="{StaticResource Gap.Left.MD}" VerticalAlignment="Top" AutomationProperties.AutomationId="ExportOpen"
+                            Command="{Binding OpenResultCommand}" />
+                    <TextBlock Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="ExportResult"
+                               Foreground="{StaticResource Brush.Status.Success}" Text="{Binding ResultMessage}" />
+                </DockPanel>
+                <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="ExportError"
+                           Foreground="{StaticResource Brush.Status.Error}"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}" Text="{Binding ErrorMessage}" />
+
+                <Grid Margin="{StaticResource Gap.Top.LG}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{StaticResource Layout.DatasetSettingsGridWidth}" />
+                        <ColumnDefinition Width="{StaticResource Spacing.LG.Grid}" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Settings -->
+                    <Border Grid.Column="0" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" VerticalAlignment="Top"
+                            IsEnabled="{Binding IsIdle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Bản xuất" />
+
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Version" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                      AutomationProperties.Name="Version"
+                                      ItemsSource="{Binding Versions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedVersion}" />
+
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Model profile" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                      AutomationProperties.Name="Model profile"
+                                      ItemsSource="{Binding Profiles}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedProfile}" />
+
+                            <DockPanel Margin="{StaticResource Gap.Top.MD}">
+                                <TextBox DockPanel.Dock="Right" Style="{StaticResource Input.Text}" Width="{StaticResource Layout.PercentFieldWidth}"
+                                         AutomationProperties.Name="imgsz" Text="{Binding ImgszText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Style="{StaticResource Text.Body}" VerticalAlignment="Center" Text="imgsz khi train (px)" />
+                            </DockPanel>
+
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Định dạng ảnh đã chỉnh" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
+                                      AutomationProperties.Name="Định dạng ảnh"
+                                      ItemsSource="{Binding ImageFormats}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedImageFormat}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       Text="Ảnh không bị chỉnh gì được chép nguyên từ master, không nén lại." />
+
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Thư mục sẽ ghi" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="ExportTarget" Text="{Binding TargetFolder}" />
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.SM}">
+                                <Button Style="{StaticResource Button.Secondary}" Content="Chọn thư mục..." Command="{Binding ChooseFolderCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}" Content="Mặc định"
+                                        Command="{Binding UseDefaultFolderCommand}" />
+                            </StackPanel>
+
+                            <CheckBox Margin="{StaticResource Gap.Top.MD}" Content="Nén thêm thành file .zip"
+                                      AutomationProperties.Name="Nén zip" IsChecked="{Binding Zip}" />
+                            <CheckBox Margin="{StaticResource Gap.Top.SM}" Content="Ghi đè nếu đã có bản xuất cũ của app"
+                                      AutomationProperties.Name="Ghi đè" IsChecked="{Binding Overwrite}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Validation -->
+                    <Border Grid.Column="2" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Kiểm tra trước khi xuất" />
+                            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.SM}"
+                                       AutomationProperties.AutomationId="ExportSummary"
+                                       Visibility="{Binding IsValidating, Converter={StaticResource InverseBoolToVisibility}}"
+                                       Text="{Binding Summary}" />
+                            <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.SM}"
+                                       AutomationProperties.AutomationId="ExportValidating"
+                                       Visibility="{Binding IsValidating, Converter={StaticResource BoolToVisibility}}"
+                                       Text="Đang kiểm tra..." />
+                            <ItemsControl ItemsSource="{Binding Issues}" Margin="{StaticResource Gap.Top.SM}" AutomationProperties.AutomationId="ExportIssues">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                                   AutomationProperties.Name="{Binding Text}" Text="{Binding Text}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
+                                                    <Setter Property="Foreground" Value="{StaticResource Brush.Status.Warning}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                            <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

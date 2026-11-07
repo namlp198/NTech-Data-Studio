@@ -1,14 +1,17 @@
 using System.Windows.Media;
 using NTech.DataStudio.Application.Datasets;
+using NTech.DataStudio.Application.Export;
 using NTech.DataStudio.Application.Prepare;
 using NTech.DataStudio.Application.Projects;
 using NTech.DataStudio.Desktop.Services;
 using NTech.DataStudio.Desktop.Shell;
 using NTech.DataStudio.Desktop.ViewModels.Annotate;
 using NTech.DataStudio.Desktop.ViewModels.Dataset;
+using NTech.DataStudio.Desktop.ViewModels.Export;
 using NTech.DataStudio.Desktop.ViewModels.Prepare;
 using NTech.DataStudio.Desktop.ViewModels.Project;
 using NTech.DataStudio.Desktop.ViewModels.Shared;
+using NTech.DataStudio.Exporters;
 using NTech.DataStudio.Imaging.Augment;
 using NTech.DataStudio.Imaging.Codecs;
 using NTech.DataStudio.Storage.Profiles;
@@ -25,6 +28,7 @@ public static class AppComposition
         var folderPicker = new WpfFolderPicker();
         var prompt = new MessageBoxPrompt();
         var codec = new OpenCvImageCodec();
+        var engine = new OpenCvAugmentationEngine();
         var profiles = new YamlModelProfileCatalog(Path.Combine(AppContext.BaseDirectory, "profiles"));
 
         var projectView = new ProjectViewModel(
@@ -47,10 +51,14 @@ public static class AppComposition
             ("Prepare", "Icon.Prepare", prepareView),
             ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader())),
             ("Dataset", "Icon.Dataset", new DatasetViewModel(
-                projects, new DatasetService(projects, new OpenCvAugmentationEngine()), prompt)),
-            ("Export", "Icon.Export", new PendingModuleViewModel(
-                "Export",
-                "Kiểm tra hợp lệ rồi xuất YOLO26 hoặc COCO, train được ngay."))
+                projects, new DatasetService(projects, engine), prompt)),
+            ("Export", "Icon.Export", new ExportViewModel(
+                projects,
+                new DatasetService(projects, engine),
+                new ExportService(projects, engine, DatasetExporters.All()),
+                profiles,
+                folderPicker,
+                new ExplorerFolderOpener()))
         };
 
         var shell = new ShellViewModel(

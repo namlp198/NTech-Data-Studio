@@ -6,7 +6,7 @@ Tên hiển thị là **NTech Data Studio**. Namespace, assembly và project là
 
 ## Trạng thái
 
-Chạy được: tạo/mở project, Module 1 Prepare (import, audit, làm sạch, chuẩn hóa) và Module 2 Annotate (box, polygon, rotated box, tag, class, undo/redo, tự lưu) và Module 3 Dataset (chia train/val/test, preprocessing, tăng cường, preview, tạo version). Module Export chưa triển khai. Xem [docs/00_CONTEXT.md](docs/00_CONTEXT.md).
+Chạy được: tạo/mở project, Module 1 Prepare (import, audit, làm sạch, chuẩn hóa) và Module 2 Annotate (box, polygon, rotated box, tag, class, undo/redo, tự lưu) và Module 3 Dataset (chia train/val/test, preprocessing, tăng cường, preview, tạo version). Module 4 Export (YOLO26 detect, segment, OBB, classify; COCO; kiểm tra trước khi xuất; zip). Chưa có nhập nhãn có sẵn vào project. Xem [docs/00_CONTEXT.md](docs/00_CONTEXT.md).
 
 ## Yêu cầu
 
@@ -44,6 +44,6 @@ scripts\deploy.bat -Version 0.2.0 -Destination \\server\releases\DataStudio
 - [Tài liệu thiết kế](docs/DESIGN_DOC.md)
 - [Kiến trúc](docs/architecture/ARCHITECTURE.md), [mô hình dữ liệu](docs/architecture/DATA_MODEL.md), [pipeline](docs/architecture/PIPELINE.md)
 - [Design system](docs/design/DESIGN_SYSTEM.md), [UI guidelines](docs/design/UI_GUIDELINES.md)
-- Màn hình: [Prepare](docs/design/screens/PREPARE.md), [Annotate](docs/design/screens/ANNOTATE.md)
+- Màn hình: [Prepare](docs/design/screens/PREPARE.md), [Annotate](docs/design/screens/ANNOTATE.md), [Dataset](docs/design/screens/DATASET.md), [Export](docs/design/screens/EXPORT.md)
 - [Quyết định kiến trúc](decisions/0000_INDEX.md)
 - [Quy trình làm việc với AI](docs/README_AI_WORKFLOW.md)

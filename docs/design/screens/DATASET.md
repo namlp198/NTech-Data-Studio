@@ -46,7 +46,7 @@ Mọi phép hình học, cùng preprocessing Fit/Stretch/Fill, được gộp th
 
 **Giới hạn đã biết:**
 
-- OBB sau khi bị biên ảnh cắt ngang được fit lại và có thể nhô vài pixel ra ngoài ảnh. Bước ghi nhãn (Module 4) phải xử lý: kẹp từng góc sẽ làm méo hình chữ nhật, nên chọn cách rút nhỏ hay chấp nhận méo nhẹ khi viết exporter.
+- OBB sau khi bị biên ảnh cắt ngang được fit lại và có thể nhô vài pixel ra ngoài ảnh. `LabelTransformer` giữ nguyên như vậy; lúc xuất, `LabelShapes.FitInside` co hình về tâm cho vừa ảnh (xem [quyết định 0008](../../../decisions/0008_export-format-choices.md)).
 - Polygon lõm bị cắt bằng Sutherland–Hodgman có thể có cạnh chồng lên biên; diện tích vẫn đúng.
 - Vùng trống do xoay, scale nhỏ hay dịch được tô xám 114; ô cutout tô xám 128.
 

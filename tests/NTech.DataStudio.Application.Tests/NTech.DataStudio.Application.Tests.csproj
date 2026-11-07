@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\src\NTech.DataStudio.Application\NTech.DataStudio.Application.csproj" />
     <ProjectReference Include="..\..\src\NTech.DataStudio.Storage\NTech.DataStudio.Storage.csproj" />
     <ProjectReference Include="..\..\src\NTech.DataStudio.Imaging\NTech.DataStudio.Imaging.csproj" />
+    <ProjectReference Include="..\..\src\NTech.DataStudio.Exporters\NTech.DataStudio.Exporters.csproj" />
   </ItemGroup>
 
 </Project>

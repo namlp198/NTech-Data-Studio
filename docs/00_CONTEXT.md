@@ -10,16 +10,16 @@ Cập nhật: 2026-11-07
 - Application: `ProjectService`; Module 1 gồm `ImportService`, `AuditReportBuilder`, `AnalyzeService`, `CleanRules`, `CleanService`, `GeometryPlanner`, `NormalizeService`.
 - Module 2 Annotate: `AnnotateService` (ghi DB trước, undo/redo riêng từng ảnh), `AnnotationEditor` (logic chuột và phím tính theo pixel ảnh, test được không cần cửa sổ), `ClassService`, `StatusRules`; `AnnotationCanvas` vẽ bằng `DrawingVisual`; màn hình Annotate đủ công cụ, panel class và nhãn, dải thumbnail có bộ lọc. Xem `docs/design/screens/ANNOTATE.md`.
 - Module 3 Dataset: `SplitService` (stratify theo class, theo nhóm thư mục, tái lập theo seed), `VersionBuilder` (lọc trạng thái, gộp hoặc bỏ class, bỏ ảnh không nhãn, số liệu và cảnh báo), `DatasetService` (tạo, xóa version, preview); Domain có `Affine2D`, `RenderPlan`, `AugmentSampler`, `LabelTransformer`; `OpenCvAugmentationEngine` dựng ảnh bằng một lần warp; màn hình Dataset có preview 3×3 vẽ nhãn. Tạo version chỉ ghi config và danh sách ảnh; ảnh tăng cường sinh lúc xuất ([quyết định 0007](../decisions/0007_version-freezes-membership-and-config-not-pixels.md)). Xem `docs/design/screens/DATASET.md`.
+- Module 4 Export: `DatasetValidator` (lỗi chặn xuất, cảnh báo không chặn), `ExportService` (dựng ảnh song song bằng đúng `RenderPlan` của Dataset, ghi vào `.partial` rồi đổi tên, README, `version.json`, zip), `LabelShapes` (box, polygon, OBB co về tâm cho vừa ảnh); `NTech.DataStudio.Exporters` có YOLO detect, segment, OBB, classify và COCO; bộ đọc `YoloLabelParser`, `CocoLabelParser`; màn hình Export. Xem `docs/design/screens/EXPORT.md` và [quyết định 0008](../decisions/0008_export-format-choices.md).
 - Imaging: đọc header không giải nén, SHA-256, pHash, dHash, phương sai Laplacian, phơi sáng, stretch 16-bit về 8-bit, resize, tile, crop ROI.
-- Desktop: Themes port từ robo-station, TopBar, màn hình Project, wizard Prepare 4 bước.
+- Desktop: Themes port từ robo-station, TopBar, màn hình Project, wizard Prepare 4 bước, Annotate, Dataset, Export.
 - 7 model profile trong `profiles/`.
 - Build và phát hành: `scripts\build`, `package`, `deploy` (mỗi lệnh có `.ps1` và `.bat`), `installer\NTech-DataStudio.iss`. Xem README. Đã chạy thật: installer 70 MB, cài vào thư mục tạm, chạy app đã cài, gỡ sạch.
 
 ## Chưa có
 
-- Module 4 Export. Trong app, màn hình này chỉ ghi rõ là chưa triển khai. Hệ quả: chưa có gì sinh ra ảnh tăng cường ra đĩa; mới có preview.
+- Nhập nhãn có sẵn (YOLO txt, COCO json) vào project: có bộ đọc và test vòng đọc lại, chưa có service ghép nhãn vào ảnh của project và chưa có màn hình.
 - Trong Module 3: tile và crop ROI tĩnh ở bước preprocessing của version (Prepare đã có tile khi tạo master).
-- `NTech.DataStudio.Exporters` còn rỗng, nên project test tương ứng chưa có test.
 - Icon ứng dụng (`.iss` tự dùng `Assets/AppIcon.ico` khi file này xuất hiện), `samples/`, `tests/TestData/`.
 - Ký số (code signing) cho installer: chưa có, nên Windows SmartScreen sẽ cảnh báo khi cài.
 
@@ -32,7 +32,8 @@ Cập nhật: 2026-11-07
 | Zoom/pan mượt trên ảnh 20MP có 200 nhãn | Đạt trên ảnh tổng hợp: 55 fps ở 20 MP và 59 fps ở 50 MP. Chưa thử ảnh thật, GPU yếu hay ảnh trên 16.384 px. Xem ANNOTATE.md |
 | Gán được box, polygon, OBB có undo/redo; tắt app đột ngột không mất nhãn | Đạt trên app thật: vẽ bằng chuột, undo/redo, kill tiến trình, đọc lại DB còn đủ nhãn và `integrity_check` ok. Chưa có người dùng thật gán thử |
 | 300 ảnh gốc tạo version nhân ×3; overlay nhãn trên ảnh tăng cường khớp | Đạt trên ảnh tổng hợp: test `VersionBuilder` với đúng ví dụ 300 ảnh chia 70/20/10 ×3 ra khoảng 720; test engine kiểm tra từng phép: tâm vật thể trong ảnh xuất trùng tâm nhãn dưới 1 px; xem overlay trên app thật với 48 ảnh. Chưa thử ảnh thật, 300 ảnh thật hay người dùng thật |
-| Các tiêu chí còn lại | Chưa kiểm tra, module tương ứng chưa có |
+| Dataset YOLO26 detect/seg/obb train được ngay bằng `yolo train` không sửa tay; bản COCO train được với RF-DETR | Chưa đạt: chưa chạy `yolo train` hay RF-DETR bằng bản xuất. Đã kiểm: cấu trúc, cú pháp nhãn (mọi tọa độ trong 0..1), nhãn bám vật thể trên ảnh đã xuất, xuất hai lần ra cùng byte |
+| Vòng đọc lại: nhập lại bản xuất YOLO/COCO thì nhãn giống hệt | Một phần: bộ đọc đọc lại đúng nhãn từ file đã ghi (test); chưa nhập vào project |
 
 ## Phép đo 20MP (2026-11-06)
 
@@ -49,4 +50,4 @@ Máy 8 luồng, RAM 16 GB. 67 file 5472 × 3648 tổng hợp có nhiễu kiểu 
 
 Bộ đo lẫn cả PNG, TIFF và JPEG vốn đã nén, nên tỉ lệ thấp hơn bộ toàn BMP. Trung bình một master JPEG giữ nguyên cỡ nặng 5,6 MB, so với 60 MB của một BMP 20MP, tức khoảng 10,7 lần; đây là phép tính, chưa đo trực tiếp trên bộ toàn BMP. Ảnh thật có thể nén khác ảnh tổng hợp. Suy ra 1.000 ảnh mất khoảng 9 phút phân tích và 5–8 phút chuẩn hóa.
 
-Toàn bộ test: 400 (Domain 134, Imaging 72, Application và Storage 194). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.
+Toàn bộ test: 486 (Domain 134, Imaging 72, Exporters 23, Application và Storage 257). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, ExportViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.

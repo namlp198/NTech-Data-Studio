@@ -5,7 +5,8 @@
 - [x] Module 1 Prepare: import, audit, làm sạch, chuẩn hóa, hình học
 - [x] Module 2 Annotate: canvas, công cụ vẽ, undo/redo, class, tự động lưu
 - [x] Module 3 Dataset: split, preprocessing, augmentation, preview
-- [ ] Module 4 Export: YOLO26, COCO, validator, nhập nhãn có sẵn
+- [x] Module 4 Export: YOLO26 (detect, segment, OBB, classify), COCO, validator
+- [ ] Nhập nhãn có sẵn (YOLO txt, COCO json) vào project: có bộ đọc, chưa có service ghép và màn hình
 
 ## Module 1: còn lại
 
@@ -34,6 +35,15 @@
 - [ ] Snapshot `versions/<tên>/` đọc được bằng mắt, nếu cần; phải sinh từ DB (quyết định 0007)
 - [ ] Giữ lại hoặc khôi phục thiết lập của lần tạo version gần nhất khi mở lại màn hình (hiện luôn về mặc định)
 - [ ] Phím tắt và thứ tự Tab của form (chưa rà soát bằng bàn phím)
+
+## Module 4: còn lại
+
+- [ ] Train thử thật bằng bản xuất: `yolo train` (detect, segment, OBB, classify) và RF-DETR (COCO). Chưa chạy; các giả định chưa kiểm chứng: `data.yaml` không có `path:`, category COCO bắt đầu từ 1 không có category giữ chỗ, tên model mẫu trong lệnh train (`yolo26s-seg.pt`, `-obb`, `-cls`) và lệnh RF-DETR trong README
+- [ ] Nhập nhãn có sẵn: ghép nhãn đọc được (`YoloLabelParser`, `CocoLabelParser`) vào ảnh của project qua `AnnotateService.Execute`; cần quyết định cách khớp ảnh (tên file, hash) và ánh xạ class (theo tên hoặc theo chỉ số)
+- [ ] Project test cho Desktop: `ExportViewModel` (kiểm tra lại khi đổi lựa chọn, hủy kiểm tra cũ, khóa nút khi có lỗi) hiện chỉ kiểm tra bằng chạy app
+- [ ] Đo trên quy mô thật: xuất vài nghìn ảnh 20 MP (RAM, thời gian; nhiễu tạo mảng cỡ số điểm ảnh) và thử ổ chậm; số luồng hiện tính theo ảnh lớn nhất của version
+- [ ] Chọn riêng từng tập khi xuất (ví dụ chỉ val), và xuất lại chỉ phần nhãn không đụng tới ảnh; hiện luôn xuất trọn version
+- [ ] Phím tắt và thứ tự Tab của form Export (chưa rà soát bằng bàn phím)
 
 ## Cần làm rõ
 

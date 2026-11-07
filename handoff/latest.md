@@ -4,32 +4,34 @@ Ngày: 2026-11-07
 
 ## Đã làm
 
-- Module 3 Dataset: chia train/val/test (stratify theo class, theo thư mục gốc, tái lập theo seed), preprocessing (Stretch, Fit, Fill, ảnh xám, gộp hoặc bỏ class, bỏ ảnh không nhãn theo tỉ lệ), tăng cường chỉ cho train (lật, xoay 90°, xoay nhỏ, scale, dịch, shear, sáng, phơi sáng, tương phản, gamma, hue, bão hòa, ảnh xám, blur, motion blur, nhiễu, JPEG vỡ, cutout), preview 3×3 có vẽ nhãn, tạo và xóa version. Xem `docs/design/screens/DATASET.md`.
-- Quyết định 0007: version chỉ đóng băng danh sách ảnh, split và config; ảnh tăng cường sinh lúc xuất, từ master, config và seed. Nhãn đọc lúc xuất.
-- Mọi phép hình học gộp thành một ma trận affine (`RenderPlan`); ảnh và nhãn cùng đọc nó. Số ngẫu nhiên dùng `DeterministicRandom`, không dùng `System.Random`.
-- Sửa nhỏ ngoài phạm vi: `Option<T>.ToString` trả về `Label` (UI Automation đọc tên mục combo qua đó).
+- Module 4 Export: kiểm tra trước khi xuất (`DatasetValidator`), xuất YOLO26 detect, segment, OBB, classify và COCO detect, segment (`ExportService` + `NTech.DataStudio.Exporters`), `README.dataset.md` và `version.json` trong mỗi bản xuất, tùy chọn zip, màn hình Export. Xem `docs/design/screens/EXPORT.md`.
+- Quyết định 0008: các lựa chọn khi ghi file (không có `path:` trong `data.yaml`, OBB co về tâm cho vừa ảnh, nhãn không biểu diễn được thì bỏ và báo, id class liên tục từ 0 và COCO từ 1, ảnh không chỉnh thì chép nguyên master, tên file ASCII, ghi vào `.partial` rồi đổi tên).
+- Ảnh và nhãn của mỗi bản xuất đọc cùng `RenderPlan` với preview ở Dataset (`RenderPlanner` + `AugmentSampler` + `OpenCvAugmentationEngine` + `LabelTransformer`). Hình nhãn do `LabelShapes` quyết định cho mọi định dạng.
+- Bộ đọc nhãn `YoloLabelParser` và `CocoLabelParser` (dùng cho test vòng đọc lại). Chưa nối vào project.
+- Exporters trước đó rỗng; giờ có code và project test.
 
 ## Đã kiểm tra
 
-- `dotnet build`: 0 cảnh báo, 0 lỗi. `dotnet test`: 400/400 (Domain 134, Imaging 72, Application và Storage 194). Trước đó là 248.
-- Đột biến kiểm chứng: tắt bước sửa class hiếm của `SplitService` thì 3 test mới thất bại, bật lại thì qua. Lần đầu các test chia tập không bắt được lỗi này (đột biến vẫn qua); đã bổ sung 3 bộ dữ liệu tìm được bằng dò ngẫu nhiên.
-- Engine OpenCV: tâm khối trắng trong ảnh xuất trùng tâm nhãn đã biến đổi dưới 1 px cho 12 biến thể hình học, 3 chế độ resize, và ảnh 3200 px bị thu nhỏ mạnh. Lỗi thật tìm được nhờ test này: nhiễu từng ném exception (`SetArray` với Mat 3 kênh); đã sửa.
-- Chạy app thật qua UI Automation trên 48 ảnh tổng hợp (6 thư mục × 8) đã qua Prepare và gán nhãn: trạng thái chưa project và chưa ảnh, số liệu, bảng class, cảnh báo, báo lỗi tỉ lệ 120%, nút Tạo version bị khóa khi config sai, ba mẫu tăng cường, preprocessing Fit và gộp class, tạo version, từ chối tên trùng, xóa có hộp xác nhận. Xem ảnh chụp: nhãn bám đúng vật thể sau xoay, dịch, scale, letterbox, gộp class.
-- Kill tiến trình rồi đọc nguội DB: `integrity_check` ok, số ảnh mỗi tập khớp màn hình, không thư mục nào nằm ở hai tập, mọi class có mặt ở cả train và val, config JSON đủ.
+- `dotnet build`: 0 cảnh báo, 0 lỗi. `dotnet test`: 486/486 (Domain 134, Imaging 72, Exporters 23, Application và Storage 257). Trước đó là 400.
+- `ExportService` chạy trên project thật (thư mục tiếng Việt, ảnh master JPEG thật, engine OpenCV): đúng cấu trúc thư mục; ảnh không chỉnh được chép nguyên byte; nhân ×3 chỉ ở train; nhãn bám khối trắng trong ảnh sau lật, xoay, scale, dịch (tâm lệch dưới 3 px, kiểm tra 20+ ảnh); cùng một version xuất hai lần ra cùng từng byte; hủy giữa chừng hoặc một master hỏng không để lại thư mục nào; không ghi đè thư mục lạ; zip; COCO; phân loại; class bị bỏ không để lỗ hổng id.
+- Đột biến: cho `ExportService` tính nhãn bằng `RenderPlan` không tăng cường thì đúng một test (căn nhãn) thất bại; khôi phục thì qua.
+- Chạy app thật qua UI Automation trên 48 ảnh tổng hợp: chưa project, chưa version, xuất YOLO detect, lần xuất thứ hai bị từ chối rồi qua khi bật ghi đè, Segment bị chặn (ảnh chỉ có box), phân loại bị chặn (chưa có tag), COCO kèm zip, imgsz "abc" bị báo lỗi. Đọc file trên đĩa: 69 ảnh train, 69 file nhãn, 138 dòng nhãn khớp README, mọi tọa độ trong 0..1. Vẽ nhãn từ file `.txt` lên ảnh đã xuất: khung bám đúng khối màu kể cả bản xoay và dịch.
+- Lỗi thật tìm được khi chạy app: lần vào Export đầu tiên không kiểm tra gì và nút Xuất bị khóa (kiểm tra bị bỏ qua vì `IsLoading` còn true). Đã sửa; chạy lại thì có kết quả ngay.
 
 ## Chưa kiểm tra
 
-- Ảnh thật và bộ vài trăm ảnh thật. Các mẫu tăng cường và ngưỡng cảnh báo (10 nhãn train tối thiểu, lệch 10 điểm phần trăm) là ước lượng.
-- Chưa có exporter, nên chưa có gì đọc version để sinh dataset; engine chạy đúng qua test và preview, nhưng chưa chạy ở quy mô xuất hàng nghìn ảnh (nhiễu tạo mảng `short` cỡ số điểm ảnh: ảnh 20 MP × 3 kênh khoảng 120 MB một lần; nên đo khi viết exporter).
-- Nhập số bằng bàn phím, thứ tự Tab, và hành vi khi đổi project trong lúc đang tính (có xử lý hủy trong code, chưa thử bằng tay).
-- `DatasetViewModel` và các view không có test tự động riêng.
-- Từ Prepare, Annotate: các mục đã ghi ở bàn giao trước (ảnh thật, một số đường UI chưa thử, installer trên máy sạch, ký số). Chưa chạy lại installer sau thay đổi này.
+- **Chưa chạy `yolo train` hay RF-DETR bằng bản xuất.** Các giả định chưa kiểm chứng: Ultralytics đọc `data.yaml` không có `path:` (lấy thư mục chứa file làm gốc) và từ chối ảnh có tọa độ OBB ngoài 0..1; RF-DETR đọc category COCO bắt đầu từ 1 không có category giữ chỗ; tên model và lệnh mẫu trong README (`yolo26s-seg.pt`, `-obb`, `-cls`, lệnh RF-DETR). Python và các thư viện này không được dùng trong repo (AGPL).
+- Ảnh thật, bộ vài trăm ảnh thật. Chưa đo xuất vài nghìn ảnh 20 MP (RAM, thời gian). Số luồng tính theo ảnh lớn nhất của version.
+- Nhãn polygon, rotated box và tag trên app thật: bản chạy app chỉ có box. Các đường này được kiểm bằng test (Segment, OBB, phân loại, kể cả OBB nhô ra ngoài), chưa bằng một bản xuất thật.
+- `ExportViewModel` và view không có test tự động riêng. Phím tắt, thứ tự Tab của form. Nút Mở thư mục và hộp chọn thư mục (`Chọn thư mục...`) chưa bấm thử. Hủy khi đang xuất qua nút Hủy chưa bấm thử trong app (đã kiểm bằng test ở tầng service).
+- Chưa chạy lại installer sau thay đổi này (không đổi script hay cách publish; Exporters vốn đã được Desktop tham chiếu).
+- Nhập nhãn có sẵn vào project: chỉ có bộ đọc, chưa có service ghép ảnh và chưa có màn hình.
 
-## Lưu ý cho Module 4
+## Lưu ý
 
-- OBB bị biên ảnh cắt được fit lại và có thể nhô vài pixel ra ngoài ảnh; exporter phải quyết định (xem DATASET.md).
-- Mặc định chia theo thư mục: ít thư mục thì tỉ lệ thực tế lệch xa mục tiêu (6 thư mục ra khoảng 52/34/14). Màn hình đã cảnh báo, nhưng nên cân nhắc mặc định khi có dữ liệu thật.
-- Tập tin kiểm thử trong scratchpad (`seed`, `smoke_dataset.ps1`) không nằm trong repo.
+- Bộ đếm "nhãn dưới 50" trong cảnh báo tính trên nhãn gốc của version, còn bảng trong README tính trên bản xuất đã nhân ×N; hai số khác nhau là bình thường.
+- Test nhiều tập cần mỗi ảnh một `source_image_id` riêng (ảnh cùng nguồn luôn cùng tập); `AnnotateFixture` mặc định cho toàn train. Xem CLAUDE.md.
+- Tập tin kiểm thử trong scratchpad (`seed`, `smoke_export.ps1`) không nằm trong repo.
 
 ## Tiếp theo
 
