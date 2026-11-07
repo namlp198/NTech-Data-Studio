@@ -512,6 +512,22 @@ public sealed class AnnotationCanvas : FrameworkElement
         }
     }
 
+    /// <summary>Raised when the right button is released over a label, which is selected first.</summary>
+    public event Action<Annotation>? LabelMenuRequested;
+
+    protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseRightButtonUp(e);
+        if (Image is null || Editor is not { Drawing: null } editor || _panning) return;
+
+        if (editor.LabelAt(ToImage(e.GetPosition(this)), Tolerance) is { } hit)
+        {
+            editor.Select(hit.Id);
+            LabelMenuRequested?.Invoke(hit);
+            e.Handled = true;
+        }
+    }
+
     protected override void OnMouseLeave(MouseEventArgs e)
     {
         base.OnMouseLeave(e);

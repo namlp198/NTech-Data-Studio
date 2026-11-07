@@ -37,6 +37,16 @@ Ngày: 2026-11-07
 
 Xem `tasks/active.md`. Chưa push, repo không có remote.
 
+## Phiên thiết kế Trainer (2026-11-07)
+
+- **Đã làm:** đánh giá Initial Design v0.1 của chủ dự án và viết v0.2 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, kèm 3 sơ đồ trong `docs/trainer/images/`. Chỉ có tài liệu, chưa có code. Chưa commit.
+- **Chủ dự án đã chốt:** máy hiện tại chỉ để phát triển, máy train là Linux hoặc Windows cấu hình cao; TensorRT là tùy chọn theo profile máy; OCR chưa phải trọng tâm; luồng cần chạy được ngay là dataset wire harness có sẵn → YOLO26 detect → ONNX.
+- **Đã kiểm tra:** render 3 sơ đồ và xem bằng mắt. Thông tin thư viện lấy từ tài liệu trên web, phần lớn license là nguồn thứ cấp hoặc tuyên bố của nhà cung cấp.
+- **Chưa kiểm tra:** chưa chạy train, export hay Docker có GPU. Ngưỡng VRAM và ngưỡng kiểm chứng ONNX trong thiết kế là giả định. Tham số `nms` khi export khác nhau giữa các trang tài liệu của Ultralytics, cần kiểm tra trên phiên bản khóa ở M0.
+- **Lưu ý:** Ultralytics nêu rõ model train ra thuộc AGPL-3.0 kể cả dùng nội bộ nếu không có Enterprise License. Chủ dự án chưa trả lời câu này. Cần kết luận trước khi đưa model vào sản xuất hoặc bán.
+- **Câu hỏi còn mở:** mục 14 của thiết kế. Thiếu đường dẫn dataset thì không bắt đầu được M0.
+- **Cập nhật lên v0.3:** chủ dự án muốn train được nhiều phiên bản YOLO. Đọc wheel `ultralytics` 8.4.204 (không chạy): cùng gói có YOLOv5u, v8, v9, v10, 11, 12, 26. Thiết kế dùng một image, một adapter và một danh mục `trainer/catalog/`, tách khỏi `profiles/` để không đổi màn hình Export. Phiên bản chỉ ghi `supported` sau khi qua kiểm thử train và export. Theo code đã đọc, chỉ YOLO26 có đầu ONNX một-một trong ba bản hỗ trợ đầu tiên, nên tham số export khai báo theo từng phiên bản; đề xuất `nms=True` cho YOLOv8, YOLO11 chưa chạy thử. Mọi phiên bản trong gói vẫn theo AGPL-3.0.
+
 ## Phiên sau Module 4: bốn yêu cầu bổ sung (2026-11-07)
 
 - **Pan khi zoom:** khi ảnh đã zoom lớn hơn vừa khung, giữ chuột trái trên chỗ trống rồi kéo thì pan (công cụ Chọn và Tag). Bấm vào nhãn thì vẫn chọn và kéo nhãn; công cụ vẽ vẫn dùng Space hoặc chuột giữa để pan. Cuộn chuột vẫn zoom. `AnnotationEditor.IsOverLabel` quyết định có bấm trúng nhãn không (3 test).
@@ -57,3 +67,11 @@ Xem `tasks/active.md`. Chưa push, repo không có remote.
 - Test 500/500, build 0 cảnh báo. Chạy app thật: kéo trái ở mức vừa khung dịch ảnh; nút Pan nằm trên Phóng to và chọn được; G vào Pan; Esc từ Polygon đang vẽ, Box, Tag, Pan đều về Chọn và bỏ hình dở; thu gọn và mở lại panel và dải ảnh (ảnh chụp kiểm tra).
 - **Lưu ý:** thanh công cụ nằm bên trái (theo thiết kế), không phải bên phải; nút Pan đã đặt vào đó. Khi thu gọn dải ảnh, panel Class vẫn chừa lề dưới cũ (168 px) và strip Kết thúc/Bỏ đỉnh/Hủy vẫn nằm cao hơn mép dưới. Chưa chỉnh.
 - **Chưa kiểm tra:** thu gọn khi cửa sổ rất nhỏ; kéo bằng Pan trên ảnh rất lớn ở zoom cao; Esc khi hộp chọn class đang mở (phím tắt không chạy khi combobox có focus, nên Esc cũng không).
+
+## Phiên tiếp: menu chuột phải trên nhãn (2026-11-07)
+
+- Chuột phải lên nhãn: chọn nhãn rồi hiện menu ba mục (icon Chọn; icon + Class mở menu con liệt kê class; icon + Xóa đỏ). Xem `ANNOTATE.md`, mục "Menu chuột phải trên nhãn".
+- Chép có chọn lọc `AppContextMenu` từ RoboStation (`sol-drcp/robo-station`, không sửa gì ở đó) sang `Controls/AppContextMenu.cs`, thêm `SubMenu` và `ItemWithIcon`. Template `MenuItem` ở `Menus.xaml` được thêm Popup cho menu con (trước đó ghi rõ là không hỗ trợ).
+- `AnnotationEditor.LabelAt` (2 test). Test 502, build 0 cảnh báo.
+- **Chạy app thật:** vẽ box, chuột phải trong lúc đang ở công cụ Box: đủ 3 mục; mở Class thấy connector và tape; chọn tape đổi class; mục Chọn đưa công cụ từ Box về Chọn; Xóa xóa nhãn (nhãn về 0); chuột phải chỗ trống không hiện menu. Ảnh chụp xác nhận giao diện.
+- **Chưa kiểm tra:** menu trên nhãn bị khóa (logic làm mờ có, chưa bấm thử); phím mũi tên và Esc trong menu; nhãn polygon và rotated box (dùng cùng đường hit-test đã có test); nhãn chồng nhau (lấy nhãn trên cùng).

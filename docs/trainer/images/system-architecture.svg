@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3b5f8a"/></marker>
+  </defs>
+  <rect width="1200" height="700" fill="#ffffff"/>
+  <text x="40" y="48" font-size="26" font-weight="700" fill="#17304f">NTech Trainer: kiến trúc</text>
+  <text x="40" y="76" font-size="15" fill="#55677d">C# điều phối, Python thực hiện AI, workspace trên đĩa là nguồn sự thật</text>
+
+  <rect x="40" y="110" width="430" height="350" rx="6" fill="#f3f6fa" stroke="#7f97b5" stroke-width="1.5"/>
+  <text x="60" y="140" font-size="18" font-weight="700" fill="#17304f">Máy chủ (Windows hoặc Ubuntu)</text>
+
+  <rect x="60" y="156" width="185" height="60" rx="4" fill="#ffffff" stroke="#7f97b5"/>
+  <text x="152" y="182" font-size="15" font-weight="700" fill="#17304f" text-anchor="middle">Trainer.Desktop</text>
+  <text x="152" y="203" font-size="13" fill="#55677d" text-anchor="middle">Avalonia, MVVM</text>
+  <rect x="265" y="156" width="185" height="60" rx="4" fill="#ffffff" stroke="#7f97b5"/>
+  <text x="357" y="182" font-size="15" font-weight="700" fill="#17304f" text-anchor="middle">Trainer.Cli</text>
+  <text x="357" y="203" font-size="13" fill="#55677d" text-anchor="middle">Chạy được qua SSH</text>
+
+  <rect x="60" y="246" width="390" height="194" rx="4" fill="#ffffff" stroke="#7f97b5"/>
+  <text x="80" y="274" font-size="15" font-weight="700" fill="#17304f">NTech.DataStudio.Trainer (net10.0)</text>
+  <text x="80" y="302" font-size="14" fill="#34465c">Đọc phần cứng, chấm điểm theo model</text>
+  <text x="80" y="328" font-size="14" fill="#34465c">Quản lý workspace, job, trạng thái</text>
+  <text x="80" y="354" font-size="14" fill="#34465c">IContainerRuntime: chạy và tìm lại container</text>
+  <text x="80" y="380" font-size="14" fill="#34465c">Đọc tiếp events.jsonl, ghi control.json</text>
+  <text x="80" y="406" font-size="14" fill="#34465c">Không nhúng code Ultralytics</text>
+  <path d="M152,216 L152,244" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M357,216 L357,244" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+
+  <rect x="670" y="110" width="490" height="350" rx="6" fill="#f3f6fa" stroke="#7f97b5" stroke-width="1.5"/>
+  <text x="690" y="140" font-size="18" font-weight="700" fill="#17304f">Container Linux, mỗi job một container</text>
+  <text x="690" y="164" font-size="13" fill="#55677d">Image ntech-trainer: cpu hoặc cuda, đã khóa phiên bản</text>
+
+  <rect x="690" y="180" width="450" height="130" rx="4" fill="#ffffff" stroke="#7f97b5"/>
+  <text x="710" y="208" font-size="15" font-weight="700" fill="#17304f">Python worker</text>
+  <text x="710" y="234" font-size="14" fill="#34465c">Kiểm tra dataset, chạy thử, train, đánh giá</text>
+  <text x="710" y="260" font-size="14" fill="#34465c">Adapter Ultralytics: nhiều phiên bản YOLO theo danh mục</text>
+  <text x="710" y="286" font-size="14" fill="#34465c">Metric lấy từ callback, ghi thành sự kiện</text>
+
+  <rect x="690" y="326" width="450" height="114" rx="4" fill="#fff9ee" stroke="#c9a15c"/>
+  <text x="710" y="354" font-size="15" font-weight="700" fill="#17304f">Export</text>
+  <text x="710" y="380" font-size="14" fill="#34465c">ONNX, kiểm chứng so với PyTorch</text>
+  <text x="710" y="406" font-size="14" fill="#34465c">TensorRT: tùy chọn, chỉ khi profile máy đạt</text>
+  <path d="M915,310 L915,324" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+
+  <path d="M470,285 L668,285" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <text x="569" y="274" font-size="13" fill="#3b5f8a" text-anchor="middle">docker run, danh sách đối số</text>
+
+  <rect x="40" y="520" width="520" height="140" rx="6" fill="#f2f8f4" stroke="#7fae90" stroke-width="1.5"/>
+  <text x="60" y="550" font-size="16" font-weight="700" fill="#17304f">Workspace (đọc ghi)</text>
+  <text x="60" y="578" font-size="14" fill="#34465c">runs/&lt;id&gt;/ config, events.jsonl, control.json, train.log</text>
+  <text x="60" y="604" font-size="14" fill="#34465c">checkpoints/, metrics.csv</text>
+  <text x="60" y="630" font-size="14" fill="#34465c">exports/ model.onnx, model.meta.json, báo cáo</text>
+
+  <rect x="640" y="520" width="520" height="140" rx="6" fill="#f7f7f7" stroke="#9a9a9a" stroke-width="1.5"/>
+  <text x="660" y="550" font-size="16" font-weight="700" fill="#17304f">Dataset wire harness (chỉ đọc)</text>
+  <text x="660" y="578" font-size="14" fill="#34465c">data.yaml, images/, labels/ định dạng YOLO</text>
+  <text x="660" y="604" font-size="14" fill="#34465c">Có sẵn, hoặc xuất từ Data Studio</text>
+  <text x="660" y="630" font-size="14" fill="#34465c">App không sửa và không chép</text>
+
+  <path d="M255,460 L255,518" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <text x="245" y="494" font-size="13" fill="#3b5f8a" text-anchor="end">đọc sự kiện, ghi yêu cầu dừng</text>
+  <path d="M760,460 L500,518" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <text x="560" y="478" font-size="13" fill="#3b5f8a" text-anchor="middle">mount đọc ghi</text>
+  <path d="M950,518 L950,462" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <text x="960" y="494" font-size="13" fill="#3b5f8a">mount chỉ đọc</text>
+</svg>

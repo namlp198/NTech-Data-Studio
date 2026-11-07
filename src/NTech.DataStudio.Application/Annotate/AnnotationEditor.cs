@@ -335,6 +335,9 @@ public sealed class AnnotationEditor
             BeginDrag(new Drag(hit, -1, point));
     }
 
+    /// <summary>The label a press at this point would hit: the topmost visible one, or null.</summary>
+    public Annotation? LabelAt(PixelPoint point, double tolerance) => Document is null ? null : HitTest(point, tolerance);
+
     /// <summary>
     /// Whether a press here would grab something with the Select tool: a label, or a vertex of the
     /// selected one. The canvas pans instead when it would not.

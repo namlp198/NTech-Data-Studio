@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" font-family="Arial, sans-serif">
+  <rect width="1200" height="720" fill="#14181f"/>
+
+  <rect width="1200" height="48" fill="#1c222b"/>
+  <g font-size="14" fill="#aeb8c4">
+    <text x="24" y="30">Máy</text>
+    <text x="84" y="30">Dataset</text>
+    <text x="164" y="30">Cấu hình</text>
+    <text x="250" y="30" font-weight="700" fill="#ffffff">Train</text>
+    <text x="310" y="30">Kết quả</text>
+    <text x="1176" y="30" text-anchor="end">WireHarness_Detect | GPU: Good | Minh họa, không phải dữ liệu thật</text>
+  </g>
+  <rect x="244" y="44" width="46" height="3" fill="#5aa2e0"/>
+
+  <text x="24" y="86" font-size="20" font-weight="700" fill="#ffffff">20261107-143000-yolo26s</text>
+  <text x="300" y="86" font-size="14" fill="#7fc99a">Đang train</text>
+  <rect x="960" y="64" width="216" height="32" rx="3" fill="#1c222b" stroke="#47525f"/>
+  <text x="1068" y="85" font-size="14" fill="#ffffff" text-anchor="middle">Dừng ở cuối epoch</text>
+
+  <g>
+    <rect x="24" y="108" width="276" height="84" rx="3" fill="#1c222b" stroke="#333c47"/>
+    <text x="40" y="134" font-size="13" fill="#aeb8c4">Epoch</text>
+    <text x="40" y="170" font-size="24" font-weight="700" fill="#ffffff">42 / 100</text>
+    <rect x="316" y="108" width="276" height="84" rx="3" fill="#1c222b" stroke="#333c47"/>
+    <text x="332" y="134" font-size="13" fill="#aeb8c4">GPU, nhiệt độ</text>
+    <text x="332" y="170" font-size="24" font-weight="700" fill="#ffffff">92 %, 74 °C</text>
+    <rect x="608" y="108" width="276" height="84" rx="3" fill="#1c222b" stroke="#333c47"/>
+    <text x="624" y="134" font-size="13" fill="#aeb8c4">VRAM</text>
+    <text x="624" y="170" font-size="24" font-weight="700" fill="#ffffff">18,4 / 24 GB</text>
+    <rect x="900" y="108" width="276" height="84" rx="3" fill="#1c222b" stroke="#333c47"/>
+    <text x="916" y="134" font-size="13" fill="#aeb8c4">Còn lại, ước tính</text>
+    <text x="916" y="170" font-size="24" font-weight="700" fill="#ffffff">01:24:30</text>
+  </g>
+
+  <rect x="24" y="204" width="1152" height="10" rx="2" fill="#333c47"/>
+  <rect x="24" y="204" width="484" height="10" rx="2" fill="#5aa2e0"/>
+
+  <rect x="24" y="228" width="564" height="290" rx="3" fill="#1c222b" stroke="#333c47"/>
+  <text x="40" y="256" font-size="15" font-weight="700" fill="#ffffff">Loss</text>
+  <g stroke="#333c47"><path d="M48 300 H564"/><path d="M48 360 H564"/><path d="M48 420 H564"/><path d="M48 480 H564"/></g>
+  <polyline points="48,300 110,340 170,370 230,392 290,408 350,420 410,430" fill="none" stroke="#5aa2e0" stroke-width="2"/>
+  <polyline points="48,290 110,326 170,350 230,366 290,378 350,386 410,392" fill="none" stroke="#e0a64f" stroke-width="2"/>
+  <text x="450" y="256" font-size="13" fill="#5aa2e0">train</text>
+  <text x="500" y="256" font-size="13" fill="#e0a64f">val</text>
+
+  <rect x="612" y="228" width="564" height="290" rx="3" fill="#1c222b" stroke="#333c47"/>
+  <text x="628" y="256" font-size="15" font-weight="700" fill="#ffffff">Theo class (val)</text>
+  <g font-size="14" fill="#d5dce4">
+    <text x="628" y="290" fill="#aeb8c4">Class</text><text x="900" y="290" fill="#aeb8c4">Precision</text><text x="990" y="290" fill="#aeb8c4">Recall</text><text x="1070" y="290" fill="#aeb8c4">mAP50</text>
+    <text x="628" y="324">connector_ok</text><text x="900" y="324">0,95</text><text x="990" y="324">0,93</text><text x="1070" y="324">0,96</text>
+    <text x="628" y="358">wire_wrong_color</text><text x="900" y="358">0,88</text><text x="990" y="358">0,81</text><text x="1070" y="358">0,85</text>
+    <text x="628" y="392">pin_missing</text><text x="900" y="392">0,79</text><text x="990" y="392" fill="#e0a64f">0,62</text><text x="1070" y="392">0,70</text>
+  </g>
+  <text x="628" y="440" font-size="13" fill="#aeb8c4">Tên class chỉ là ví dụ. Recall thấp được tô màu kèm con số.</text>
+
+  <rect x="24" y="532" width="1152" height="164" rx="3" fill="#1c222b" stroke="#333c47"/>
+  <text x="40" y="560" font-size="15" font-weight="700" fill="#ffffff">Log và cảnh báo</text>
+  <g font-size="13" font-family="Consolas, monospace" fill="#d5dce4">
+    <text x="40" y="590">14:32:10 INFO  Epoch 42 xong, map50-95 0,54</text>
+    <text x="40" y="614">14:32:11 INFO  Đã lưu checkpoint last.pt</text>
+    <text x="40" y="638" fill="#e0a64f">14:32:11 WARN  Class pin_missing có recall thấp hơn các class khác</text>
+    <text x="40" y="662">14:33:02 INFO  Epoch 43 bắt đầu</text>
+  </g>
+</svg>

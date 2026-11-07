@@ -63,6 +63,7 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - `Parallel.ForEach` bọc lỗi của worker trong `AggregateException`; `ExportService` mở nó ra, nên người gọi bắt `ImageReadException` hay `InvalidOperationException` trực tiếp. Giữ nguyên khi sửa.
 - Test cần nhiều tập (train, val, test) thì mỗi ảnh phải có `source_image_id` riêng: ảnh cùng nguồn luôn cùng một tập, nên `AnnotateFixture` mặc định (một nguồn cho mọi ảnh) cho ra toàn train.
 - Phím tắt của Annotate là chữ đơn nên bộ gõ tiếng Việt Telex (Unikey, EVKey) làm hỏng chúng (gõ `e` hai lần thành `ê`, app nhận Backspace). Tắt IME ở WPF không chặn được bộ gõ ở mức hệ điều hành. Đừng gán phím chữ lặp được hoặc là phím Telex (a, e, o, d, w, s, f, r, x, j, z) cho việc cần nhấn liên tiếp; Q dùng để đổi công cụ vì Telex không đụng tới nó. Khi tự kiểm bằng SendKeys trên máy có Telex bật, thấy phím rơi thì xem nó có thành Backspace không.
+- Menu chuột phải dựng bằng `Controls/AppContextMenu` (từ RoboStation); mục có con tự hiện mũi tên và mở menu con nhờ Popup trong template `MenuItem` ở `Menus.xaml`. Mục không có header cần tooltip để có tên cho trình đọc màn hình.
 
 ## Kiểm tra
 

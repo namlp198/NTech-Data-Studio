@@ -446,5 +446,5 @@ Mình không phải luật sư. Trước khi bán, nên nhờ người chuyên v
 
 1. **Pre-label bằng model:** chạy model ONNX qua ONNX Runtime (MIT) ngay trong C#. Người dùng chỉ cần sửa, tốc độ gán nhãn tăng nhiều lần.
 2. **SAM click-to-segment:** encoder/decoder ONNX. Kiểm tra license từng phiên bản SAM trước khi nhúng.
-3. **Trainer (đi cùng NTech Data Studio):** process Python riêng (PyTorch, RF-DETR) giao tiếp với app qua HTTP local. App gọi train, theo dõi metric, xuất ONNX/TensorRT, rồi nạp model ngược lại cho pre-label. Đây là vòng active learning. Đầu ra giao cho bên ngoài duy nhất là file `.nvmodel`, dành cho NVision.
+3. **Trainer (đi cùng NTech Data Studio):** process Python riêng (PyTorch, RF-DETR) giao tiếp với app qua HTTP local. App gọi train, theo dõi metric, xuất ONNX/TensorRT, rồi nạp model ngược lại cho pre-label. Đây là vòng active learning. Đầu ra giao cho bên ngoài duy nhất là file `.nvmodel`, dành cho NVision. Thiết kế hiện hành của Trainer nằm ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`; bản nháp đó đổi thứ tự (làm YOLO detect nhiều phiên bản trước RF-DETR) và cách giao tiếp, sẽ ghi vào `decisions/` sau khi kiểm chứng.
 4. Keypoint/pose, video, nhiều người dùng qua LAN, đóng gói và license key.

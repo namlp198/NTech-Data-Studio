@@ -8,6 +8,19 @@
 - [x] Module 4 Export: YOLO26 (detect, segment, OBB, classify), COCO, validator
 - [ ] Nhập nhãn có sẵn (YOLO txt, COCO json) vào project: có bộ đọc, chưa có service ghép và màn hình
 
+## NTech Trainer
+
+Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER_SYSTEM_DESIGN.md`.
+
+- [ ] M0: thử luồng dataset wire harness → YOLO detect (YOLO26, YOLO11, YOLOv8, thử YOLO12) → ONNX trên dataset thật, khóa phiên bản
+- [ ] M1: luồng chính bằng CLI, worker, danh mục model và kiểm thử danh mục, sự kiện, kiểm chứng ONNX
+- [ ] M2: Desktop bằng Avalonia
+- [ ] M3: train tiếp, phát hiện `Interrupted`, cảnh báo, nối lại sau khi mở app, hàng đợi, so sánh phiên bản
+- [ ] M4: đóng gói Windows và Ubuntu
+- [ ] M5: TensorRT tùy chọn theo profile máy
+- [ ] M6: YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; Segment, OBB, Classify; OCR; Remote
+- [ ] Kết luận license Ultralytics trước khi đưa model vào sản xuất hoặc bán
+
 ## Module 1: còn lại
 
 - [ ] Chạy nghiệm thu 1.000 ảnh BMP 20MP trên ảnh thật

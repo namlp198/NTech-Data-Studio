@@ -139,6 +139,39 @@ public class AnnotationEditorTests : IDisposable
     }
 
     [Fact]
+    public void LabelAt_FindsTheTopmostVisibleLabelUnderThePoint()
+    {
+        DrawBox(20, 20, 80, 60);
+        DrawBox(40, 30, 120, 80);
+        var second = Document.Annotations[1];
+
+        Assert.Equal(second.Id, _editor.LabelAt(new PixelPoint(60, 40), Tolerance)!.Id);
+        Assert.Equal(Document.Annotations[0].Id, _editor.LabelAt(new PixelPoint(25, 25), Tolerance)!.Id);
+        Assert.Null(_editor.LabelAt(new PixelPoint(180, 95), Tolerance));
+
+        _editor.ToggleShapesVisible();
+        Assert.Null(_editor.LabelAt(new PixelPoint(60, 40), Tolerance));
+    }
+
+    [Fact]
+    public void RightClickMenuActions_ChangeClassDeleteAndSwitchToSelect()
+    {
+        DrawBox(20, 20, 80, 60);
+        _editor.SetTool(AnnotateTool.Box);
+        var label = _editor.LabelAt(new PixelPoint(50, 40), Tolerance)!;
+        _editor.Select(label.Id);
+
+        // What the menu items call, in order: Class, Select, Delete.
+        Assert.True(_editor.ChangeSelectedClass(_otherClassId));
+        Assert.Equal(_otherClassId, Document.Annotations.Single().ClassId);
+        _editor.SetTool(AnnotateTool.Select);
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+        Assert.Equal(label.Id, _editor.SelectedId);
+        Assert.True(_editor.DeleteSelected());
+        Assert.Empty(Document.Annotations);
+    }
+
+    [Fact]
     public void IsOverLabel_IsTrueOnALabel_AndFalseOnEmptyPicture()
     {
         DrawBox(20, 20, 80, 60);

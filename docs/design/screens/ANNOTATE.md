@@ -91,3 +91,15 @@ Kết luận: chưa cần ảnh pyramid ở mức này. Giới hạn của phép
 ### Bộ gõ tiếng Việt
 
 Phím tắt là chữ đơn, nên bộ gõ tiếng Việt kiểu Telex (Unikey, EVKey) làm hỏng chúng: gõ `e` hai lần thành `ê` nghĩa là app nhận Backspace thay vì `e`, và `a`, `d`, `w`, `s`, `r` cũng bị biến đổi khi đứng sau một nguyên âm. Tắt tiếng Việt (chuyển về gõ tiếng Anh) khi gán nhãn. App đã tắt IME của Windows trên canvas, nhưng bộ gõ chạy ở mức hệ điều hành thì app không chặn được; vì vậy Q (không thuộc phím nào của Telex) được chọn cho việc đổi công cụ, không dùng E. Đã gặp lỗi này khi chạy app trên máy có Telex bật.
+
+## Menu chuột phải trên nhãn
+
+Nhả chuột phải lên một nhãn (đang hiện, không đang vẽ dở, công cụ nào cũng được) thì nhãn đó được chọn và hiện menu theo kiểu RoboStation (`Themes/Components/Menus.xaml`, dựng bằng `Controls/AppContextMenu`, chép có chọn lọc từ RoboStation):
+
+| Mục | Làm gì |
+| --- | --- |
+| Icon Chọn (chỉ có icon) | Chuyển sang công cụ Chọn; nhãn vẫn đang chọn |
+| Icon + Class | Mở menu con liệt kê mọi class (chấm màu, class hiện tại in đậm); chọn một class thì đổi class của nhãn (undo được) |
+| Icon + Xóa (chữ đỏ) | Xóa nhãn (undo được) |
+
+Nhãn bị khóa thì Class và Xóa bị làm mờ. Chuột phải lên chỗ trống không hiện menu. `AnnotationEditor.LabelAt` tìm nhãn dưới con trỏ; mọi thay đổi vẫn đi qua `AnnotateService.Execute`.

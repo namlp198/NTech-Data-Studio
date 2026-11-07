@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3b5f8a"/></marker>
+  </defs>
+  <rect width="1200" height="560" fill="#ffffff"/>
+  <text x="40" y="48" font-size="26" font-weight="700" fill="#17304f">Luồng chính: từ dataset đến ONNX</text>
+  <text x="40" y="76" font-size="15" fill="#55677d">Mỗi bước không đạt thì dừng và báo lý do, không đi tiếp</text>
+
+  <g font-size="14" fill="#34465c">
+    <rect x="40" y="110" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="60" y="142" font-size="17" font-weight="700" fill="#17304f">1. Tham chiếu dataset</text>
+    <text x="60" y="172">Chọn data.yaml có sẵn</text>
+    <text x="60" y="198">Tạo workspace</text>
+    <text x="60" y="224">Ghi fingerprint</text>
+
+    <rect x="330" y="110" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="350" y="142" font-size="17" font-weight="700" fill="#17304f">2. Kiểm tra dataset</text>
+    <text x="350" y="172">Lỗi nhãn, ảnh hỏng</text>
+    <text x="350" y="198">Phân bố class</text>
+    <text x="350" y="224">Vật thể nhỏ theo imgsz</text>
+
+    <rect x="620" y="110" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="640" y="142" font-size="17" font-weight="700" fill="#17304f">3. Đánh giá máy</text>
+    <text x="640" y="172">Phần cứng và Docker</text>
+    <text x="640" y="198">Phù hợp với model không</text>
+    <text x="640" y="224">Không GPU: buộc xác nhận</text>
+
+    <rect x="910" y="110" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="930" y="142" font-size="17" font-weight="700" fill="#17304f">4. Cấu hình</text>
+    <text x="930" y="172">Phiên bản, cỡ YOLO, imgsz</text>
+    <text x="930" y="198">Gợi ý cho wire harness</text>
+    <text x="930" y="224">Người dùng xác nhận</text>
+
+    <rect x="910" y="320" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="930" y="352" font-size="17" font-weight="700" fill="#17304f">5. Preflight</text>
+    <text x="930" y="382">GPU trong container</text>
+    <text x="930" y="408">Load batch, forward, backward</text>
+    <text x="930" y="434">Đo VRAM, ghi thử checkpoint</text>
+
+    <rect x="620" y="320" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="640" y="352" font-size="17" font-weight="700" fill="#17304f">6. Train YOLO detect</text>
+    <text x="640" y="382">Trạng thái, log, cảnh báo</text>
+    <text x="640" y="408">Checkpoint mỗi epoch</text>
+    <text x="640" y="434">Dừng rồi train tiếp được</text>
+
+    <rect x="330" y="320" width="250" height="150" rx="6" fill="#f3f6fa" stroke="#7f97b5"/>
+    <text x="350" y="352" font-size="17" font-weight="700" fill="#17304f">7. Đánh giá</text>
+    <text x="350" y="382">mAP, Precision, Recall</text>
+    <text x="350" y="408">Theo từng class lỗi</text>
+    <text x="350" y="434">So sánh các phiên bản</text>
+
+    <rect x="40" y="320" width="250" height="150" rx="6" fill="#eef7f0" stroke="#5f9f76" stroke-width="2"/>
+    <text x="60" y="352" font-size="17" font-weight="700" fill="#17304f">8. Xuất ONNX</text>
+    <text x="60" y="382">Kiểm chứng so với PyTorch</text>
+    <text x="60" y="408">model.onnx, model.meta.json</text>
+    <text x="60" y="434">Báo cáo export</text>
+  </g>
+
+  <path d="M290,185 L328,185" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M580,185 L618,185" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M870,185 L908,185" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M1035,260 L1035,318" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M910,395 L872,395" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M620,395 L582,395" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <path d="M330,395 L292,395" stroke="#3b5f8a" stroke-width="2" fill="none" marker-end="url(#a)"/>
+
+  <text x="40" y="520" font-size="14" fill="#55677d">Bước 4 đến 7 lặp lại cho từng phiên bản cần thử. Sau bước 8, TensorRT là tùy chọn riêng: chỉ mở khi profile máy đạt và ONNX đã qua kiểm chứng.</text>
+</svg>

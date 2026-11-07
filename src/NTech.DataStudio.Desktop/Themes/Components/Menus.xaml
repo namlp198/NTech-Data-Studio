@@ -10,7 +10,7 @@
         Context menus: dark elevated card, rounded, shadowed,
         an icon column, a hover highlight, dimmed disabled items, and a red
         "danger" item. Implicit, so every ContextMenu in the app takes it.
-        Items have no sub-menus; none is used.
+        An item with children shows an arrow and opens a sub-menu to its right (Popup in the item template).
     -->
     <!-- A menu icon in XAML: drawn in its item's colour. -->
     <Style x:Key="MenuItem.IconPath" TargetType="Path">
@@ -60,6 +60,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuItem">
+                    <Grid>
                     <Border x:Name="root" Background="Transparent" CornerRadius="{StaticResource Radius.SM}"
                             Padding="8,0,14,0" MinHeight="32">
                         <Grid>
@@ -72,11 +73,30 @@
                                               HorizontalAlignment="Left" VerticalAlignment="Center" />
                             <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True"
                                               VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="24,0,0,0"
+                            <TextBlock x:Name="gesture" Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="24,0,0,0"
                                        Foreground="{StaticResource Brush.Text.Muted}" VerticalAlignment="Center" />
+                            <!-- Only an item with children shows the arrow and opens a sub-menu. -->
+                            <Path x:Name="arrow" Grid.Column="2" Width="12" Height="12" Stretch="Uniform" Margin="24,0,0,0"
+                                  Data="{StaticResource Icon.ChevronRight}" Visibility="Collapsed" VerticalAlignment="Center"
+                                  Stroke="{StaticResource Brush.Text.Muted}" StrokeThickness="1.5"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
                         </Grid>
                     </Border>
+                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" AllowsTransparency="True"
+                           Focusable="False" PopupAnimation="Fade" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                        <Border Margin="0,0,8,8" Padding="4" MinWidth="180"
+                                Background="{StaticResource Brush.Background.Elevated}"
+                                BorderBrush="{StaticResource Brush.Overlay.PanelBorder}" BorderThickness="1"
+                                CornerRadius="{StaticResource Radius.MD}" Effect="{StaticResource Elevation.Overlay}">
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                        </Border>
+                    </Popup>
+                    </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="arrow" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="gesture" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
                         <Trigger Property="IsHighlighted" Value="True">
                             <Setter TargetName="root" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
                         </Trigger>
