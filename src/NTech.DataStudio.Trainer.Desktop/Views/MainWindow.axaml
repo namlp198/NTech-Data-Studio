@@ -1,0 +1,100 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+        xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+        x:Class="NTech.DataStudio.Trainer.Desktop.Views.MainWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="NTech Trainer"
+        Width="1280" Height="760" MinWidth="1024" MinHeight="600"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.DataTemplates>
+        <DataTemplate DataType="vm:MachineViewModel"><views:MachineView /></DataTemplate>
+        <DataTemplate DataType="vm:DatasetViewModel"><views:DatasetView /></DataTemplate>
+        <DataTemplate DataType="vm:ConfigViewModel"><views:ConfigView /></DataTemplate>
+        <DataTemplate DataType="vm:TrainViewModel"><views:TrainView /></DataTemplate>
+        <DataTemplate DataType="vm:ResultsViewModel"><views:ResultsView /></DataTemplate>
+    </Window.DataTemplates>
+
+    <DockPanel>
+        <!-- TopBar: view selector on the left, workspace on the right (UI_GUIDELINES). -->
+        <Border DockPanel.Dock="Top" Classes="topBar">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Margin="{StaticResource Inset.TopBarGroup}">
+                    <TextBlock Classes="brand" Text="NTech Trainer" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}" />
+                    <RadioButton AutomationProperties.Name="Máy" Classes="viewSelector" GroupName="views" IsChecked="{Binding Machine.IsSelected}" ToolTip.Tip="Máy">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon medium" Data="{StaticResource Icon.Machine}" Stroke="{Binding $parent[RadioButton].Foreground}" />
+                            <TextBlock Text="Máy" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton AutomationProperties.Name="Dataset" Classes="viewSelector" GroupName="views" IsChecked="{Binding Dataset.IsSelected}" ToolTip.Tip="Dataset">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon medium" Data="{StaticResource Icon.Dataset}" Stroke="{Binding $parent[RadioButton].Foreground}" />
+                            <TextBlock Text="Dataset" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton AutomationProperties.Name="Cấu hình" Classes="viewSelector" GroupName="views" IsChecked="{Binding Config.IsSelected}" ToolTip.Tip="Cấu hình">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon medium" Data="{StaticResource Icon.Config}" Stroke="{Binding $parent[RadioButton].Foreground}" />
+                            <TextBlock Text="Cấu hình" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton AutomationProperties.Name="Train" Classes="viewSelector" GroupName="views" IsChecked="{Binding Train.IsSelected}" ToolTip.Tip="Train">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon medium" Data="{StaticResource Icon.Train}" Stroke="{Binding $parent[RadioButton].Foreground}" />
+                            <TextBlock Text="Train" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton AutomationProperties.Name="Kết quả" Classes="viewSelector" GroupName="views" IsChecked="{Binding Results.IsSelected}" ToolTip.Tip="Kết quả">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon medium" Data="{StaticResource Icon.Results}" Stroke="{Binding $parent[RadioButton].Foreground}" />
+                            <TextBlock Text="Kết quả" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}" Margin="{StaticResource Inset.TopBarGroup}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding WorkspaceName}" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" MaxWidth="{StaticResource Layout.FormFieldWidth}" />
+                        <TextBlock Classes="caption" Text="{Binding WorkspacePath}" HorizontalAlignment="Right" IsVisible="{Binding HasWorkspace}"
+                                   TextTrimming="{x:Static TextTrimming.PrefixCharacterEllipsis}" MaxWidth="{StaticResource Layout.FormFieldWidth}" ToolTip.Tip="{Binding WorkspacePath}" />
+                    </StackPanel>
+                    <Button AutomationProperties.Name="Mở workspace" Command="{Binding OpenWorkspaceCommand}" MinHeight="{StaticResource ControlHeight.Small}" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon" Data="{StaticResource Icon.Folder}" />
+                            <TextBlock Text="Mở workspace" />
+                        </StackPanel>
+                    </Button>
+                    <Button AutomationProperties.Name="Tạo workspace" Command="{Binding CreateWorkspaceCommand}" MinHeight="{StaticResource ControlHeight.Small}" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                            <Path Classes="icon" Data="{StaticResource Icon.Plus}" />
+                            <TextBlock Text="Tạo workspace" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border DockPanel.Dock="Top" Classes="notice error" Margin="{StaticResource Inset.MD}" IsVisible="{Binding HasError}">
+            <TextBlock Classes="wrap" Text="{Binding Error}" />
+        </Border>
+
+        <Grid>
+            <ContentControl Content="{Binding CurrentPage}" IsVisible="{Binding !NeedsWorkspace}" />
+
+            <!-- Empty state for every tab that needs a workspace. -->
+            <StackPanel IsVisible="{Binding NeedsWorkspace}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Spacing="{StaticResource Spacing.MD}" MaxWidth="{StaticResource Layout.FormFieldWidth}">
+                <TextBlock Classes="section" Text="Chưa mở workspace" HorizontalAlignment="Center" />
+                <TextBlock Classes="secondary wrap" TextAlignment="Center"
+                           Text="Workspace là một thư mục cho một bài toán, chứa mọi run của các phiên bản YOLO. Tạo mới từ data.yaml của một dataset YOLO detect (dataset chỉ được tham chiếu, không chép, không sửa), hoặc mở một workspace đã có." />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="{StaticResource Spacing.SM}">
+                    <Button Classes="primary" Command="{Binding CreateWorkspaceCommand}" Content="Tạo workspace" />
+                    <Button Command="{Binding OpenWorkspaceCommand}" Content="Mở workspace" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

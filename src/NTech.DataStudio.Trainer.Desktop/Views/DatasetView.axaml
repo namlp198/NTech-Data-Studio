@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+             xmlns:runs="using:NTech.DataStudio.Trainer.Runs"
+             xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+             x:Class="NTech.DataStudio.Trainer.Desktop.Views.DatasetView"
+             x:DataType="vm:DatasetViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.PageContentMaxWidth}" HorizontalAlignment="Left">
+            <StackPanel Spacing="{StaticResource Spacing.XS}">
+                <TextBlock Classes="pageTitle" Text="Dataset" />
+                <TextBlock Classes="secondary wrap" Text="Kiểm tra dataset YOLO detect trong container. Dataset được mount chỉ đọc: app không sửa file nào." />
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Spacing.MD}">
+                    <StackPanel>
+                        <TextBlock Classes="label" Text="DATA.YAML" />
+                        <TextBlock Classes="mono wrap" Text="{Binding DataYaml}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                        <StackPanel>
+                            <TextBlock Classes="label" Text="IMGSZ ĐỂ ĐO VẬT THỂ" />
+                            <TextBox AutomationProperties.Name="IMGSZ ĐỂ ĐO VẬT THỂ" Text="{Binding Imgsz}" Width="{StaticResource Layout.NumberFieldWidth}" HorizontalAlignment="Left" />
+                        </StackPanel>
+                        <Button AutomationProperties.Name="Kiểm tra dataset" Classes="primary" Command="{Binding CheckCommand}" VerticalAlignment="Bottom">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                <Path Classes="icon" Data="{StaticResource Icon.Search}" />
+                                <TextBlock Text="Kiểm tra dataset" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Loading -->
+            <StackPanel IsVisible="{Binding IsChecking}" Spacing="{StaticResource Spacing.SM}">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Classes="secondary" Text="Đang đọc ảnh và nhãn trong container..." />
+            </StackPanel>
+
+            <!-- Error -->
+            <Border Classes="notice error" IsVisible="{Binding HasError}">
+                <TextBlock Classes="wrap" Text="{Binding Error}" />
+            </Border>
+
+            <!-- Empty -->
+            <TextBlock Classes="secondary wrap" IsVisible="{Binding IsEmpty}"
+                       Text="Chưa kiểm tra. Bấm Kiểm tra dataset để đọc nhãn, đếm theo class và đo kích thước vật thể ở imgsz đã chọn." />
+
+            <StackPanel IsVisible="{Binding HasReport}" Spacing="{StaticResource Spacing.LG}">
+                <Border Classes="notice" Classes.error="{Binding Failed}" Classes.success="{Binding !Failed}">
+                    <TextBlock Classes="wrap" Text="{Binding Verdict}" FontWeight="SemiBold" />
+                </Border>
+                <Border Classes="notice warning" IsVisible="{Binding Synthetic}">
+                    <TextBlock Classes="wrap" Text="Dataset tổng hợp: chỉ dùng để thử luồng. Metric của nó không nói lên chất lượng thật." />
+                </Border>
+
+                <ItemsControl ItemsSource="{Binding Errors}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="runs:DatasetIssue">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}" Margin="{StaticResource Gap.Top.XS}">
+                                <Path Classes="icon" Data="{StaticResource Icon.Grade.Block}" Stroke="{StaticResource Brush.Status.Error}" VerticalAlignment="Top" />
+                                <TextBlock Classes="wrap" Text="{Binding Message}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ItemsControl ItemsSource="{Binding Warnings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="runs:DatasetIssue">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}" Margin="{StaticResource Gap.Top.XS}">
+                                <Path Classes="icon" Data="{StaticResource Icon.Grade.Alert}" Stroke="{StaticResource Brush.Status.Warning}" VerticalAlignment="Top" />
+                                <TextBlock Classes="wrap" Text="{Binding Message}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="{StaticResource Spacing.SM}">
+                        <TextBlock Classes="section" Text="Tập" />
+                        <ItemsControl ItemsSource="{Binding Splits}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="runs:SplitCount">
+                                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}">
+                                        <TextBlock Classes="secondary" Text="{Binding Split}" Width="{StaticResource Layout.NameColumnWidth}" />
+                                        <TextBlock Classes="metricSmall" Text="{Binding Images, StringFormat='{}{0} ảnh'}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                                        <TextBlock Classes="metricSmall" Text="{Binding Boxes, StringFormat='{}{0} nhãn'}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="{StaticResource Spacing.SM}">
+                        <TextBlock Classes="section" Text="Số nhãn theo class" />
+                        <ItemsControl ItemsSource="{Binding Classes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ClassCountItem">
+                                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}">
+                                        <TextBlock Text="{Binding Name}" Width="{StaticResource Layout.NameColumnWidth}" />
+                                        <TextBlock Classes="metricSmall" Text="{Binding Boxes}" Width="{StaticResource Layout.PercentFieldWidth}" />
+                                        <Border Background="{StaticResource Brush.Brand.Primary}" CornerRadius="{StaticResource Radius.SM}"
+                                                Height="{StaticResource Layout.ClassBarHeight}" VerticalAlignment="Center"
+                                                Width="{Binding Share, Converter={x:Static views:Converters.ShareToWidth}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="secondary wrap" Text="{Binding SizeText}" Margin="{StaticResource Gap.Top.SM}" />
+                        <StackPanel Margin="{StaticResource Gap.Top.SM}">
+                            <TextBlock Classes="label" Text="FINGERPRINT" />
+                            <TextBlock Classes="mono wrap" Text="{Binding Fingerprint}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

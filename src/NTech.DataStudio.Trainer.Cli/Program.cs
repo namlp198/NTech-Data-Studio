@@ -179,7 +179,7 @@ namespace NTech.DataStudio.Trainer.Cli
 
             if (!options.Flags.Contains("container")) return 0;
 
-            var compute = ComputeFor(machine);
+            var compute = TrainPlanner.ComputeFor(machine);
             var image = options.Text("image", JobService.ImageFor(compute));
             if (await app.Containers.ImageDigestAsync(image) is null) throw new TrainerException($"Không có image {image}.");
             var result = await app.Containers.RunToEndAsync(JobService.ProbeSpec(image, compute == "cuda"));
@@ -214,22 +214,14 @@ namespace NTech.DataStudio.Trainer.Cli
         {
             var workspace = Workspace.Open(options.Require("workspace"));
             var machine = await app.Probe.ReadAsync(workspace.Root);
-            var image = options.Text("image", JobService.ImageFor(ComputeFor(machine)));
-            var result = await app.Containers.RunToEndAsync(JobService.ValidateSpec(workspace, image, options.Number("imgsz", 640)));
-            if (string.IsNullOrWhiteSpace(result.Output))
-            {
-                Output.Error(result.Error.Trim());
-                return 3;
-            }
-
-            using var report = JsonDocument.Parse(result.Output);
-            var root = report.RootElement;
-            foreach (var item in root.GetProperty("errors").EnumerateArray()) Output.Error(item.GetProperty("message").GetString() ?? "");
-            foreach (var item in root.GetProperty("warnings").EnumerateArray()) Output.Warn(item.GetProperty("message").GetString() ?? "");
-            Console.WriteLine(JsonSerializer.Serialize(root.GetProperty("stats"), new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
-            Console.WriteLine($"Fingerprint: {root.GetProperty("fingerprint").GetString()}");
-            Console.WriteLine(root.GetProperty("ok").GetBoolean() ? "Dataset đạt." : "Dataset chưa đạt.");
-            return root.GetProperty("ok").GetBoolean() ? 0 : 2;
+            var image = options.Text("image", JobService.ImageFor(TrainPlanner.ComputeFor(machine)));
+            var report = await app.Datasets.CheckAsync(workspace, image, options.Number("imgsz", TrainPlanner.DefaultImgsz));
+            foreach (var item in report.Errors) Output.Error(item.Message);
+            foreach (var item in report.Warnings) Output.Warn(item.Message);
+            Console.WriteLine(JsonSerializer.Serialize(report.Stats, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+            Console.WriteLine($"Fingerprint: {report.Fingerprint}");
+            Console.WriteLine(report.Ok ? "Dataset đạt." : "Dataset chưa đạt.");
+            return report.Ok ? 0 : 2;
         }
 
         public static async Task<int> TrainAsync(AppComposition app, Arguments options)
@@ -261,18 +253,18 @@ namespace NTech.DataStudio.Trainer.Cli
                 }
             }
 
-            var compute = ComputeFor(machine);
+            var compute = TrainPlanner.ComputeFor(machine);
             var image = options.Text("image", JobService.ImageFor(compute));
             var digest = await app.Containers.ImageDigestAsync(image)
                 ?? throw new TrainerException($"Không có image {image}. Build bằng docker/trainer/Dockerfile.");
             var train = new TrainOptions(
                 imgsz,
-                options.Number("epochs", 100),
-                options.Number("batch", compute == "cuda" ? -1 : 4),
-                compute == "cuda" ? "0" : "cpu",
-                options.Number("workers", Math.Min(8, Math.Max(1, machine.CpuThreads / 2))),
+                options.Number("epochs", TrainPlanner.DefaultEpochs),
+                options.Number("batch", TrainPlanner.DefaultBatch(compute)),
+                TrainPlanner.DeviceFor(compute),
+                options.Number("workers", TrainPlanner.DefaultWorkers(machine)),
                 options.Number("seed", 0),
-                options.Number("patience", 100),
+                options.Number("patience", TrainPlanner.DefaultPatience),
                 !options.Flags.Contains("no-preflight"),
                 ParseOverrides(options.Text("set", "")));
 
@@ -337,26 +329,22 @@ namespace NTech.DataStudio.Trainer.Cli
         {
             var workspace = Workspace.Open(options.Require("workspace"));
             Console.WriteLine($"{"Run",-36} {"Trạng thái",-11} {"mAP50",6} {"mAP50-95",8} {"P",6} {"R",6} {"ONNX",-12} {"ms",6}");
-            var fingerprints = new HashSet<string>();
+            var summaries = new List<RunSummary>();
             foreach (var run in workspace.Runs())
             {
-                var state = await app.Jobs.StateAsync(run);
-                var result = ReadJson(run.ResultFile);
-                var report = ReadJson(run.ReportFile);
-                var dataset = ReadJson(Path.Combine(run.Path_, "dataset.json"));
-                if (dataset?.GetProperty("fingerprint").GetString() is { Length: > 0 } print) fingerprints.Add(print);
+                var summary = RunSummary.Read(run, await app.Jobs.StateAsync(run));
+                summaries.Add(summary);
+                var overall = summary.Overall;
                 Console.WriteLine(
-                    $"{run.Id,-36} {state,-11} {Metric(result, "map50"),6} {Metric(result, "map50_95"),8} {Metric(result, "precision"),6} {Metric(result, "recall"),6} " +
-                    $"{(report?.GetProperty("status").GetString() ?? "-"),-12} {Metric(report, "latency_ms_median"),6}");
-                if (result is { } value)
-                {
-                    foreach (var item in value.GetProperty("classes").EnumerateArray())
-                        Console.WriteLine($"    {item.GetProperty("name").GetString(),-32} {"",-11} {Metric(item, "map50"),6} {Metric(item, "map50_95"),8} {Metric(item, "precision"),6} {Metric(item, "recall"),6}");
-                }
-                if (dataset?.GetProperty("synthetic").GetBoolean() == true) Output.Warn("Dataset tổng hợp: metric không nói lên chất lượng thật.");
+                    $"{run.Id,-36} {summary.State,-11} {Metric(overall?.Map50),6} {Metric(overall?.Map50To95),8} {Metric(overall?.Precision),6} {Metric(overall?.Recall),6} " +
+                    $"{summary.Export?.Status ?? "-",-12} {Metric(summary.Export?.LatencyMsMedian),6}");
+                foreach (var item in summary.Classes)
+                    Console.WriteLine($"    {item.Name,-32} {"",-11} {Metric(item.Metrics.Map50),6} {Metric(item.Metrics.Map50To95),8} {Metric(item.Metrics.Precision),6} {Metric(item.Metrics.Recall),6}");
+                if (summary.Synthetic) Output.Warn("Dataset tổng hợp: metric không nói lên chất lượng thật.");
             }
 
-            if (fingerprints.Count > 1) Output.Warn("Các run dùng dataset khác nhau nên không so sánh trực tiếp được.");
+            foreach (var reason in RunSummary.Differences(summaries))
+                Output.Warn(reason + " Không so sánh trực tiếp được.");
             return 0;
         }
 
@@ -409,42 +397,25 @@ namespace NTech.DataStudio.Trainer.Cli
 
         private static void Print(TrainerEvent item)
         {
-            switch (item.Type)
+            if (item.Type == "progress")
             {
-                case "state":
-                    Console.WriteLine($"[{item.Timestamp}] Trạng thái: {item.Text("state")}");
+                Console.WriteLine($"[{item.Timestamp}] Epoch {item.Number("epoch")}/{item.Number("epochs")}, batch {item.Number("batch")}/{item.Number("batches")}");
+                return;
+            }
+
+            switch (EventText.Describe(item))
+            {
+                case { Level: LogLevel.Warning } line:
+                    Output.Warn(line.Text);
                     break;
-                case "progress":
-                    Console.WriteLine($"[{item.Timestamp}] Epoch {item.Number("epoch")}/{item.Number("epochs")}, batch {item.Number("batch")}/{item.Number("batches")}");
+                case { Level: LogLevel.Error } line:
+                    Output.Error(line.Text);
                     break;
-                case "epoch_end":
-                    Console.WriteLine($"[{item.Timestamp}] Epoch {item.Number("epoch")}/{item.Number("epochs")}: train loss {item.Number("train_loss"):0.###}, val loss {item.Number("val_loss"):0.###}, mAP50 {item.Number("map50"):0.###}, mAP50-95 {item.Number("map50_95"):0.###}, còn khoảng {Duration(item.Number("eta_seconds"))}");
-                    break;
-                case "preflight":
-                    Console.WriteLine($"[{item.Timestamp}] Chạy thử: {item.Number("seconds_per_batch"):0.##} s/batch, ước tính {item.Number("train_seconds_per_epoch_estimate"):0} s/epoch (chưa tính val), VRAM đỉnh {item.Number("vram_peak_gb")?.ToString("0.##", CultureInfo.InvariantCulture) ?? "không có"} GB, batch {item.Number("batch")}");
-                    break;
-                case "warning":
-                    Output.Warn(item.Text("message") ?? "");
-                    break;
-                case "error":
-                    Output.Error(item.Text("message") ?? "");
-                    break;
-                case "checkpoint_saved" when item.Text("kind") == "resume":
-                    Console.WriteLine($"[{item.Timestamp}] Đã lưu checkpoint để train tiếp, epoch {item.Number("epoch")}");
-                    break;
-                case "export":
-                    Console.WriteLine($"[{item.Timestamp}] Export {item.Text("format")}: {item.Text("stage")}");
-                    break;
-                case "export_result":
-                    Console.WriteLine($"[{item.Timestamp}] Export {item.Text("format")}: {item.Text("status")}");
-                    if (item.Data.TryGetProperty("problems", out var problems))
-                        foreach (var problem in problems.EnumerateArray()) Output.Warn(problem.GetString() ?? "");
+                case { } line:
+                    Console.WriteLine($"[{line.Timestamp}] {line.Text}");
                     break;
             }
         }
-
-        private static string Duration(double? seconds) =>
-            TimeSpan.FromSeconds(seconds ?? 0).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
 
         /// <summary>The worker reports the end a moment before its container is gone; a next command must not race it.</summary>
         private static async Task WaitForContainerExitAsync(AppComposition app, RunFolder run)
@@ -455,8 +426,6 @@ namespace NTech.DataStudio.Trainer.Cli
 
         private static ModelVariant FindModel(AppComposition app, string name) =>
             app.Catalog.Find(name) ?? throw new TrainerException($"Không có model {name}. Chạy models để xem danh sách.");
-
-        private static string ComputeFor(HardwareSnapshot machine) => Assessor.UsableGpu(machine) is null ? "cpu" : "cuda";
 
         /// <summary>Numbers stay numbers, because the engine rejects a string for an augmentation amount.</summary>
         private static IReadOnlyDictionary<string, object>? ParseOverrides(string text)
@@ -473,16 +442,6 @@ namespace NTech.DataStudio.Trainer.Cli
             return result;
         }
 
-        private static JsonElement? ReadJson(string path)
-        {
-            if (!File.Exists(path)) return null;
-            using var document = JsonDocument.Parse(File.ReadAllText(path));
-            return document.RootElement.Clone();
-        }
-
-        private static string Metric(JsonElement? element, string name) =>
-            element is { } value && value.TryGetProperty(name, out var metric) && metric.ValueKind == JsonValueKind.Number
-                ? metric.GetDouble().ToString("0.###", CultureInfo.InvariantCulture)
-                : "-";
+        private static string Metric(double? value) => value?.ToString("0.###", CultureInfo.InvariantCulture) ?? "-";
     }
 }

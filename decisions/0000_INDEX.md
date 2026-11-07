@@ -14,3 +14,4 @@
 | [0010](0010_trainer-workspace-and-event-log.md) | Workspace là nguồn sự thật, giao tiếp với worker bằng log sự kiện | 2026-11-08 |
 | [0011](0011_trainer-runtime-in-docker.md) | Runtime của Trainer nằm trong Docker, TensorRT là tùy chọn | 2026-11-08 |
 | [0012](0012_onnx-embedded-nms-and-consumer-contract.md) | ONNX dùng NMS nhúng cho mọi phiên bản, kèm hợp đồng trong `model.meta.json` | 2026-11-08 |
+| [0013](0013_trainer-desktop-avalonia.md) | Desktop của Trainer viết bằng Avalonia, dùng chung use case với CLI | 2026-11-08 |

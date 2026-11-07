@@ -8,6 +8,7 @@
     <Project Path="src/NTech.DataStudio.Desktop/NTech.DataStudio.Desktop.csproj" />
     <Project Path="src/NTech.DataStudio.Trainer/NTech.DataStudio.Trainer.csproj" />
     <Project Path="src/NTech.DataStudio.Trainer.Cli/NTech.DataStudio.Trainer.Cli.csproj" />
+    <Project Path="src/NTech.DataStudio.Trainer.Desktop/NTech.DataStudio.Trainer.Desktop.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/NTech.DataStudio.Domain.Tests/NTech.DataStudio.Domain.Tests.csproj" />
@@ -15,5 +16,6 @@
     <Project Path="tests/NTech.DataStudio.Imaging.Tests/NTech.DataStudio.Imaging.Tests.csproj" />
     <Project Path="tests/NTech.DataStudio.Exporters.Tests/NTech.DataStudio.Exporters.Tests.csproj" />
     <Project Path="tests/NTech.DataStudio.Trainer.Tests/NTech.DataStudio.Trainer.Tests.csproj" />
+    <Project Path="tests/NTech.DataStudio.Trainer.Desktop.Tests/NTech.DataStudio.Trainer.Desktop.Tests.csproj" />
   </Folder>
 </Solution>

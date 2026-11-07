@@ -1,0 +1,74 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Text roles of the WPF Text.xaml, as classes: Text.PageTitle becomes Classes="pageTitle". -->
+
+    <!-- Font, size and color of plain text are inherited from the window, so text in a tab or a button follows its parent. -->
+    <Style Selector="Window">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.App}" />
+    </Style>
+
+    <Style Selector="TextBlock.wrap">
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.pageTitle">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Heading1}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.section">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Heading3}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.secondary">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.BodySmall}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+    </Style>
+
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Muted}" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Micro}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+    </Style>
+
+    <Style Selector="TextBlock.metric">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Monospace}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Heading2}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.metricSmall">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Monospace}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.BodySmall}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+    </Style>
+
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Monospace}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}" />
+    </Style>
+
+    <Style Selector="TextBlock.error">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
+    </Style>
+
+    <Style Selector="TextBlock.warning">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Status.Warning}" />
+    </Style>
+
+    <Style Selector="TextBlock.brand">
+        <Setter Property="FontSize" Value="{StaticResource FontSize.BodyLarge}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+</Styles>

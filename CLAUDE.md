@@ -78,6 +78,14 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Dung lượng RAM, VRAM, đĩa tính theo 1024³ ở cả C# và Python, để khớp số Windows và `nvidia-smi` hiện.
 - Mount bằng `--mount`, không dùng `-v`: `-v` tách theo dấu `:` của đường dẫn Windows.
 - Dataset tổng hợp phải giữ `ntech_synthetic: true` để mọi báo cáo ghi rõ. Không trình bày metric của nó như kết quả thật, và không commit ảnh của project wire harness.
+- Desktop của Trainer là Avalonia (quyết định 0013). Logic dùng chung đặt ở `NTech.DataStudio.Trainer`, không đặt trong CLI hay ViewModel. ViewModel không dùng kiểu của Avalonia; hộp chọn file đi qua `IDialogs`.
+- Avalonia dùng compiled binding: đường dẫn qua một giá trị null (`Report.Ok` khi chưa có `Report`) sinh lỗi binding. Hãy đưa ra thuộc tính phẳng không null. `ScreenTests` báo mọi lỗi binding, nên đừng nới bộ lọc ở đó.
+- Trong `Content` của CheckBox và Button, Avalonia hiểu `_` là phím tắt và nuốt mất nó: viết `hsv__h` để hiện `hsv_h`.
+- Selector nhiều loại (`TextBox, ComboBox`) trong một `Style` chỉ nhận thuộc tính của lớp cha chung, nên tách thành từng style riêng.
+- Tên icon trùng với `Icons.xaml` của WPF phải cùng hình (`TokenParityTests` kiểm); icon riêng của Trainer đặt tên mới, ví dụ `Icon.Grade.*`.
+- Test Desktop đặt `Polling: false` trong `TrainerServices` rồi tự gọi `RefreshAsync`; để timer chạy trong test sẽ có hai lượt đọc chen nhau.
+- Test giao diện dùng `HeadlessUnitTestSession` trực tiếp vì repo dùng xunit 2; `Avalonia.Headless.XUnit` cần xunit v3.
+- Trên Linux, app cần thư viện X11 của hệ điều hành (`libice6`, `libsm6` thiếu trong WSL Ubuntu).
 
 ## Kiểm tra
 

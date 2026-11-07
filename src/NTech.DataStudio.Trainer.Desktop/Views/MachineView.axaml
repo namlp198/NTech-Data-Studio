@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+             xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+             x:Class="NTech.DataStudio.Trainer.Desktop.Views.MachineView"
+             x:DataType="vm:MachineViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.PageContentMaxWidth}" HorizontalAlignment="Left">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="{StaticResource Spacing.XS}">
+                    <TextBlock Classes="pageTitle" Text="Máy" />
+                    <TextBlock Classes="secondary wrap" Text="Đánh giá máy này cho việc train. Điểm tổng lấy theo tiêu chí kém nhất; mỗi tiêu chí ghi lý do và nguồn số liệu." />
+                </StackPanel>
+                <Button AutomationProperties.Name="Đọc lại" Grid.Column="1" Command="{Binding RefreshCommand}" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                        <Path Classes="icon" Data="{StaticResource Icon.Sync}" />
+                        <TextBlock Text="Đọc lại" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Loading -->
+            <StackPanel IsVisible="{Binding IsLoading}" Spacing="{StaticResource Spacing.SM}">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Classes="secondary" Text="Đang đọc phần cứng, driver và Docker..." />
+            </StackPanel>
+
+            <!-- Error -->
+            <Border Classes="notice error" IsVisible="{Binding HasError}">
+                <TextBlock Classes="wrap" Text="{Binding Error}" />
+            </Border>
+
+            <StackPanel IsVisible="{Binding HasResult}" Spacing="{StaticResource Spacing.LG}">
+                <Border Classes="card">
+                    <StackPanel Spacing="{StaticResource Spacing.MD}">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                            <Path Classes="icon medium" Data="{Binding Overall, Converter={x:Static views:Converters.GradeIcon}}"
+                                  Stroke="{Binding Overall, Converter={x:Static views:Converters.GradeBrush}}" />
+                            <TextBlock Classes="section" Text="{Binding Overall}" Foreground="{Binding Overall, Converter={x:Static views:Converters.GradeBrush}}" />
+                            <TextBlock Classes="secondary" Text="{Binding OverallMeaning}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Classes="wrap" Text="{Binding ComputeText}" />
+
+                        <ItemsControl ItemsSource="{Binding Criteria}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CriterionItem">
+                                    <Grid ColumnDefinitions="Auto,Auto,*" Margin="{StaticResource Gap.Top.SM}">
+                                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.XS}" Width="{StaticResource Layout.GradeColumnWidth}" VerticalAlignment="Top">
+                                            <Path Classes="icon" Data="{Binding Grade, Converter={x:Static views:Converters.GradeIcon}}"
+                                                  Stroke="{Binding Grade, Converter={x:Static views:Converters.GradeBrush}}" />
+                                            <TextBlock Text="{Binding GradeText}" Foreground="{Binding Grade, Converter={x:Static views:Converters.GradeBrush}}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" Width="{StaticResource Layout.NameColumnWidth}" />
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Classes="wrap" Text="{Binding Reason}" />
+                                            <TextBlock Classes="caption" Text="{Binding Source}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="{StaticResource Spacing.SM}">
+                        <TextBlock Classes="section" Text="Chi tiết" />
+                        <ItemsControl ItemsSource="{Binding Details}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyValueItem">
+                                    <Grid ColumnDefinitions="Auto,*" Margin="{StaticResource Gap.Top.XS}">
+                                        <TextBlock Classes="secondary" Text="{Binding Key}" Width="{StaticResource Layout.NameColumnWidth}" />
+                                        <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="secondary wrap" Text="{Binding TensorRtText}" Margin="{StaticResource Gap.Top.SM}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="{StaticResource Spacing.SM}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Classes="section" Text="Trong container" />
+                                <TextBlock Classes="secondary wrap" Text="Chạy image của Trainer để xem runtime thấy gì: PyTorch, GPU, giới hạn RAM thật của container. nvidia-smi chạy được là chưa đủ để kết luận." />
+                            </StackPanel>
+                            <Button Grid.Column="1" Command="{Binding ProbeContainerCommand}" Content="Kiểm tra trong container" VerticalAlignment="Top" />
+                        </Grid>
+                        <StackPanel IsVisible="{Binding IsProbingContainer}" Spacing="{StaticResource Spacing.SM}">
+                            <ProgressBar IsIndeterminate="True" />
+                            <TextBlock Classes="secondary" Text="Đang chạy container kiểm tra..." />
+                        </StackPanel>
+                        <TextBlock Classes="error wrap" Text="{Binding ContainerError}" IsVisible="{Binding ContainerError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <ItemsControl ItemsSource="{Binding ContainerDetails}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyValueItem">
+                                    <Grid ColumnDefinitions="Auto,*" Margin="{StaticResource Gap.Top.XS}">
+                                        <TextBlock Classes="mono" Foreground="{StaticResource Brush.Text.Secondary}" Text="{Binding Key}" Width="{StaticResource Layout.NameColumnWidth}" />
+                                        <TextBlock Grid.Column="1" Classes="mono wrap" Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

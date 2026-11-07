@@ -18,7 +18,10 @@ Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER
 - [ ] Train từ phía Linux: bật WSL Integration hoặc dùng máy Ubuntu, kiểm `--user` và quyền ghi
 - [ ] Kiểm thử danh mục tự động: script chạy train, export, kiểm chứng cho mọi phiên bản `supported` (hiện chạy bằng tay)
 - [ ] Test đọc một bản xuất thật của Data Studio (hiện test dựng lại đúng dạng `data.yaml`, chưa chạy `ExportService`)
-- [ ] M2: Desktop bằng Avalonia
+- [x] M2 trên Windows: Desktop Avalonia 5 màn hình, chạy thật cả luồng bằng UI Automation (quyết định 0013)
+- [ ] M2 trên Ubuntu: chạy app bằng WSLg sau khi cài `libice6`, `libsm6`; thử hộp chọn file trên Linux
+- [ ] Desktop: thử tạo và mở workspace bằng hộp chọn file thật (hiện chỉ test với hộp chọn giả)
+- [ ] Tìm hiểu vì sao metric val của epoch 2 trùng epoch 1 trong run 3 epoch (cả `results.csv` của Ultralytics cũng trùng)
 - [x] M3 một phần: train tiếp, phát hiện `Interrupted`, nối lại, bảng `compare`, luật cảnh báo
 - [ ] M3 còn lại: hàng đợi nhiều phiên bản, tạo lỗi thật cho hết VRAM và các cảnh báo
 - [ ] M4: đóng gói Windows và Ubuntu

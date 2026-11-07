@@ -4,7 +4,9 @@
     "projects": [
       "src\\NTech.DataStudio.Trainer\\NTech.DataStudio.Trainer.csproj",
       "src\\NTech.DataStudio.Trainer.Cli\\NTech.DataStudio.Trainer.Cli.csproj",
-      "tests\\NTech.DataStudio.Trainer.Tests\\NTech.DataStudio.Trainer.Tests.csproj"
+      "src\\NTech.DataStudio.Trainer.Desktop\\NTech.DataStudio.Trainer.Desktop.csproj",
+      "tests\\NTech.DataStudio.Trainer.Tests\\NTech.DataStudio.Trainer.Tests.csproj",
+      "tests\\NTech.DataStudio.Trainer.Desktop.Tests\\NTech.DataStudio.Trainer.Desktop.Tests.csproj"
     ]
   }
 }

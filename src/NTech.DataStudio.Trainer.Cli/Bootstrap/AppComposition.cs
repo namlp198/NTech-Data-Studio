@@ -15,6 +15,7 @@ public sealed class AppComposition
         Containers = new DockerCli(runner);
         Probe = new HardwareProbe(runner, Containers);
         Jobs = new JobService(Containers);
+        Datasets = new DatasetChecker(Containers);
         Catalog = ModelCatalog.LoadFolder(Path.Combine(AppContext.BaseDirectory, "catalog"));
     }
 
@@ -23,6 +24,8 @@ public sealed class AppComposition
     public HardwareProbe Probe { get; }
 
     public JobService Jobs { get; }
+
+    public DatasetChecker Datasets { get; }
 
     public ModelCatalog Catalog { get; }
 }

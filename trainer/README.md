@@ -1,6 +1,6 @@
 # NTech Trainer
 
-Train YOLO detect trong Docker và xuất ONNX đã kiểm chứng. Hiện dùng bằng dòng lệnh, chưa có giao diện. Thiết kế ở [TRAINER_SYSTEM_DESIGN.md](../docs/trainer/TRAINER_SYSTEM_DESIGN.md).
+Train YOLO detect trong Docker và xuất ONNX đã kiểm chứng. Dùng bằng app Desktop (Avalonia) hoặc dòng lệnh; cả hai gọi cùng một phần lõi và cùng đọc một workspace. Thiết kế ở [TRAINER_SYSTEM_DESIGN.md](../docs/trainer/TRAINER_SYSTEM_DESIGN.md).
 
 Model train bằng gói `ultralytics` thuộc AGPL-3.0 kể cả dùng nội bộ theo lập trường của Ultralytics, trừ khi có Enterprise License. Xem mục 10 của thiết kế trước khi đưa model vào sản xuất hoặc bán.
 
@@ -29,7 +29,12 @@ Bản Linux tự chứa:
 
 ```powershell
 dotnet publish src\NTech.DataStudio.Trainer.Cli -c Release -r linux-x64 --self-contained true -o publish\trainer-linux
+dotnet publish src\NTech.DataStudio.Trainer.Desktop -c Release -r linux-x64 --self-contained true -o publish\trainer-desktop-linux
 ```
+
+App Desktop trên Ubuntu cần thư viện X11 của hệ điều hành. Ubuntu desktop thường có sẵn; WSL Ubuntu thì thiếu, cài bằng `sudo apt install libice6 libsm6`.
+
+Ảnh chụp từng màn hình do test dựng ra nằm ở `tests\NTech.DataStudio.Trainer.Desktop.Tests\bin\Debug\net10.0\screens\` sau khi chạy test.
 
 Test worker, không cần GPU hay Docker:
 
@@ -38,7 +43,23 @@ $env:PYTHONPATH = "trainer\python"
 uv run --no-project --python 3.12 --with pytest --with pillow --with pyyaml --with psutil --with numpy --with opencv-python-headless python -m pytest trainer\python\tests -q
 ```
 
-## Dùng
+## Dùng bằng app
+
+```powershell
+dotnet run --project src\NTech.DataStudio.Trainer.Desktop
+```
+
+| Màn hình | Làm gì |
+| --- | --- |
+| Máy | Mức đánh giá từng tiêu chí, kèm nguồn số liệu; kiểm tra trong container |
+| Dataset | Kiểm tra dataset trong container: lỗi, cảnh báo, số nhãn theo class, kích thước vật thể |
+| Cấu hình | Phiên bản và cỡ YOLO, tham số, gợi ý cho wire harness, đánh giá theo cấu hình; train bằng CPU hoặc model thử nghiệm phải tích xác nhận |
+| Train | Danh sách run, tiến độ, metric, biểu đồ, tài nguyên, log có lọc; dừng ở cuối epoch và train tiếp |
+| Kết quả | Bảng so sánh các run, metric theo class, export và kết quả kiểm chứng ONNX |
+
+Tạo workspace từ `data.yaml` của dataset, hoặc mở workspace đã tạo bằng CLI. App nhớ workspace lần trước. Đóng app không dừng job; mở lại thì app đọc tiếp từ workspace.
+
+## Dùng bằng dòng lệnh
 
 `ntech-trainer` nằm ở `src\NTech.DataStudio.Trainer.Cli\bin\Debug\net10.0\`.
 

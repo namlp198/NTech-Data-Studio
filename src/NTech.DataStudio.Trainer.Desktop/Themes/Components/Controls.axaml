@@ -1,0 +1,211 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Buttons: Button.Primary, Button.Secondary, Button.Danger of the WPF Buttons.xaml. -->
+
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeight.Medium}" />
+        <Setter Property="Padding" Value="{StaticResource Inset.Button}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Strong}" />
+        <Setter Property="BorderThickness" Value="{StaticResource Border.Thin}" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Strong}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Selected}" />
+    </Style>
+    <Style Selector="Button:disabled">
+        <Setter Property="Opacity" Value="0.4" />
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+    </Style>
+
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{StaticResource Brush.Brand.Primary}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Brand.PrimaryHover}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Brand.PrimaryPressed}" />
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Brand.Primary}" />
+    </Style>
+
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="{StaticResource Brush.Status.Error}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Status.Error}" />
+        <Setter Property="Opacity" Value="0.85" />
+    </Style>
+    <Style Selector="Button.danger:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Status.Error}" />
+    </Style>
+
+    <!-- A stroke icon inside a button or row; color follows the surrounding text. -->
+    <Style Selector="Path.icon">
+        <Setter Property="Width" Value="{StaticResource IconSize.Small}" />
+        <Setter Property="Height" Value="{StaticResource IconSize.Small}" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeThickness" Value="{StaticResource Layout.IconStroke}" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="StrokeJoin" Value="Round" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Inside a button the icon takes the button's text color; elsewhere the view sets Stroke. -->
+    <Style Selector="Button Path.icon">
+        <Setter Property="Stroke" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+    <Style Selector="Path.icon.medium">
+        <Setter Property="Width" Value="{StaticResource IconSize.Medium}" />
+        <Setter Property="Height" Value="{StaticResource IconSize.Medium}" />
+    </Style>
+
+    <!-- ViewSelector.Item: tab on the TopBar, underlined in brand color when selected. -->
+    <Style Selector="RadioButton.viewSelector">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.BodySmall}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="root"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="{StaticResource Border.ViewSelector}"
+                        Padding="{StaticResource Inset.ViewSelector}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.viewSelector:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+    </Style>
+    <Style Selector="RadioButton.viewSelector:pointerover /template/ Border#root">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+    </Style>
+    <Style Selector="RadioButton.viewSelector:checked">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+    </Style>
+    <Style Selector="RadioButton.viewSelector:checked /template/ Border#root">
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Brand.Primary}" />
+    </Style>
+    <Style Selector="RadioButton.viewSelector:disabled">
+        <Setter Property="Opacity" Value="0.4" />
+    </Style>
+
+    <!-- Inputs -->
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeight.Medium}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeight.Medium}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="CheckBox">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+    </Style>
+
+    <!-- Surfaces: Surface.Card, Badge.Pill and Overlay.TopBar of the WPF Overlay.xaml. -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Surface}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+        <Setter Property="BorderThickness" Value="{StaticResource Border.Thin}" />
+        <Setter Property="Padding" Value="{StaticResource Inset.LG}" />
+    </Style>
+    <Style Selector="Border.pill">
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.Pill}" />
+        <Setter Property="Padding" Value="{StaticResource Inset.Pill}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style Selector="Border.topBar">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Surface}" />
+        <Setter Property="Height" Value="{StaticResource Layout.TopBarHeight}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+        <Setter Property="BorderThickness" Value="{StaticResource Border.Bottom}" />
+    </Style>
+    <Style Selector="Border.notice">
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="Padding" Value="{StaticResource Inset.MD}" />
+        <Setter Property="BorderThickness" Value="{StaticResource Border.Thin}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Strong}" />
+    </Style>
+    <Style Selector="Border.notice.warning">
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Warning}" />
+    </Style>
+    <Style Selector="Border.notice.success">
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Success}" />
+    </Style>
+    <Style Selector="Border.notice.error">
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Error}" />
+    </Style>
+    <Style Selector="Border.divider">
+        <Setter Property="Height" Value="{StaticResource Layout.DividerThickness}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Border.Default}" />
+    </Style>
+
+    <!-- Lists: transparent rows, selected row in Background.Selected (WPF Lists.xaml). -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="{StaticResource Inset.Row}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Selected}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Selected}" />
+    </Style>
+
+    <Style Selector="ProgressBar">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Brand.Primary}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="MinHeight" Value="{StaticResource Layout.ProgressHeight}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+    </Style>
+
+</Styles>

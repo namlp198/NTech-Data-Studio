@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Port of the WPF Typography.xaml. Ubuntu has no Segoe UI, so Inter (bundled, covers
+        Vietnamese) follows it; monospace falls back to what Ubuntu ships.
+    -->
+    <FontFamily x:Key="Font.Primary">Segoe UI, avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
+    <FontFamily x:Key="Font.Monospace">Cascadia Mono, Consolas, DejaVu Sans Mono, Ubuntu Mono, monospace</FontFamily>
+
+    <x:Double x:Key="FontSize.Display">28</x:Double>
+    <x:Double x:Key="FontSize.Heading1">24</x:Double>
+    <x:Double x:Key="FontSize.Heading2">20</x:Double>
+    <x:Double x:Key="FontSize.Heading3">16</x:Double>
+    <x:Double x:Key="FontSize.BodyLarge">15</x:Double>
+    <x:Double x:Key="FontSize.Body">14</x:Double>
+    <x:Double x:Key="FontSize.BodySmall">13</x:Double>
+    <x:Double x:Key="FontSize.Caption">12</x:Double>
+    <x:Double x:Key="FontSize.Micro">11</x:Double>
+
+</ResourceDictionary>

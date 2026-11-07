@@ -1,0 +1,37 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Port of the WPF Sizing.xaml (shared keys are compared), plus Trainer layout sizes. -->
+    <x:Double x:Key="ControlHeight.Small">28</x:Double>
+    <x:Double x:Key="ControlHeight.Medium">36</x:Double>
+    <x:Double x:Key="ControlHeight.Large">44</x:Double>
+
+    <x:Double x:Key="IconSize.Small">14</x:Double>
+    <x:Double x:Key="IconSize.Medium">18</x:Double>
+    <x:Double x:Key="IconSize.Large">24</x:Double>
+
+    <x:Double x:Key="Layout.TopBarHeight">48</x:Double>
+    <x:Double x:Key="Layout.PageContentMaxWidth">960</x:Double>
+    <x:Double x:Key="Layout.FormFieldWidth">480</x:Double>
+    <x:Double x:Key="Layout.FloatingPanelWidth">320</x:Double>
+    <x:Double x:Key="Layout.StatusDotSize">10</x:Double>
+    <x:Double x:Key="Layout.FilterWidth">160</x:Double>
+    <x:Double x:Key="Layout.PercentFieldWidth">80</x:Double>
+    <x:Double x:Key="Layout.DividerThickness">1</x:Double>
+
+    <!-- Trainer -->
+    <x:Double x:Key="Layout.WideContentMaxWidth">1280</x:Double>
+    <x:Double x:Key="Layout.RunListWidth">300</x:Double>
+    <x:Double x:Key="Layout.ChartHeight">200</x:Double>
+    <x:Double x:Key="Layout.LogHeight">220</x:Double>
+    <x:Double x:Key="Layout.NumberFieldWidth">120</x:Double>
+    <x:Double x:Key="Layout.MetricTileWidth">136</x:Double>
+    <x:Double x:Key="Layout.ClassBarWidth">240</x:Double>
+    <x:Double x:Key="Layout.ClassBarHeight">8</x:Double>
+    <x:Double x:Key="Layout.GradeColumnWidth">120</x:Double>
+    <x:Double x:Key="Layout.NameColumnWidth">160</x:Double>
+    <x:Double x:Key="Layout.ProgressHeight">6</x:Double>
+    <x:Double x:Key="Layout.ChartStroke">2</x:Double>
+    <x:Double x:Key="Layout.IconStroke">1.5</x:Double>
+
+</ResourceDictionary>

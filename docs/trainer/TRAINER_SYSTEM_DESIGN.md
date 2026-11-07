@@ -4,7 +4,7 @@
 | --- | --- |
 | Sản phẩm | NTech Data Studio |
 | Thành phần | NTech Trainer |
-| Phiên bản | 0.4, đã có CLI và worker chạy được, chưa có Desktop |
+| Phiên bản | 0.4, đã có CLI, worker và Desktop (M2) chạy được trên Windows |
 | Ngày | 2026-11-08 |
 | Thay cho | Initial System Design v0.1, các bản 0.2 và 0.3 |
 | Máy train | Linux hoặc Windows cấu hình cao, GPU NVIDIA |
@@ -492,6 +492,15 @@ Mỗi mốc kết thúc bằng một bản chạy được và được báo cá
 
 Cũng đã chạy thật: dừng ở cuối epoch rồi train tiếp (YOLO11n), kill container sau epoch đầu thành `Interrupted` rồi train tiếp (YOLOv8n), kill lúc preflight thì từ chối và nêu lý do, chạy nền rồi nối lại bằng `follow`, không xác nhận thì không train bằng CPU, dataset và workspace có đường dẫn tiếng Việt, dataset không đổi một byte sau toàn bộ các lần chạy. Bản Linux tự chứa chạy được trong WSL Ubuntu ở các lệnh `models`, `init`, `probe`, và báo đúng khi Docker không dùng được.
 
+**M2 đã chạy thật trên Windows (2026-11-08)** với app Desktop, Docker thật và cùng dataset tổng hợp:
+- **Kiểm tra dataset:** chạy trong container.
+- **Bắt đầu train:** YOLO26n chỉ bắt đầu được sau khi tích xác nhận CPU.
+- **Dừng và train tiếp:** dừng ở cuối epoch rồi train tiếp tới Hoàn tất.
+- **Export:** ONNX đạt kiểm chứng (6.000 box, IoU thấp nhất 0,99994).
+- **Đóng app:** đóng khi đang train thì job vẫn chạy; mở lại, app nối vào run và theo tới Hoàn tất.
+
+App điều khiển bằng UI Automation; từng màn hình còn được dựng headless và lưu PNG trong test. Bản Linux build được, nhưng chưa mở được trong WSL vì thiếu `libice6`, `libsm6`.
+
 **Chưa chạy, cần làm tiếp:**
 
 - Dataset thật. Lúc viết chỉ có 2 ảnh có nhãn.
@@ -536,7 +545,7 @@ Lưu ý với NVision: theo quyết định 0003, NVision chỉ nhận `.nvmodel
 
 Đã ghi, vì đã có code và đã chạy thật: 0009 (YOLO nhiều phiên bản qua `ultralytics`, danh mục tách khỏi `profiles/`, điều kiện license), 0010 (workspace và log sự kiện thay HTTP local), 0011 (runtime trong Docker, TensorRT tùy chọn), 0012 (ONNX bằng `nms=True` và hợp đồng cho bên dùng).
 
-Ghi khi làm M2: Trainer dùng Avalonia, WPF giữ nguyên.
+Đã ghi khi làm M2: 0013 (Desktop bằng Avalonia, WPF giữ nguyên, dùng chung use case với CLI, token port có test đối chiếu).
 
 ## Nguồn đã tham khảo
 

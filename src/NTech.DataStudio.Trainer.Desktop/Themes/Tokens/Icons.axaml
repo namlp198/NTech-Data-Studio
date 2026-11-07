@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Stroke icons on the 18x18 grid of the WPF Icons.xaml. Shared ones keep their path data;
+        consumers set Stroke and StrokeThickness, never Fill.
+    -->
+
+    <!-- View selector -->
+    <StreamGeometry x:Key="Icon.Machine">M4.5,4.5 H13.5 V13.5 H4.5 Z M7,7 H11 V11 H7 Z M7,2 V4.5 M11,2 V4.5 M7,13.5 V16 M11,13.5 V16 M2,7 H4.5 M2,11 H4.5 M13.5,7 H16 M13.5,11 H16</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Dataset">M2,2 H7 V7 H2 Z M11,2 H16 V7 H11 Z M2,11 H7 V16 H2 Z M11,11 H16 V16 H11 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Config">M3,4.5 H15 M3,9 H15 M3,13.5 H15 M6,3 V6 M12,7.5 V10.5 M8,12 V15</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Train">M2.5,14.5 L6.5,9 L9.5,11.5 L15.5,3.5 M12,3.5 H15.5 V7</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Results">M3,15.5 H15.5 M4.5,15.5 V10 M8,15.5 V5 M11.5,15.5 V8 M15,15.5 V3</StreamGeometry>
+
+    <!-- Grades: one shape per meaning, so a grade never relies on color alone. -->
+    <StreamGeometry x:Key="Icon.Grade.Check">M9,2 A7,7 0 1 1 8.99,2 Z M5.5,9 L8,11.5 L12.5,6.5</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Grade.Alert">M9,2.5 L16,15 H2 Z M9,7 V10.5 M9,12.8 V13</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Grade.Block">M9,2 A7,7 0 1 1 8.99,2 Z M6,6 L12,12 M12,6 L6,12</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Grade.Question">M9,2 A7,7 0 1 1 8.99,2 Z M6.8,7 C6.8,4.8 11.2,4.8 11.2,7 C11.2,8.6 9,8.8 9,10.5 M9,12.8 V13</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Grade.Info">M9,2 A7,7 0 1 1 8.99,2 Z M9,8 V12.5 M9,5.5 V5.7</StreamGeometry>
+
+    <!-- Actions -->
+    <StreamGeometry x:Key="Icon.Folder">M2.5,5 H7 L8.5,7 H15.5 V14.5 H2.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Plus">M9,3 V15 M3,9 H15</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Sync">M14,6 A6,6 0 1 0 15,9 M14,3 V6 H11</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Play">M5,3 L14.5,9 L5,15 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Stop">M4.5,4.5 H13.5 V13.5 H4.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Export">M9,11.5 V2.5 M5.5,6 L9,2.5 L12.5,6 M3,11 V15.5 H15 V11</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Search">M8,3 A5,5 0 1 1 7.99,3 Z M11.5,11.5 L15.5,15.5</StreamGeometry>
+
+</ResourceDictionary>

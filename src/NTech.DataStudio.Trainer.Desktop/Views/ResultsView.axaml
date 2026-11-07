@@ -1,0 +1,138 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+             xmlns:sys="using:System"
+             xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+             x:Class="NTech.DataStudio.Trainer.Desktop.Views.ResultsView"
+             x:DataType="vm:ResultsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.WideContentMaxWidth}" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="{StaticResource Spacing.XS}">
+                <TextBlock Classes="pageTitle" Text="Kết quả" />
+                <TextBlock Classes="secondary wrap" Text="Metric của best.pt trên tập val, tổng và theo class. Export ONNX được kiểm chứng từng box với PyTorch." />
+            </StackPanel>
+
+            <StackPanel IsVisible="{Binding IsLoading}" Spacing="{StaticResource Spacing.SM}">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Classes="secondary" Text="Đang đọc kết quả các run..." />
+            </StackPanel>
+            <Border Classes="notice error" IsVisible="{Binding HasError}">
+                <TextBlock Classes="wrap" Text="{Binding Error}" />
+            </Border>
+            <TextBlock Classes="secondary wrap" IsVisible="{Binding IsEmpty}" Text="Workspace chưa có run nào. Bắt đầu một run ở màn hình Cấu hình." />
+
+            <Border Classes="notice warning" IsVisible="{Binding AnySynthetic}">
+                <TextBlock Classes="wrap" Text="Có run train trên dataset tổng hợp: metric của chúng không nói lên chất lượng thật." />
+            </Border>
+            <ItemsControl ItemsSource="{Binding Differences}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="sys:String">
+                        <Border Classes="notice warning" Margin="{StaticResource Gap.Bottom.SM}">
+                            <TextBlock Classes="wrap" Text="{Binding}" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card" IsVisible="{Binding !IsEmpty}">
+                <StackPanel Spacing="{StaticResource Spacing.SM}">
+                    <Grid ColumnDefinitions="3*,1.4*,*,*,*,*,1.4*,*,*" Margin="{StaticResource Inset.Row}">
+                        <TextBlock Classes="label" Text="RUN" />
+                        <TextBlock Grid.Column="1" Classes="label" Text="TRẠNG THÁI" />
+                        <TextBlock Grid.Column="2" Classes="label" Text="MAP50" />
+                        <TextBlock Grid.Column="3" Classes="label" Text="MAP50-95" />
+                        <TextBlock Grid.Column="4" Classes="label" Text="P" />
+                        <TextBlock Grid.Column="5" Classes="label" Text="R" />
+                        <TextBlock Grid.Column="6" Classes="label" Text="ONNX" />
+                        <TextBlock Grid.Column="7" Classes="label" Text="ĐỘ TRỄ" />
+                        <TextBlock Grid.Column="8" Classes="label" Text="FILE" />
+                    </Grid>
+                    <Border Classes="divider" />
+                    <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ResultRow">
+                                <Grid ColumnDefinitions="3*,1.4*,*,*,*,*,1.4*,*,*">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Model}" FontWeight="SemiBold" />
+                                        <TextBlock Classes="caption" Text="{Binding Id}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding StateText}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Classes="metricSmall" Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding Map50}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Classes="metricSmall" Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding Map50To95}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Classes="metricSmall" Text="{Binding Precision}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Classes="metricSmall" Text="{Binding Recall}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="6" Text="{Binding OnnxText}" Foreground="{Binding OnnxText, Converter={x:Static views:Converters.ExportBrush}}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="7" Classes="metricSmall" Text="{Binding LatencyText}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="8" Classes="metricSmall" Text="{Binding FileText}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" IsVisible="{Binding HasRow}">
+                <StackPanel Spacing="{StaticResource Spacing.MD}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel>
+                            <TextBlock Classes="section" Text="{Binding ClassTitle}" />
+                            <TextBlock Classes="caption" Text="Theo dõi Recall của từng class lỗi: bỏ sót lỗi thường đắt hơn báo nhầm." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}" VerticalAlignment="Top">
+                            <Button AutomationProperties.Name="Export ONNX" Classes="primary" Command="{Binding ExportCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Path Classes="icon" Data="{StaticResource Icon.Export}" />
+                                    <TextBlock Text="Export ONNX" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.Name="Mở thư mục export" Command="{Binding OpenExportsCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Path Classes="icon" Data="{StaticResource Icon.Folder}" />
+                                    <TextBlock Text="Mở thư mục export" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Classes="secondary" Text="Chưa có metric: run chưa đánh giá xong best.pt." IsVisible="{Binding !HasClasses}" />
+                    <StackPanel IsVisible="{Binding HasClasses}">
+                        <Grid ColumnDefinitions="2*,*,*,*,*" Margin="{StaticResource Inset.Row}">
+                            <TextBlock Classes="label" Text="CLASS" />
+                            <TextBlock Grid.Column="1" Classes="label" Text="PRECISION" />
+                            <TextBlock Grid.Column="2" Classes="label" Text="RECALL" />
+                            <TextBlock Grid.Column="3" Classes="label" Text="MAP50" />
+                            <TextBlock Grid.Column="4" Classes="label" Text="MAP50-95" />
+                        </Grid>
+                        <Border Classes="divider" />
+                        <ItemsControl ItemsSource="{Binding Classes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ClassRow">
+                                    <Grid ColumnDefinitions="2*,*,*,*,*" Margin="{StaticResource Inset.Row}">
+                                        <TextBlock Text="{Binding Name}" />
+                                        <TextBlock Grid.Column="1" Classes="metricSmall" Text="{Binding Precision}" />
+                                        <TextBlock Grid.Column="2" Classes="metricSmall" Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding Recall}" />
+                                        <TextBlock Grid.Column="3" Classes="metricSmall" Text="{Binding Map50}" />
+                                        <TextBlock Grid.Column="4" Classes="metricSmall" Text="{Binding Map50To95}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="{StaticResource Spacing.XS}" IsVisible="{Binding HasExportDetails}">
+                        <TextBlock Classes="section" Text="ONNX" />
+                        <ItemsControl ItemsSource="{Binding ExportDetails}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="sys:String">
+                                    <TextBlock Classes="wrap" Text="{Binding}" Margin="{StaticResource Gap.Top.XS}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <TextBlock Classes="secondary wrap" Text="{Binding TensorRtText}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

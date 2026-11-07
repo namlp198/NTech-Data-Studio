@@ -1,0 +1,200 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+             xmlns:runs="using:NTech.DataStudio.Trainer.Runs"
+             xmlns:controls="using:NTech.DataStudio.Trainer.Desktop.Controls"
+             xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+             x:Class="NTech.DataStudio.Trainer.Desktop.Views.TrainView"
+             x:DataType="vm:TrainViewModel">
+
+    <Grid ColumnDefinitions="Auto,*">
+        <!-- Runs of this workspace, newest first. -->
+        <Border Width="{StaticResource Layout.RunListWidth}" Background="{StaticResource Brush.Background.Surface}"
+                BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="{StaticResource Border.Right}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Classes="section" Text="Run" Margin="{StaticResource Inset.LG}" />
+                <TextBlock DockPanel.Dock="Top" Classes="secondary wrap" Margin="{StaticResource Inset.LG}" IsVisible="{Binding IsEmpty}"
+                           Text="Workspace chưa có run nào. Bắt đầu một run ở màn hình Cấu hình." />
+                <ListBox ItemsSource="{Binding Runs}" SelectedItem="{Binding SelectedRun}" Margin="{StaticResource Inset.SM}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RunItem">
+                            <StackPanel Spacing="{StaticResource Spacing.XS}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Ellipse Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}"
+                                             Fill="{Binding State, Converter={x:Static views:Converters.StateBrush}}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Model}" FontWeight="SemiBold" />
+                                    <TextBlock Classes="caption" Text="{Binding StateText}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Classes="caption" Text="{Binding Id}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.WideContentMaxWidth}" HorizontalAlignment="Stretch">
+                <StackPanel IsVisible="{Binding IsLoading}" Spacing="{StaticResource Spacing.SM}">
+                    <ProgressBar IsIndeterminate="True" />
+                    <TextBlock Classes="secondary" Text="Đang đọc các run..." />
+                </StackPanel>
+                <Border Classes="notice error" IsVisible="{Binding HasError}">
+                    <TextBlock Classes="wrap" Text="{Binding Error}" />
+                </Border>
+                <TextBlock Classes="secondary" IsVisible="{Binding !HasRun}" Text="Chọn một run bên trái để theo dõi." />
+
+                <StackPanel IsVisible="{Binding HasRun}" Spacing="{StaticResource Spacing.LG}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="{StaticResource Spacing.XS}">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                                <TextBlock Classes="pageTitle" Text="{Binding SelectedModel}" />
+                                <Border Classes="pill">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.XS}">
+                                        <Ellipse Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}"
+                                                 Fill="{Binding SelectedState, Converter={x:Static views:Converters.StateBrush}}" VerticalAlignment="Center" />
+                                        <TextBlock Classes="caption" Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding SelectedStateText}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Classes="caption" Text="{Binding SelectedId}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}" VerticalAlignment="Top">
+                            <Button AutomationProperties.Name="Dừng ở cuối epoch" Classes="danger" Command="{Binding StopCommand}" ToolTip.Tip="Dừng ở cuối epoch hiện tại, sau khi lưu checkpoint">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Path Classes="icon" Data="{StaticResource Icon.Stop}" />
+                                    <TextBlock Text="Dừng ở cuối epoch" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.Name="Train tiếp" Classes="primary" Command="{Binding ResumeCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Path Classes="icon" Data="{StaticResource Icon.Play}" />
+                                    <TextBlock Text="Train tiếp" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.Name="Mở thư mục run" Command="{Binding OpenFolderCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                    <Path Classes="icon" Data="{StaticResource Icon.Folder}" />
+                                    <TextBlock Text="Mở thư mục run" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Classes="notice warning" IsVisible="{Binding HasNotice}">
+                        <TextBlock Classes="wrap" Text="{Binding Notice}" />
+                    </Border>
+                    <Border Classes="notice warning" IsVisible="{Binding IsSynthetic}">
+                        <TextBlock Classes="wrap" Text="Dataset tổng hợp: metric không nói lên chất lượng thật." />
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel Spacing="{StaticResource Spacing.SM}">
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <TextBlock Classes="metricSmall" Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding ProgressText}" />
+                                <TextBlock Grid.Column="1" Classes="metricSmall" Text="{Binding ElapsedText, StringFormat='Đã chạy {0}'}" Margin="{StaticResource Gap.Right.SM}" />
+                                <TextBlock Grid.Column="2" Classes="metricSmall" Text="{Binding EtaText, StringFormat='Còn khoảng {0}'}" />
+                            </Grid>
+                            <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" />
+                        </StackPanel>
+                    </Border>
+
+                    <WrapPanel>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel><TextBlock Classes="label" Text="TRAIN LOSS" /><TextBlock Classes="metric" Text="{Binding TrainLoss}" /></StackPanel>
+                        </Border>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel><TextBlock Classes="label" Text="VAL LOSS" /><TextBlock Classes="metric" Text="{Binding ValLoss}" /></StackPanel>
+                        </Border>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel><TextBlock Classes="label" Text="MAP50" /><TextBlock Classes="metric" Text="{Binding Map50}" /></StackPanel>
+                        </Border>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel><TextBlock Classes="label" Text="MAP50-95" /><TextBlock Classes="metric" Text="{Binding Map50To95}" /></StackPanel>
+                        </Border>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel><TextBlock Classes="label" Text="PRECISION" /><TextBlock Classes="metric" Text="{Binding Precision}" /></StackPanel>
+                        </Border>
+                        <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}">
+                            <StackPanel><TextBlock Classes="label" Text="RECALL" /><TextBlock Classes="metric" Text="{Binding Recall}" /></StackPanel>
+                        </Border>
+                    </WrapPanel>
+
+                    <Grid ColumnDefinitions="*,*">
+                        <Border Classes="card" Margin="{StaticResource Gap.Right.SM}">
+                            <StackPanel Spacing="{StaticResource Spacing.SM}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="section" Text="Loss" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                        <Border Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}" Background="{StaticResource Brush.Chart.Primary}" VerticalAlignment="Center" />
+                                        <TextBlock Classes="caption" Text="Train" />
+                                        <Border Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}" Background="{StaticResource Brush.Chart.Secondary}" VerticalAlignment="Center" />
+                                        <TextBlock Classes="caption" Text="Val" />
+                                    </StackPanel>
+                                </Grid>
+                                <controls:LineChart Series="{Binding LossSeries}" Height="{StaticResource Layout.ChartHeight}" IsVisible="{Binding HasEpochs}" />
+                                <TextBlock Classes="secondary" Text="Chưa có epoch nào xong." IsVisible="{Binding !HasEpochs}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Classes="card">
+                            <StackPanel Spacing="{StaticResource Spacing.SM}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="section" Text="mAP trên val" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                        <Border Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}" Background="{StaticResource Brush.Chart.Primary}" VerticalAlignment="Center" />
+                                        <TextBlock Classes="caption" Text="mAP50" />
+                                        <Border Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}" Background="{StaticResource Brush.Chart.Secondary}" VerticalAlignment="Center" />
+                                        <TextBlock Classes="caption" Text="mAP50-95" />
+                                    </StackPanel>
+                                </Grid>
+                                <controls:LineChart Series="{Binding MapSeries}" Height="{StaticResource Layout.ChartHeight}" IsVisible="{Binding HasEpochs}" />
+                                <TextBlock Classes="secondary" Text="Chưa có epoch nào xong." IsVisible="{Binding !HasEpochs}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Classes="card">
+                        <StackPanel Spacing="{StaticResource Spacing.SM}">
+                            <TextBlock Classes="section" Text="Tài nguyên" />
+                            <WrapPanel>
+                                <StackPanel Width="{StaticResource Layout.NameColumnWidth}"><TextBlock Classes="label" Text="CPU" /><TextBlock Classes="metricSmall" Text="{Binding CpuText}" /></StackPanel>
+                                <StackPanel Width="{StaticResource Layout.NameColumnWidth}"><TextBlock Classes="label" Text="RAM CONTAINER" /><TextBlock Classes="metricSmall" Text="{Binding RamText}" /></StackPanel>
+                                <StackPanel Width="{StaticResource Layout.NameColumnWidth}"><TextBlock Classes="label" Text="GPU" /><TextBlock Classes="metricSmall" Text="{Binding GpuText}" /></StackPanel>
+                                <StackPanel Width="{StaticResource Layout.NameColumnWidth}"><TextBlock Classes="label" Text="VRAM" /><TextBlock Classes="metricSmall" Text="{Binding VramText}" /></StackPanel>
+                                <StackPanel Width="{StaticResource Layout.NameColumnWidth}"><TextBlock Classes="label" Text="ĐĨA TRỐNG" /><TextBlock Classes="metricSmall" Text="{Binding DiskText}" /></StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel Spacing="{StaticResource Spacing.SM}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                                    <TextBlock Classes="section" Text="Log" />
+                                    <TextBlock Classes="caption" Text="{Binding WarningSummary}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding LogFilters}" SelectedItem="{Binding SelectedLogFilter}" Width="{StaticResource Layout.FilterWidth}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LogFilterOption">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            <ListBox ItemsSource="{Binding VisibleLog}" Height="{StaticResource Layout.LogHeight}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="runs:LogLine">
+                                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                            <TextBlock Classes="mono" Foreground="{StaticResource Brush.Text.Muted}" Text="{Binding Timestamp}" />
+                                            <TextBlock Classes="mono wrap" Text="{Binding Text}" Foreground="{Binding Level, Converter={x:Static views:Converters.LogBrush}}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

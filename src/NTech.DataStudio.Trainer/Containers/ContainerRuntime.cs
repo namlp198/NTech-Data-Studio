@@ -33,6 +33,9 @@ public interface IContainerRuntime
 
     Task<bool> IsRunningAsync(string label, string value, CancellationToken cancellationToken = default);
 
+    /// <summary>The values of this label on every running container, in one call instead of one per run.</summary>
+    Task<IReadOnlySet<string>> RunningLabelValuesAsync(string label, CancellationToken cancellationToken = default);
+
     Task StopAsync(string name, CancellationToken cancellationToken = default);
 }
 
@@ -111,6 +114,13 @@ public sealed class DockerCli(IProcessRunner runner) : IContainerRuntime
     {
         var result = await runner.RunAsync(Docker, ["ps", "--filter", $"label={label}={value}", "--format", "{{.ID}}"], cancellationToken);
         return result.Succeeded && !string.IsNullOrWhiteSpace(result.Output);
+    }
+
+    public async Task<IReadOnlySet<string>> RunningLabelValuesAsync(string label, CancellationToken cancellationToken = default)
+    {
+        var result = await runner.RunAsync(Docker, ["ps", "--filter", "label=" + label, "--format", "{{.Label \"" + label + "\"}}"], cancellationToken);
+        if (!result.Succeeded) return new HashSet<string>();
+        return result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(StringComparer.Ordinal);
     }
 
     public async Task StopAsync(string name, CancellationToken cancellationToken = default) =>

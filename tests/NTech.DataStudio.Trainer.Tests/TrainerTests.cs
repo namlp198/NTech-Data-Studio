@@ -374,6 +374,7 @@ public sealed class JobServiceTests : IDisposable
         public Task StartDetachedAsync(ContainerSpec spec, CancellationToken cancellationToken = default) { Started.Add(spec); return Task.CompletedTask; }
         public Task<ProcessResult> RunToEndAsync(ContainerSpec spec, CancellationToken cancellationToken = default) => Task.FromResult(new ProcessResult(0, "", ""));
         public Task<bool> IsRunningAsync(string label, string value, CancellationToken cancellationToken = default) => Task.FromResult(Running);
+        public Task<IReadOnlySet<string>> RunningLabelValuesAsync(string label, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlySet<string>>(new HashSet<string>());
         public Task StopAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 

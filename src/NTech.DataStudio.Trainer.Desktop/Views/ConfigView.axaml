@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NTech.DataStudio.Trainer.Desktop.ViewModels"
+             xmlns:sys="using:System"
+             xmlns:views="using:NTech.DataStudio.Trainer.Desktop.Views"
+             x:Class="NTech.DataStudio.Trainer.Desktop.Views.ConfigView"
+             x:DataType="vm:ConfigViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.PageContentMaxWidth}" HorizontalAlignment="Left">
+            <StackPanel Spacing="{StaticResource Spacing.XS}">
+                <TextBlock Classes="pageTitle" Text="Cấu hình" />
+                <TextBlock Classes="secondary wrap" Text="Chọn phiên bản và cỡ YOLO, tham số train. Đánh giá theo cấu hình cập nhật ngay khi đổi model hoặc imgsz." />
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Spacing.MD}">
+                    <TextBlock Classes="section" Text="Model" />
+                    <ListBox ItemsSource="{Binding Families}" SelectedItem="{Binding SelectedFamily}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FamilyItem">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Width="{StaticResource Layout.GradeColumnWidth}" VerticalAlignment="Center" />
+                                    <Border Classes="pill">
+                                        <TextBlock Classes="caption" Text="{Binding StatusText}" Classes.warning="{Binding IsExperimental}" />
+                                    </Border>
+                                    <TextBlock Classes="caption" Text="{Binding License, StringFormat='License {0}'}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                        <StackPanel>
+                            <TextBlock Classes="label" Text="CỠ" />
+                            <ComboBox AutomationProperties.Name="CỠ" ItemsSource="{Binding Sizes}" SelectedItem="{Binding SelectedSize}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Bottom">
+                            <TextBlock Classes="label" Text="MODEL" />
+                            <TextBlock Classes="metricSmall" Text="{Binding ModelName}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Border Classes="notice warning">
+                        <TextBlock Classes="wrap" Text="{Binding LicenseText}" />
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Spacing.MD}">
+                    <TextBlock Classes="section" Text="Tham số" />
+                    <WrapPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="IMGSZ" />
+                            <TextBox AutomationProperties.Name="IMGSZ" Text="{Binding Imgsz}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="EPOCH" />
+                            <TextBox AutomationProperties.Name="EPOCH" Text="{Binding Epochs}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="BATCH" />
+                            <TextBox AutomationProperties.Name="BATCH" Text="{Binding Batch}" Width="{StaticResource Layout.NumberFieldWidth}" IsEnabled="{Binding !AutoBatch}" />
+                        </StackPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="WORKERS" />
+                            <TextBox AutomationProperties.Name="WORKERS" Text="{Binding Workers}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="SEED" />
+                            <TextBox AutomationProperties.Name="SEED" Text="{Binding Seed}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                        <StackPanel Margin="{StaticResource Gap.Right.SM}">
+                            <TextBlock Classes="label" Text="PATIENCE" />
+                            <TextBox AutomationProperties.Name="PATIENCE" Text="{Binding Patience}" Width="{StaticResource Layout.NumberFieldWidth}" />
+                        </StackPanel>
+                    </WrapPanel>
+                    <CheckBox IsChecked="{Binding AutoBatch}" IsEnabled="{Binding IsCuda}" Content="Batch tự động theo VRAM (chỉ khi có GPU)" />
+                    <CheckBox IsChecked="{Binding Preflight}" Content="Chạy thử vài batch trước khi train (đo VRAM và thời gian)" />
+
+                    <TextBlock Classes="label" Text="GỢI Ý CHO WIRE HARNESS, CHỈ ÁP DỤNG KHI TÍCH" Margin="{StaticResource Gap.Top.SM}" />
+                    <CheckBox IsChecked="{Binding NoFlipLeftRight}" Content="Không lật trái phải (fliplr=0): khi vị trí trái, phải có ý nghĩa" />
+                    <CheckBox IsChecked="{Binding NoFlipUpDown}" Content="Không lật trên dưới (flipud=0)" />
+                    <CheckBox IsChecked="{Binding KeepHue}" Content="Giữ nguyên màu (hsv__h=0): khi màu dây là căn cứ phân biệt lỗi" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Spacing.MD}">
+                    <TextBlock Classes="section" Text="Đánh giá theo cấu hình" />
+                    <TextBlock Classes="wrap" Text="{Binding ComputeText}" />
+                    <ItemsControl ItemsSource="{Binding Workload}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CriterionItem">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.XS}" Width="{StaticResource Layout.GradeColumnWidth}" VerticalAlignment="Top">
+                                        <Path Classes="icon" Data="{Binding Grade, Converter={x:Static views:Converters.GradeIcon}}"
+                                              Stroke="{Binding Grade, Converter={x:Static views:Converters.GradeBrush}}" />
+                                        <TextBlock Text="{Binding GradeText}" Foreground="{Binding Grade, Converter={x:Static views:Converters.GradeBrush}}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Classes="wrap" Text="{Binding Reason}" />
+                                        <TextBlock Classes="caption" Text="{Binding Source}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Classes="notice" Classes.error="{Binding IsBlocked}" Classes.warning="{Binding NeedsConfirmation}"
+                            IsVisible="{Binding Gate, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel Spacing="{StaticResource Spacing.XS}">
+                            <TextBlock Text="{Binding GateText}" FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding GateReasons}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="sys:String">
+                                        <TextBlock Classes="wrap" Text="{Binding}" Margin="{StaticResource Gap.Top.XS}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <CheckBox IsVisible="{Binding NeedsConfirmation}" IsChecked="{Binding RiskAccepted}" Margin="{StaticResource Gap.Top.SM}"
+                                      Content="Tôi đã đọc các điểm trên và vẫn muốn train" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="notice error" IsVisible="{Binding HasError}">
+                        <TextBlock Classes="wrap" Text="{Binding Error}" />
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.MD}">
+                        <Button AutomationProperties.Name="Bắt đầu train" Classes="primary" Command="{Binding StartCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Spacing.SM}">
+                                <Path Classes="icon" Data="{StaticResource Icon.Play}" />
+                                <TextBlock Text="Bắt đầu train" />
+                            </StackPanel>
+                        </Button>
+                        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsStarting}" Width="{StaticResource Layout.NumberFieldWidth}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

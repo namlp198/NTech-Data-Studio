@@ -65,6 +65,10 @@ public sealed class JobService(IContainerRuntime containers)
     public Task<bool> IsRunningAsync(RunFolder run, CancellationToken cancellationToken = default) =>
         containers.IsRunningAsync(RunLabel, run.Id, cancellationToken);
 
+    /// <summary>Ids of the runs that have a container now, train or export.</summary>
+    public Task<IReadOnlySet<string>> RunningRunsAsync(CancellationToken cancellationToken = default) =>
+        containers.RunningLabelValuesAsync(RunLabel, cancellationToken);
+
     /// <summary>A checkpoint continues only in the image that started it (design section 5.1).</summary>
     private async Task EnsureSameImageAsync(RunRecord record, bool resume, CancellationToken cancellationToken)
     {

@@ -1,0 +1,48 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NTech.DataStudio.Trainer.Desktop.App"
+             RequestedThemeVariant="Dark">
+
+    <!-- Tokens first: the Fluent palette and every style below read them. -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://NTechTrainer/Themes/Tokens/Colors.axaml" />
+                <ResourceInclude Source="avares://NTechTrainer/Themes/Tokens/Spacing.axaml" />
+                <ResourceInclude Source="avares://NTechTrainer/Themes/Tokens/Typography.axaml" />
+                <ResourceInclude Source="avares://NTechTrainer/Themes/Tokens/Sizing.axaml" />
+                <ResourceInclude Source="avares://NTechTrainer/Themes/Tokens/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <!-- Fluent gives the control templates; its dark palette is mapped onto our tokens. -->
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark"
+                                       Accent="{StaticResource Color.Brand.Primary}"
+                                       RegionColor="{StaticResource Color.Background.App}"
+                                       AltHigh="{StaticResource Color.Background.App}"
+                                       AltMedium="{StaticResource Color.Background.Surface}"
+                                       AltLow="{StaticResource Color.Background.Surface}"
+                                       ChromeLow="{StaticResource Color.Background.Surface}"
+                                       ChromeMediumLow="{StaticResource Color.Background.Elevated}"
+                                       ChromeMedium="{StaticResource Color.Background.Elevated}"
+                                       ChromeHigh="{StaticResource Color.Border.Strong}"
+                                       ChromeAltLow="{StaticResource Color.Text.Secondary}"
+                                       BaseHigh="{StaticResource Color.Text.Primary}"
+                                       BaseMediumHigh="{StaticResource Color.Text.Secondary}"
+                                       BaseMedium="{StaticResource Color.Text.Muted}"
+                                       BaseMediumLow="{StaticResource Color.Text.Disabled}"
+                                       BaseLow="{StaticResource Color.Border.Default}"
+                                       ListLow="{StaticResource Color.Background.Hover}"
+                                       ListMedium="{StaticResource Color.Background.Selected}"
+                                       ErrorText="{StaticResource Color.Status.Error}" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <StyleInclude Source="avares://NTechTrainer/Themes/Components/Text.axaml" />
+        <StyleInclude Source="avares://NTechTrainer/Themes/Components/Controls.axaml" />
+    </Application.Styles>
+
+</Application>
