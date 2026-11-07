@@ -10,7 +10,7 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 2. `docs/README_AI_WORKFLOW.md`
 3. `docs/00_CONTEXT.md`
 4. `tasks/active.md`
-5. `handoff/latest.md`
+5. `handoff/latest.md` với Data Studio, `handoff/trainer.md` với Trainer
 6. `decisions/0000_INDEX.md`
 7. `docs/DESIGN_DOC.md`, và `docs/design/` khi đụng tới UI
 
@@ -18,7 +18,8 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 
 - Không đổi kiến trúc mà không ghi vào `decisions/`.
 - Không sửa file không liên quan; không refactor lớn khi chưa được đồng ý.
-- Trước khi kết thúc phiên: cập nhật `handoff/latest.md`, và `tasks/active.md`, `docs/00_CONTEXT.md` nếu trạng thái đổi.
+- Trước khi kết thúc phiên: cập nhật file bàn giao của phần đang làm (`handoff/latest.md` hoặc `handoff/trainer.md`), và `tasks/active.md`, `docs/00_CONTEXT.md` nếu trạng thái đổi.
+- Data Studio và Trainer phát triển song song theo quy tắc trong `docs/README_AI_WORKFLOW.md`. Commit chỉ gồm file của phần mình; đừng dùng `git add -A` khi còn thay đổi của phiên khác.
 - Đổi UI hoặc hành vi runtime thì phải chạy app; build xanh không chứng minh giao diện đúng.
 - Không sửa gì trong robo-station. Chỉ copy có chọn lọc sang đây.
 

@@ -37,15 +37,7 @@ Ngày: 2026-11-07
 
 Xem `tasks/active.md`. Chưa push, repo không có remote.
 
-## Phiên thiết kế Trainer (2026-11-07)
-
-- **Đã làm:** đánh giá Initial Design v0.1 của chủ dự án và viết v0.2 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, kèm 3 sơ đồ trong `docs/trainer/images/`. Chỉ có tài liệu, chưa có code. Chưa commit.
-- **Chủ dự án đã chốt:** máy hiện tại chỉ để phát triển, máy train là Linux hoặc Windows cấu hình cao; TensorRT là tùy chọn theo profile máy; OCR chưa phải trọng tâm; luồng cần chạy được ngay là dataset wire harness có sẵn → YOLO26 detect → ONNX.
-- **Đã kiểm tra:** render 3 sơ đồ và xem bằng mắt. Thông tin thư viện lấy từ tài liệu trên web, phần lớn license là nguồn thứ cấp hoặc tuyên bố của nhà cung cấp.
-- **Chưa kiểm tra:** chưa chạy train, export hay Docker có GPU. Ngưỡng VRAM và ngưỡng kiểm chứng ONNX trong thiết kế là giả định. Tham số `nms` khi export khác nhau giữa các trang tài liệu của Ultralytics, cần kiểm tra trên phiên bản khóa ở M0.
-- **Lưu ý:** Ultralytics nêu rõ model train ra thuộc AGPL-3.0 kể cả dùng nội bộ nếu không có Enterprise License. Chủ dự án chưa trả lời câu này. Cần kết luận trước khi đưa model vào sản xuất hoặc bán.
-- **Câu hỏi còn mở:** mục 14 của thiết kế. Thiếu đường dẫn dataset thì không bắt đầu được M0.
-- **Cập nhật lên v0.3:** chủ dự án muốn train được nhiều phiên bản YOLO. Đọc wheel `ultralytics` 8.4.204 (không chạy): cùng gói có YOLOv5u, v8, v9, v10, 11, 12, 26. Thiết kế dùng một image, một adapter và một danh mục `trainer/catalog/`, tách khỏi `profiles/` để không đổi màn hình Export. Phiên bản chỉ ghi `supported` sau khi qua kiểm thử train và export. Theo code đã đọc, chỉ YOLO26 có đầu ONNX một-một trong ba bản hỗ trợ đầu tiên, nên tham số export khai báo theo từng phiên bản; đề xuất `nms=True` cho YOLOv8, YOLO11 chưa chạy thử. Mọi phiên bản trong gói vẫn theo AGPL-3.0.
+Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ dành cho Data Studio.
 
 ## Phiên sau Module 4: bốn yêu cầu bổ sung (2026-11-07)
 

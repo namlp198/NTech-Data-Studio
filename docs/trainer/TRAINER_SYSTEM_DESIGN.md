@@ -145,7 +145,7 @@ Các tên lệnh và tham số trên là thiết kế, chưa có code. App Deskt
 
 Đã đọc trong gói `ultralytics` 8.4.204 (chưa chạy): cùng một gói có cấu hình và tên trọng số của các phiên bản dưới đây, train qua cùng một API. Vì vậy chúng dùng chung một image và một adapter; dataset detect cũng cùng định dạng.
 
-| Phiên bản | Cỡ | Trọng số | Trạng thái đề xuất | Dạng ONNX dự kiến |
+| Phiên bản | Cỡ | Trọng số | Trạng thái (chủ dự án đã chốt) | Dạng ONNX dự kiến |
 | --- | --- | --- | --- | --- |
 | YOLO26 | n, s, m, l, x | `yolo26s.pt` | Hỗ trợ từ M1 | Một-một, không cần NMS |
 | YOLO11 | n, s, m, l, x | `yolo11s.pt` | Hỗ trợ từ M1 | Thô, cần NMS |
@@ -157,7 +157,7 @@ Các tên lệnh và tham số trên là thiết kế, chưa có code. App Deskt
 
 - YOLO12 để ở mức thử nghiệm vì tài liệu của Ultralytics khuyên dùng YOLO11 hoặc YOLO26 cho sản xuất, và blog của họ nêu có người gặp khó khi export.
 - `yolov5su` là bản viết lại trong gói `ultralytics`, không phải repo YOLOv5 gốc. Repo gốc, YOLOv7 và YOLOX có cách train riêng nên là engine riêng.
-- Danh sách cuối chốt ở M0 theo phiên bản `ultralytics` được khóa.
+- Bộ phiên bản bước đầu đã chốt: YOLO26, YOLO11, YOLOv8, cùng YOLO12 thử nghiệm. M0 chỉ khóa phiên bản `ultralytics` và xác nhận từng bản chạy được; bản nào không qua được thì báo lại chủ dự án.
 
 Mỗi mục trong `trainer/catalog/ultralytics-detect.yaml` khai báo:
 
@@ -459,7 +459,7 @@ Mỗi mốc kết thúc bằng một bản chạy được và được báo cá
 | Mốc | Nội dung | Điều kiện đạt |
 | --- | --- | --- |
 | **M0. Thử trên dataset thật** | Image `cpu` và `cuda`, script tối thiểu chạy dataset wire harness → train → ONNX với YOLO26, YOLO11, YOLOv8 và thử YOLO12. Khóa phiên bản, chốt tham số export của từng bản | Máy phát triển: vài epoch trên tập nhỏ bằng CPU, ra ONNX cho từng phiên bản. Máy train: GPU chạy được trong container, có số liệu thật |
-| **M1. Luồng chính bằng CLI** | Project Trainer và Cli, worker với adapter Ultralytics, danh mục và kiểm thử danh mục, `probe`, `models`, `init`, `validate`, `train`, `export`, sự kiện, kiểm chứng ONNX | Toàn bộ mục 5 chạy trên Windows và Ubuntu trên máy train với cả ba phiên bản `supported`. Thêm một phiên bản cùng engine không phải sửa C#. Test với worker giả không cần GPU |
+| **M1. Luồng chính bằng CLI** | Project Trainer và Cli, worker với adapter Ultralytics, danh mục và kiểm thử danh mục, `probe`, `models`, `init`, `validate`, `train`, `export`, sự kiện, kiểm chứng ONNX | Toàn bộ mục 5 chạy trên Windows và Ubuntu trên máy train với cả ba phiên bản `supported`. Thêm một phiên bản cùng engine không phải sửa C#. Test với worker giả không cần GPU. Có test đọc một bản xuất mẫu của Data Studio |
 | **M2. Desktop** | Avalonia, 5 màn hình ở mục 12 | Chạy thật trên Windows và Ubuntu (máy phát triển thử bằng WSLg) |
 | **M3. Độ tin cậy và so sánh** | Train tiếp, phát hiện `Interrupted`, đủ cảnh báo, nối lại sau khi mở app, hàng đợi, `compare` | Kill worker rồi train tiếp được; đóng app rồi nối lại được; tạo lỗi hết VRAM thì cảnh báo đúng; hàng đợi nhiều phiên bản chạy hết kể cả khi một run lỗi |
 | **M4. Đóng gói** | Installer Windows, gói Ubuntu, phát hành image, khớp kiểm tra trong `build.ps1` | Cài, chạy, gỡ sạch trên hai nền tảng |
@@ -487,7 +487,6 @@ Lưu ý với NVision: theo quyết định 0003, NVision chỉ nhận `.nvmodel
 | 4 | Runtime trong image dùng chung thay vì trong thư mục project có chấp nhận được không | Mục 4.2 và 8 | Trước M1 |
 | 5 | Công ty hoặc khách hàng có thuộc diện trả phí Docker Desktop không | Nếu có và không muốn trả, Windows cần backend khác, ví dụ venv | Trước M4 |
 | 6 | ONNX sẽ chạy ở đâu, và NVision có cần dùng sớm không | Có thể phải đưa `.nvmodel` lên sớm hơn M6 | Trước M2 |
-| 7 | Bộ phiên bản YOLO26, YOLO11, YOLOv8, với YOLO12 thử nghiệm, đã đủ chưa, hay cần repo YOLOv5 gốc, YOLOv7 | Repo gốc cần engine riêng, tốn công hơn nhiều so với thêm một mục danh mục | Trước M1 |
 
 ## 15. Quyết định cần ghi vào `decisions/`
 
