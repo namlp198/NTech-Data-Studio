@@ -4,7 +4,7 @@
 
 - [x] Module 1 Prepare: import, audit, làm sạch, chuẩn hóa, hình học
 - [x] Module 2 Annotate: canvas, công cụ vẽ, undo/redo, class, tự động lưu
-- [ ] Module 3 Dataset: split, preprocessing, augmentation, preview
+- [x] Module 3 Dataset: split, preprocessing, augmentation, preview
 - [ ] Module 4 Export: YOLO26, COCO, validator, nhập nhãn có sẵn
 
 ## Module 1: còn lại
@@ -24,6 +24,16 @@
 - [ ] Thử zoom/pan trên ảnh thật, GPU yếu (render tier 0 hoặc 1), ảnh có cạnh trên 16.384 px
 - [ ] Nếu ghi đồng bộ gây giật khi vẽ liên tục trên ổ chậm: hàng đợi ghi có thứ tự (xem quyết định 0006)
 - [ ] Ảnh nằm một phần dưới các panel nổi khi vừa khung; cân nhắc vừa khung theo vùng không bị che
+
+## Module 3: còn lại
+
+- [ ] Tile và crop ROI tĩnh ở preprocessing của version (hiện chỉ có Stretch, Fit, Fill, ảnh xám, gộp class)
+- [ ] Mặc định tăng cường theo profile (YOLO26, RF-DETR, Anomaly có mặc định riêng theo thiết kế); hiện chỉ có ba nút mẫu, chưa nối với model profile
+- [ ] Chạy trên ảnh thật và bộ vài trăm ảnh thật; chỉnh các mẫu tăng cường (giá trị hiện là ước lượng)
+- [ ] Project test cho Desktop: `DatasetViewModel` (debounce, hủy khi sửa tiếp, đồng bộ bảng class gộp) hiện chỉ kiểm tra bằng chạy app
+- [ ] Snapshot `versions/<tên>/` đọc được bằng mắt, nếu cần; phải sinh từ DB (quyết định 0007)
+- [ ] Giữ lại hoặc khôi phục thiết lập của lần tạo version gần nhất khi mở lại màn hình (hiện luôn về mặc định)
+- [ ] Phím tắt và thứ tự Tab của form (chưa rà soát bằng bàn phím)
 
 ## Cần làm rõ
 

@@ -15,4 +15,7 @@ public interface IProjectStore
 
     /// <summary>Opens an already created project for annotation. Dispose when the screen is left.</summary>
     IAnnotationStore OpenAnnotationStore(string folder);
+
+    /// <summary>Opens an already created project for building versions. Dispose when the operation ends.</summary>
+    IDatasetStore OpenDatasetStore(string folder);
 }

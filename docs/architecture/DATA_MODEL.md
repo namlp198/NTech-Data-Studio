@@ -48,5 +48,6 @@ View `active_images`: master còn dùng được, tức ảnh nguồn không b�
 - Xóa ảnh thì xóa luôn nhãn của ảnh. `classes` có khóa RESTRICT: chỉ `ClassService.Delete` xóa được class, và nó xóa nhãn, tag của class trước.
 - `images.status`: Annotate đổi theo quy tắc ở `docs/design/screens/ANNOTATE.md` (`StatusRules`). Ảnh chưa có nhãn và không Null thì là `new`.
 - `annotations.points_json` là `[[x,y],...]`, số thực ghi và đọc lại không mất độ chính xác. Box và OBB luôn đủ 4 điểm; `updated_at` đổi khi sửa, `created_at` giữ nguyên.
+- `versions`: `prep_json`, `split_json`, `augment_json` là `PreprocessConfig`, `SplitConfig`, `AugmentConfig` dạng JSON (enum ghi bằng tên), `seed` là seed chung. Trường mới thêm vào config sau này đọc được từ version cũ vì thiếu trường thì lấy mặc định. `version_items` ghi ảnh nào thuộc tập nào lúc tạo version; không tự cập nhật khi nhãn hay ảnh đổi ([quyết định 0007](../../decisions/0007_version-freezes-membership-and-config-not-pixels.md)). Thư mục `versions/` chưa được ghi.
 - `PRAGMA user_version` là số migration đã áp dụng. Project có version mới hơn app thì bị từ chối và không bị sửa.
 - WAL với `synchronous = FULL`: dữ liệu đã commit không mất khi mất điện. Connection không dùng pool, nên đóng connection cuối là không còn file `-wal`, chép thư mục đi được ngay.

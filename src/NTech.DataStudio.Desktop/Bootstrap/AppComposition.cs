@@ -1,12 +1,15 @@
 using System.Windows.Media;
+using NTech.DataStudio.Application.Datasets;
 using NTech.DataStudio.Application.Prepare;
 using NTech.DataStudio.Application.Projects;
 using NTech.DataStudio.Desktop.Services;
 using NTech.DataStudio.Desktop.Shell;
 using NTech.DataStudio.Desktop.ViewModels.Annotate;
+using NTech.DataStudio.Desktop.ViewModels.Dataset;
 using NTech.DataStudio.Desktop.ViewModels.Prepare;
 using NTech.DataStudio.Desktop.ViewModels.Project;
 using NTech.DataStudio.Desktop.ViewModels.Shared;
+using NTech.DataStudio.Imaging.Augment;
 using NTech.DataStudio.Imaging.Codecs;
 using NTech.DataStudio.Storage.Profiles;
 using NTech.DataStudio.Storage.Sqlite;
@@ -43,9 +46,8 @@ public static class AppComposition
             ("Project", "Icon.Project", projectView),
             ("Prepare", "Icon.Prepare", prepareView),
             ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader())),
-            ("Dataset", "Icon.Dataset", new PendingModuleViewModel(
-                "Dataset",
-                "Chia train/val/test, preprocessing và tăng cường ảnh thành một Version.")),
+            ("Dataset", "Icon.Dataset", new DatasetViewModel(
+                projects, new DatasetService(projects, new OpenCvAugmentationEngine()), prompt)),
             ("Export", "Icon.Export", new PendingModuleViewModel(
                 "Export",
                 "Kiểm tra hợp lệ rồi xuất YOLO26 hoặc COCO, train được ngay."))
@@ -60,3 +62,4 @@ public static class AppComposition
 
     private static Geometry Icon(string key) => (Geometry)System.Windows.Application.Current.FindResource(key);
 }
+

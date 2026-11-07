@@ -4,6 +4,8 @@
         xmlns:projectVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Project"
         xmlns:annotateVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Annotate"
         xmlns:annotateView="clr-namespace:NTech.DataStudio.Desktop.Views.Annotate"
+        xmlns:datasetVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Dataset"
+        xmlns:datasetView="clr-namespace:NTech.DataStudio.Desktop.Views.Dataset"
         xmlns:prepareVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Prepare"
         xmlns:prepareView="clr-namespace:NTech.DataStudio.Desktop.Views.Prepare"
         xmlns:sharedVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Shared"
@@ -25,6 +27,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type annotateVm:AnnotateViewModel}">
             <annotateView:AnnotateView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type datasetVm:DatasetViewModel}">
+            <datasetView:DatasetView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type sharedVm:PendingModuleViewModel}">
             <sharedView:PendingModuleView />
@@ -74,3 +79,4 @@
         <ContentControl Grid.Row="1" Focusable="False" Content="{Binding CurrentView}" />
     </Grid>
 </Window>
+

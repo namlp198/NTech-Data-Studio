@@ -17,6 +17,8 @@ public sealed class SqliteProjectStore : IProjectStore
 
     public IAnnotationStore OpenAnnotationStore(string folder) => new SqliteAnnotationStore(new ProjectFolderLayout(folder));
 
+    public IDatasetStore OpenDatasetStore(string folder) => new SqliteDatasetStore(new ProjectFolderLayout(folder));
+
     private static ProjectSummary Create(string folder, string name)
     {
         var layout = new ProjectFolderLayout(folder);

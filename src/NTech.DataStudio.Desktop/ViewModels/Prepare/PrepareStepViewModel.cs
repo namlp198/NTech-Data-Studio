@@ -6,7 +6,11 @@ using NTech.DataStudio.Application.Projects;
 
 namespace NTech.DataStudio.Desktop.ViewModels.Prepare;
 
-public sealed record Option<T>(string Label, T Value);
+public sealed record Option<T>(string Label, T Value)
+{
+    // Screen readers and UI Automation read the item's text from ToString.
+    public override string ToString() => Label;
+}
 
 /// <summary>What every wizard step shares: background work with progress, cancel and error reporting.</summary>
 public abstract partial class PrepareStepViewModel : ObservableObject

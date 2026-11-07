@@ -8,3 +8,4 @@
 | [0004](0004_source-images-separate-from-masters.md) | Tách `source_images` khỏi `images` để hỗ trợ tile | 2026-11-06 |
 | [0005](0005_reject-marks-never-moves.md) | Loại ảnh chỉ đánh dấu, không di chuyển file | 2026-11-06 |
 | [0006](0006_annotate-saves-first-then-updates-memory.md) | Mỗi sửa nhãn ghi DB trước, rồi mới đổi bộ nhớ | 2026-11-06 |
+| [0007](0007_version-freezes-membership-and-config-not-pixels.md) | Version đóng băng danh sách ảnh, split và config, không đóng băng điểm ảnh | 2026-11-07 |

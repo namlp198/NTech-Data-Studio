@@ -54,6 +54,10 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Màn hình có giữ connection (Annotate) phải thành `IActivatable` và nhả connection khi rời đi. `ShellViewModel` gọi `Activate` và `Deactivate`.
 - `AnnotationCanvas` vẽ nhãn theo tọa độ màn hình để nét vẽ luôn dày như nhau khi zoom; chỉ ảnh dùng transform. Đừng chuyển nhãn sang hệ tọa độ ảnh.
 - Phím tắt của Annotate đi qua `AnnotateViewModel.HandleKey`, gọi từ `PreviewKeyDown` của view. Đừng dùng `KeyBinding`: chữ đơn sẽ bị bắt cả khi đang gõ tên class.
+- Cái gì phải tái lập (chia tập, mẫu tăng cường, nhiễu) thì dùng `DeterministicRandom`, không dùng `System.Random` hay `string.GetHashCode` (xem quyết định 0007). Test `Sample_PinnedValuesDoNotDriftBetweenRuntimeVersions` ghim dãy số; sửa nó là phá mọi version đã lưu.
+- Ma trận affine ở tọa độ cạnh (0..W), cùng hệ với nhãn; đưa sang OpenCV phải qua `Affine2D.ToPixelCenters()`. Ảnh và nhãn phải cùng đọc một `RenderPlan`: đừng tính ma trận riêng cho nhãn.
+- `Mat.SetArray` chỉ nhận Mat một kênh; muốn nhiều kênh thì tạo Mat `cols * channels` rồi `Reshape(channels)`. `Cv2.SetRNGSeed` không có trong OpenCvSharp.
+- Mở thêm màn hình dùng `ComboBox` với `Option<T>`: UI Automation đọc tên mục qua `ToString`, nên `Option<T>.ToString` trả về `Label`. Giữ như vậy.
 - Panel và dải nổi trên canvas che mất click: điểm thử bằng chuột trong kịch bản UI phải nằm ngoài chúng.
 
 ## Kiểm tra

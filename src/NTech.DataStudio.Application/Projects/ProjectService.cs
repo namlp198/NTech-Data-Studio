@@ -62,6 +62,12 @@ public sealed class ProjectService
             : throw new ProjectException("Chưa mở project.");
 
     /// <exception cref="ProjectException">No project is open.</exception>
+    public IDatasetStore OpenDatasetStore() =>
+        Current is { } project
+            ? _store.OpenDatasetStore(project.RootPath)
+            : throw new ProjectException("Chưa mở project.");
+
+    /// <exception cref="ProjectException">No project is open.</exception>
     public IPrepareStore OpenPrepareStore() =>
         Current is { } project
             ? _store.OpenPrepareStore(project.RootPath)

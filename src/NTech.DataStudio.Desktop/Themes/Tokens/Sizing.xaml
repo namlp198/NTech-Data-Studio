@@ -36,9 +36,16 @@
     <sys:Double x:Key="Layout.PaletteSwatchSize">20</sys:Double>
     <sys:Double x:Key="Layout.ClassListMaxHeight">150</sys:Double>
     <sys:Double x:Key="Layout.LabelListMaxHeight">190</sys:Double>
+    <!-- Dataset -->
+    <sys:Double x:Key="Layout.PercentFieldWidth">80</sys:Double>
+    <sys:Double x:Key="Layout.PreviewCellHeight">190</sys:Double>
+    <sys:Double x:Key="Layout.ClassTableMaxHeight">260</sys:Double>
+    <GridLength x:Key="Layout.DatasetSettingsGridWidth">400</GridLength>
+    <GridLength x:Key="Layout.ValueFieldGridWidth">72</GridLength>
     <GridLength x:Key="Layout.FloatingPanelGridWidth">320</GridLength>
     <GridLength x:Key="Layout.HotkeyGridWidth">20</GridLength>
     <GridLength x:Key="Layout.NumberFieldGridWidth">120</GridLength>
     <GridLength x:Key="Spacing.LG.Grid">16</GridLength>
 
 </ResourceDictionary>
+

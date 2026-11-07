@@ -6,7 +6,7 @@ Tên hiển thị là **NTech Data Studio**. Namespace, assembly và project là
 
 ## Trạng thái
 
-Chạy được: tạo/mở project, Module 1 Prepare (import, audit, làm sạch, chuẩn hóa) và Module 2 Annotate (box, polygon, rotated box, tag, class, undo/redo, tự lưu). Các module Dataset, Export chưa triển khai. Xem [docs/00_CONTEXT.md](docs/00_CONTEXT.md).
+Chạy được: tạo/mở project, Module 1 Prepare (import, audit, làm sạch, chuẩn hóa) và Module 2 Annotate (box, polygon, rotated box, tag, class, undo/redo, tự lưu) và Module 3 Dataset (chia train/val/test, preprocessing, tăng cường, preview, tạo version). Module Export chưa triển khai. Xem [docs/00_CONTEXT.md](docs/00_CONTEXT.md).
 
 ## Yêu cầu
 
