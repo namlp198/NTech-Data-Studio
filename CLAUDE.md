@@ -66,6 +66,19 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Phím tắt của Annotate là chữ đơn nên bộ gõ tiếng Việt Telex (Unikey, EVKey) làm hỏng chúng (gõ `e` hai lần thành `ê`, app nhận Backspace). Tắt IME ở WPF không chặn được bộ gõ ở mức hệ điều hành. Đừng gán phím chữ lặp được hoặc là phím Telex (a, e, o, d, w, s, f, r, x, j, z) cho việc cần nhấn liên tiếp; Q dùng để đổi công cụ vì Telex không đụng tới nó. Khi tự kiểm bằng SendKeys trên máy có Telex bật, thấy phím rơi thì xem nó có thành Backspace không.
 - Menu chuột phải dựng bằng `Controls/AppContextMenu` (từ RoboStation); mục có con tự hiện mũi tên và mở menu con nhờ Popup trong template `MenuItem` ở `Menus.xaml`. Mục không có header cần tooltip để có tên cho trình đọc màn hình.
 
+## Bẫy đã biết của Trainer
+
+- Trên Linux, solution có WPF không build được: dùng `NTech.DataStudio.Trainer.slnf`. Trainer không tham chiếu project nào của Data Studio.
+- Worker chỉ gọi Ultralytics trong `ultralytics_adapter.py` và `onnx_export.py`. Không đưa code Ultralytics vào C# hay installer (quyết định 0009).
+- Worker dùng thư viện nào thì khai báo trong `docker/trainer/requirements.in`, đừng dựa vào `ultralytics` kéo theo: nó không kéo `pyyaml`. Build lại image rồi chạy thật; test không chạy trong image nên không bắt được lỗi này.
+- Khi run kết thúc, Ultralytics xóa optimizer khỏi `last.pt`, nên dừng giữa chừng phải giữ `checkpoints/resume.pt` trước khi đặt `trainer.stop`.
+- `on_fit_epoch_end` còn được gọi một lần ở lượt đánh giá cuối, với `epoch + 1` và không có val loss. Bỏ qua lượt này, nếu không sẽ có "Epoch 4/3" và cảnh báo NaN giả.
+- ONNX xuất bằng `nms=True` cho mọi phiên bản (quyết định 0012). `nms=False` là nhánh khác với metric lúc train. Kiểm chứng phải cắt box về khung đầu vào, vì NMS nhúng trả cả box vượt ra ngoài.
+- Worker báo trạng thái kết thúc trước khi container thoát hẳn: lệnh kế tiếp phải chờ container thoát. Khi `resume` hoặc `export`, đọc sự kiện từ cuối file, nếu không sẽ đọc nhầm trạng thái của lần trước.
+- Dung lượng RAM, VRAM, đĩa tính theo 1024³ ở cả C# và Python, để khớp số Windows và `nvidia-smi` hiện.
+- Mount bằng `--mount`, không dùng `-v`: `-v` tách theo dấu `:` của đường dẫn Windows.
+- Dataset tổng hợp phải giữ `ntech_synthetic: true` để mọi báo cáo ghi rõ. Không trình bày metric của nó như kết quả thật, và không commit ảnh của project wire harness.
+
 ## Kiểm tra
 
 ```powershell

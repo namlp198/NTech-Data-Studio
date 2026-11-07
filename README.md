@@ -45,6 +45,6 @@ scripts\deploy.bat -Version 0.2.0 -Destination \\server\releases\DataStudio
 - [Kiến trúc](docs/architecture/ARCHITECTURE.md), [mô hình dữ liệu](docs/architecture/DATA_MODEL.md), [pipeline](docs/architecture/PIPELINE.md)
 - [Design system](docs/design/DESIGN_SYSTEM.md), [UI guidelines](docs/design/UI_GUIDELINES.md)
 - Màn hình: [Prepare](docs/design/screens/PREPARE.md), [Annotate](docs/design/screens/ANNOTATE.md), [Dataset](docs/design/screens/DATASET.md), [Export](docs/design/screens/EXPORT.md)
-- [Thiết kế NTech Trainer](docs/trainer/TRAINER_SYSTEM_DESIGN.md) (bản nháp, chưa có code)
+- [NTech Trainer](trainer/README.md): cách dùng, và [thiết kế](docs/trainer/TRAINER_SYSTEM_DESIGN.md)
 - [Quyết định kiến trúc](decisions/0000_INDEX.md)
 - [Quy trình làm việc với AI](docs/README_AI_WORKFLOW.md)

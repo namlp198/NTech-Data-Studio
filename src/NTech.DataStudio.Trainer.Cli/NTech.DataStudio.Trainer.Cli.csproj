@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ntech-trainer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NTech.DataStudio.Trainer\NTech.DataStudio.Trainer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\trainer\catalog\*.yaml" Link="catalog\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

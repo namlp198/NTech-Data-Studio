@@ -22,7 +22,7 @@ Cập nhật: 2026-11-07
 - Trong Module 3: tile và crop ROI tĩnh ở bước preprocessing của version (Prepare đã có tile khi tạo master).
 - Icon ứng dụng (`.iss` tự dùng `Assets/AppIcon.ico` khi file này xuất hiện), `samples/`, `tests/TestData/`.
 - Ký số (code signing) cho installer: chưa có, nên Windows SmartScreen sẽ cảnh báo khi cài.
-- NTech Trainer: có thiết kế v0.3 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, chưa có code. Luồng ưu tiên: dataset wire harness có sẵn → YOLO detect nhiều phiên bản → ONNX.
+- NTech Trainer: CLI và worker đã chạy thật luồng dataset → YOLO detect (YOLO26, YOLO11, YOLOv8, YOLO12 thử nghiệm) → ONNX đã kiểm chứng, trên image CPU và dataset tổng hợp. Chưa có Desktop, chưa chạy trên GPU hay dataset thật. Xem `handoff/trainer.md`.
 
 ## Tiêu chí nghiệm thu MVP
 

@@ -12,10 +12,15 @@
 
 Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER_SYSTEM_DESIGN.md`.
 
-- [ ] M0: thử luồng dataset wire harness → YOLO detect (YOLO26, YOLO11, YOLOv8, thử YOLO12) → ONNX trên dataset thật, khóa phiên bản
-- [ ] M1: luồng chính bằng CLI, worker, danh mục model và kiểm thử danh mục, sự kiện, kiểm chứng ONNX
+- [x] M0, M1 trên image CPU và dataset tổng hợp: CLI, worker, danh mục, sự kiện, kiểm chứng ONNX cho cả 4 phiên bản
+- [ ] M0, M1 trên máy train: build image `cuda`, chạy với GPU thật, đo VRAM, hiệu chỉnh ngưỡng
+- [ ] M0, M1 trên dataset wire harness thật khi gán nhãn xong; chốt `imgsz` và gợi ý tăng cường
+- [ ] Train từ phía Linux: bật WSL Integration hoặc dùng máy Ubuntu, kiểm `--user` và quyền ghi
+- [ ] Kiểm thử danh mục tự động: script chạy train, export, kiểm chứng cho mọi phiên bản `supported` (hiện chạy bằng tay)
+- [ ] Test đọc một bản xuất thật của Data Studio (hiện test dựng lại đúng dạng `data.yaml`, chưa chạy `ExportService`)
 - [ ] M2: Desktop bằng Avalonia
-- [ ] M3: train tiếp, phát hiện `Interrupted`, cảnh báo, nối lại sau khi mở app, hàng đợi, so sánh phiên bản
+- [x] M3 một phần: train tiếp, phát hiện `Interrupted`, nối lại, bảng `compare`, luật cảnh báo
+- [ ] M3 còn lại: hàng đợi nhiều phiên bản, tạo lỗi thật cho hết VRAM và các cảnh báo
 - [ ] M4: đóng gói Windows và Ubuntu
 - [ ] M5: TensorRT tùy chọn theo profile máy
 - [ ] M6: YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; Segment, OBB, Classify; OCR; Remote

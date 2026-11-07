@@ -1,0 +1,11 @@
+# Thu vien worker dung truc tiep, dung chung cho moi image. Phien ban day du nam trong lock-cpu.txt, lock-cuda.txt.
+ultralytics==8.4.204
+torch
+torchvision
+onnx
+onnxslim
+numpy
+opencv-python
+pillow
+psutil
+pyyaml

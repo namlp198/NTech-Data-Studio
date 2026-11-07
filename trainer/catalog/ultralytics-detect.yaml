@@ -1,0 +1,63 @@
+# Danh muc model cua Trainer. Cac phien ban cung engine dung chung mot image va mot adapter.
+# status: supported | experimental | hidden. Chi ghi supported sau khi qua kiem thu train va export.
+# vram_gb_at_640: min va recommended la gia dinh chua do, hieu chinh bang so lieu chay that.
+# Phien ban khong co vram_gb_at_640 duoc danh gia la Unknown cho toi khi chay thu.
+models:
+  - id: yolo26
+    engine: ultralytics
+    task: detect
+    dataset_format: yolo-detect
+    sizes: [n, s, m, l, x]
+    weights: "yolo26{size}.pt"
+    status: supported
+    license: AGPL-3.0
+    # true: metric luc train do tren nhanh mot-nhieu kem NMS, va ONNX xuat dung nhanh do.
+    onnx_nms: true
+    vram_gb_at_640:
+      n: { min: 4, recommended: 8 }
+      s: { min: 4, recommended: 8 }
+      m: { min: 6, recommended: 12 }
+      l: { min: 8, recommended: 16 }
+      x: { min: 12, recommended: 24 }
+
+  - id: yolo11
+    engine: ultralytics
+    task: detect
+    dataset_format: yolo-detect
+    sizes: [n, s, m, l, x]
+    weights: "yolo11{size}.pt"
+    status: supported
+    license: AGPL-3.0
+    onnx_nms: true
+    vram_gb_at_640:
+      n: { min: 4, recommended: 8 }
+      s: { min: 4, recommended: 8 }
+      m: { min: 6, recommended: 12 }
+      l: { min: 8, recommended: 16 }
+      x: { min: 12, recommended: 24 }
+
+  - id: yolov8
+    engine: ultralytics
+    task: detect
+    dataset_format: yolo-detect
+    sizes: [n, s, m, l, x]
+    weights: "yolov8{size}.pt"
+    status: supported
+    license: AGPL-3.0
+    onnx_nms: true
+    vram_gb_at_640:
+      n: { min: 4, recommended: 8 }
+      s: { min: 4, recommended: 8 }
+      m: { min: 6, recommended: 12 }
+      l: { min: 8, recommended: 16 }
+      x: { min: 12, recommended: 24 }
+
+  - id: yolo12
+    engine: ultralytics
+    task: detect
+    dataset_format: yolo-detect
+    sizes: [n, s, m, l, x]
+    weights: "yolo12{size}.pt"
+    status: experimental
+    license: AGPL-3.0
+    onnx_nms: true

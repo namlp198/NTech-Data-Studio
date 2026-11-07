@@ -1,0 +1,4 @@
+*
+!docker/trainer/lock-*.txt
+!trainer/python/ntech_worker
+**/__pycache__

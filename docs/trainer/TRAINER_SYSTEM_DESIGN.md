@@ -4,9 +4,9 @@
 | --- | --- |
 | Sản phẩm | NTech Data Studio |
 | Thành phần | NTech Trainer |
-| Phiên bản | 0.3, bản nháp, chưa có code |
-| Ngày | 2026-11-07 |
-| Thay cho | Initial System Design v0.1, bản 0.2 |
+| Phiên bản | 0.4, đã có CLI và worker chạy được, chưa có Desktop |
+| Ngày | 2026-11-08 |
+| Thay cho | Initial System Design v0.1, các bản 0.2 và 0.3 |
 | Máy train | Linux hoặc Windows cấu hình cao, GPU NVIDIA |
 | Máy phát triển | Máy hiện tại, không dùng để train thật |
 | Công nghệ | Avalonia, C# .NET 10, Python, PyTorch, Docker, ONNX |
@@ -16,6 +16,8 @@
 > Dataset đã có (kiểm tra wire harness) → chọn phiên bản YOLO, train detect → xuất ONNX đã kiểm chứng.
 
 Luồng phải train được **nhiều phiên bản YOLO**, không gắn cứng vào một phiên bản (mục 5). Mọi thứ không phục vụ luồng này đều để sau.
+
+**Trạng thái:** luồng đã chạy thật bằng CLI trên image CPU với dataset tổng hợp, vì nhãn thật chưa xong (mục 13). Chưa chạy trên GPU và chưa chạy trên dataset thật. Cách dùng ở `trainer/README.md`.
 
 ## 1. Thay đổi so với v0.1
 
@@ -103,16 +105,16 @@ WireHarness_Detect/
   workspace.json          tên, tham chiếu dataset
   runs/
     20261107-143000-yolo26s/
-      run.json            trạng thái, thời gian, kết quả, model, image digest, hash trọng số
+      run.json            model, license, image digest, thời gian; không đổi sau khi tạo
       config.yaml         cấu hình đã đóng băng khi bắt đầu
-      hardware.json       phần cứng lúc chạy
-      dataset.json        đường dẫn, fingerprint, kết quả kiểm tra
+      dataset.json        fingerprint, thống kê, kết quả kiểm tra
       data.resolved.yaml  data.yaml đã đổi đường dẫn cho container
-      events.jsonl        sự kiện có cấu trúc
+      events.jsonl        sự kiện có cấu trúc; trạng thái suy ra từ đây
       control.json        yêu cầu dừng từ app
       train.log           stdout và stderr
-      checkpoints/        best.pt, last.pt
-      metrics.csv
+      train/              do Ultralytics ghi: weights/best.pt, weights/last.pt, results.csv, args.yaml
+      checkpoints/resume.pt  bản giữ lại khi dừng giữa chừng
+      result.json         metric của best.pt trên val, tổng và theo class
       exports/
         model.onnx
         model.meta.json
@@ -139,18 +141,18 @@ ntech-trainer compare  --workspace <thư mục>
 ntech-trainer export   --workspace <thư mục> --run <id> --format onnx
 ```
 
-Các tên lệnh và tham số trên là thiết kế, chưa có code. App Desktop gọi cùng các use case này trong `NTech.DataStudio.Trainer`.
+Các lệnh này đã chạy thật. Thêm `stop`, `resume`, `follow`, `status`; `compare` hiện có bảng so sánh, chưa có hàng đợi. App Desktop sẽ gọi cùng các use case này trong `NTech.DataStudio.Trainer`.
 
 ### 5.1 Danh mục phiên bản YOLO
 
-Đã đọc trong gói `ultralytics` 8.4.204 (chưa chạy): cùng một gói có cấu hình và tên trọng số của các phiên bản dưới đây, train qua cùng một API. Vì vậy chúng dùng chung một image và một adapter; dataset detect cũng cùng định dạng.
+Cùng gói `ultralytics` 8.4.204 có cấu hình và tên trọng số của các phiên bản dưới đây, train qua cùng một API. Vì vậy chúng dùng chung một image và một adapter; dataset detect cũng cùng định dạng. Bốn phiên bản đã chốt đã chạy thật; các bản còn lại mới đọc trong gói.
 
-| Phiên bản | Cỡ | Trọng số | Trạng thái (chủ dự án đã chốt) | Dạng ONNX dự kiến |
+| Phiên bản | Cỡ | Trọng số | Trạng thái (chủ dự án đã chốt) | Dạng ONNX |
 | --- | --- | --- | --- | --- |
-| YOLO26 | n, s, m, l, x | `yolo26s.pt` | Hỗ trợ từ M1 | Một-một, không cần NMS |
-| YOLO11 | n, s, m, l, x | `yolo11s.pt` | Hỗ trợ từ M1 | Thô, cần NMS |
-| YOLOv8 | n, s, m, l, x | `yolov8s.pt` | Hỗ trợ từ M1 | Thô, cần NMS |
-| YOLO12 | n, s, m, l, x | `yolo12s.pt` | Thử nghiệm | Thô, cần NMS |
+| YOLO26 | n, s, m, l, x | `yolo26s.pt` | Hỗ trợ từ M1 | `(1, 300, 6)`, NMS nhúng |
+| YOLO11 | n, s, m, l, x | `yolo11s.pt` | Hỗ trợ từ M1 | `(1, 300, 6)`, NMS nhúng |
+| YOLOv8 | n, s, m, l, x | `yolov8s.pt` | Hỗ trợ từ M1 | `(1, 300, 6)`, NMS nhúng |
+| YOLO12 | n, s, m, l, x | `yolo12s.pt` | Thử nghiệm | `(1, 300, 6)`, NMS nhúng |
 | YOLOv10 | n, s, m, b, l, x | `yolov10s.pt` | Thêm sau M1 | Xác minh khi thêm |
 | YOLOv9 | t, s, m, c, e | `yolov9s.pt` | Thêm sau M1 | Xác minh khi thêm |
 | YOLOv5 bản `u` | n, s, m, l, x | `yolov5su.pt` | Thêm sau M1 | Xác minh khi thêm |
@@ -170,11 +172,12 @@ Mỗi mục trong `trainer/catalog/ultralytics-detect.yaml` khai báo:
   weights: "yolo11{size}.pt"
   status: supported        # supported | experimental | hidden
   license: AGPL-3.0
-  onnx_output: raw_needs_nms
-  vram_gb_at_640: {n: 4, s: 4, m: 6, l: 8, x: 12}
+  onnx_nms: true
+  vram_gb_at_640:
+    n: { min: 4, recommended: 8 }
 ```
 
-Ví dụ trên là định dạng đề xuất; số VRAM là giả định (mục 7.3).
+Số VRAM là giả định (mục 7.3).
 
 **Quy tắc khi có nhiều phiên bản:**
 
@@ -292,11 +295,11 @@ Gợi ý batch, `imgsz`, workers chỉ áp dụng khi người dùng xác nhận
 | Mount thư mục run và `cache/` đọc ghi | Lưu kết quả |
 | `--gpus` theo GPU đã chọn | GPU cụ thể trên máy nhiều GPU |
 | `--shm-size` theo số worker | Tránh DataLoader chết vì thiếu shared memory |
-| `--user` theo UID, GID trên Linux | File kết quả không thuộc root |
+| `--user` theo UID, GID trên Linux | File kết quả không thuộc root. Chưa chạy thật, xem mục 13 |
 | Label `ntech.run=<id>` | App tìm lại container sau khi mở lại |
 | Không `--privileged`, không mount Docker socket | Bảo mật |
 
-Lệnh Docker chạy bằng danh sách đối số, không nối chuỗi shell. M1 gọi Docker CLI qua một interface `IContainerRuntime`; Docker Engine API chỉ thêm khi có nhu cầu thật.
+Lệnh Docker chạy bằng danh sách đối số, không nối chuỗi shell, và mount bằng `--mount` vì `-v` tách theo dấu `:` của đường dẫn Windows. Trainer gọi Docker CLI qua một interface `IContainerRuntime`; Docker Engine API chỉ thêm khi có nhu cầu thật.
 
 ### 8.3 Theo hệ điều hành
 
@@ -317,18 +320,20 @@ Kiểm tra lần lượt: Docker, image, GPU trong container, dung lượng đĩ
 
 | Từ | Sang được |
 | --- | --- |
-| `Created` | `Preparing`, `Cancelled` |
-| `Preparing` | `Preflight`, `Failed`, `Cancelled` |
-| `Preflight` | `Running`, `Failed`, `Cancelled` |
-| `Running` | `Stopping`, `Completed`, `Failed`, `Interrupted` |
-| `Stopping` | `Cancelled`, `Failed` |
-| `Interrupted` | `Preparing` (train tiếp từ checkpoint), `Cancelled` |
-| `Cancelled` có checkpoint | `Preparing` (train tiếp) |
+| `Created` | `Preflight`, `Interrupted` |
+| `Preflight` | `Running`, `Failed`, `Interrupted` |
+| `Running` | `Evaluating`, `Failed`, `Interrupted` |
+| `Evaluating` | `Completed`, `Cancelled` (nếu đã yêu cầu dừng), `Failed`, `Interrupted` |
+| `Interrupted` có checkpoint | `Preflight` (train tiếp) |
+| `Cancelled` có checkpoint | `Preflight` (train tiếp) |
 
-- `Failed`: worker báo lỗi. `Cancelled`: người dùng dừng. `Interrupted`: mất tiến trình không báo trước (mất điện, Docker dừng), được phát hiện khi không còn container và `run.json` chưa ở trạng thái kết thúc.
-- Export là tác vụ riêng trên một run đã có checkpoint, có trạng thái riêng, không làm đổi trạng thái train.
+- `Failed`: worker báo lỗi. `Cancelled`: người dùng dừng ở cuối epoch. `Interrupted`: mất tiến trình không báo trước (mất điện, container bị kill), suy ra khi không còn container mà sự kiện `state` cuối chưa phải trạng thái kết thúc. `Interrupted` chưa có checkpoint thì phải train lại từ đầu.
+- Trạng thái không lưu riêng, luôn suy ra từ `events.jsonl`, nên không thể lệch với sự kiện.
+- Export là tác vụ riêng trên một run đã có `best.pt`, có sự kiện riêng, không làm đổi trạng thái train.
 
-**Pause:** adapter Ultralytics khai báo `pause: false` ở M1. Cách dùng là dừng ở cuối epoch rồi train tiếp từ `last.pt`. App không hiện nút Pause giả.
+**Pause:** adapter Ultralytics khai báo `pause: false`. Cách dùng là dừng ở cuối epoch rồi train tiếp. App không hiện nút Pause giả.
+
+**Train tiếp:** khi run kết thúc, Ultralytics xóa optimizer khỏi `last.pt`, nên train tiếp từ đó không được. Vì vậy khi có yêu cầu dừng, worker chép `last.pt` sang `checkpoints/resume.pt` trước khi dừng. Sau khi bị kill thì `last.pt` còn nguyên optimizer và được dùng trực tiếp. Train tiếp chỉ chạy khi dataset và image digest không đổi.
 
 ### 9.2 Sự kiện và điều khiển
 
@@ -338,10 +343,10 @@ Worker ghi `events.jsonl`, mỗi dòng một sự kiện. App đọc tiếp từ
 {"schema":1,"id":128,"run":"20261107-143000-yolo26s","ts":"2026-11-07T14:32:10Z","type":"epoch_end","data":{"epoch":12,"epochs":100,"box_loss":1.21,"map50":0.81,"map50_95":0.54}}
 ```
 
-Các loại sự kiện: `state`, `progress`, `epoch_end`, `resource`, `warning`, `error`, `checkpoint_saved`, `export_result`.
+Các loại sự kiện: `state`, `capabilities`, `preflight`, `progress`, `epoch_end`, `resource`, `warning`, `error`, `checkpoint_saved`, `export`, `export_result`.
 
-- Metric lấy từ callback `on_fit_epoch_end` của Ultralytics, không phân tích text log.
-- App yêu cầu dừng bằng cách ghi `control.json`; worker kiểm tra ở biên batch hoặc epoch. Không dùng tín hiệu vì Windows và container xử lý khác nhau.
+- Metric lấy từ callback `on_fit_epoch_end` của Ultralytics, không phân tích text log. Lượt đánh giá cuối cũng gọi callback này với số epoch tăng thêm một và không có val loss, nên phải bỏ qua lượt đó.
+- App yêu cầu dừng bằng cách ghi `control.json`; worker kiểm tra ở cuối epoch, sau khi đã lưu checkpoint. Không dùng tín hiệu vì Windows và container xử lý khác nhau.
 - Hợp đồng này độc lập với cách truyền. Khi làm Remote chỉ thêm REST và WebSocket đọc từ cùng log, **bắt buộc có xác thực**.
 
 ### 9.3 Màn hình và cảnh báo
@@ -369,15 +374,33 @@ flowchart TD
     B --> C[onnx.checker]
     C --> D[ONNX Runtime chạy trên ảnh val]
     D --> E{Khớp với PyTorch?}
-    E -->|Có| F[model.onnx, model.meta.json, export-report.json]
-    E -->|Không| G[Báo lỗi kèm số liệu, giữ file để điều tra]
+    E -->|Có| F[status passed]
+    E -->|Không| G[status failed, giữ file để điều tra]
 ```
 
-- **Dạng đầu ra khác nhau theo phiên bản, không có một tham số chung.** Theo tài liệu Ultralytics, mặc định detect xuất đầu ra thô và bên dùng phải chạy NMS (dạng `(N, nc + 4, 8400)`); `nms=False` cho đầu một-một không cần NMS (dạng `(N, 300, 6)`). Đọc code `ultralytics` 8.4.204 (chưa chạy): đầu một-một chỉ có khi model có nhánh `one2one`, tức YOLO26 trong số các phiên bản hỗ trợ từ M1. Với YOLOv8, YOLO11, `nms=False` không tạo ra dạng một-một; `nms=True` nhúng NMS vào model.
-- **Đề xuất:** YOLO26 dùng `nms=False`; YOLOv8, YOLO11 dùng `nms=True` để mọi phiên bản cho ra kết quả đã hậu xử lý, bên dùng model không phải viết NMS riêng. Cần thử ở M0, gồm cả ảnh hưởng tới độ trễ và tới TensorRT. Nếu không đạt thì giữ dạng thô và khai báo rõ trong metadata.
-- **`model.meta.json`** ghi: phiên bản model, tên và thứ tự class, `imgsz`, tiền xử lý, dạng đầu ra, opset, phiên bản Ultralytics và image, fingerprint dataset, metric. Bên dùng model đọc file này để biết cách xử lý đầu ra, không phải đoán theo tên phiên bản.
-- **Kiểm chứng:** cùng ảnh val, cùng đầu vào, so box và điểm giữa PyTorch và ONNX, rồi tính mAP qua ONNX. Ngưỡng ban đầu (giả định): IoU box từ 0,99, chênh điểm dưới 0,01, chênh mAP50-95 dưới 0,01.
-- ONNX đạt kiểm chứng mới được coi là xong. Báo cáo ghi rõ độ trễ trung bình trên thiết bị đã chạy.
+**Mọi phiên bản xuất bằng `nms=True` (đã đo, quyết định 0012).** Metric lúc train đo trên nhánh một-nhiều kèm NMS; `nms=True` xuất đúng nhánh đó và cho mọi phiên bản cùng dạng `(1, 300, 6)`. Với YOLO26, `nms=False` xuất nhánh một-một, là một bộ đầu ra khác: trên model train 3 epoch, mAP50-95 là 0,044 so với 0,142 của nhánh đã đo.
+
+**Hợp đồng cho bên dùng model, ghi trong `model.meta.json`:**
+
+- Tiền xử lý: letterbox vào giữa, nền 114, RGB, 0..1, NCHW, `float32`.
+- Đầu ra là số dòng cố định, các dòng trống bằng 0: giữ dòng có điểm từ ngưỡng của mình.
+- **Phải cắt box về khung đầu vào.** NMS nhúng trả cả box vượt ra ngoài, còn PyTorch cắt khi đổi tọa độ. Không cắt thì YOLO12 lệch với PyTorch tới IoU 0,30 ở box sát biên.
+- Bỏ letterbox để có tọa độ trên ảnh gốc.
+- File này còn ghi phiên bản model, tên và thứ tự class, opset, phiên bản Ultralytics, image digest, fingerprint dataset, kết quả kiểm chứng và **cờ dataset tổng hợp**.
+
+**Kiểm chứng:** phần xử lý ảnh và đọc đầu ra làm theo đúng hợp đồng trên, không qua predictor của Ultralytics, nên kiểm luôn cả metadata. So từng box với PyTorch trên cùng tensor, tối đa 20 ảnh val, ở ngưỡng 0,001 mà mAP dùng. Ghép cặp khi cùng class và IoU từ 0,99. Các ngưỡng này là giả định.
+
+| Kết quả | Điều kiện |
+| --- | --- |
+| `failed` | Có box điểm từ 0,25 không có cặp khớp; hoặc quá 1% số box không có cặp; hoặc điểm lệch từ 0,01 |
+| `inconclusive` | Model không phát hiện box nào, nên chưa so được |
+| `passed` | Còn lại |
+
+- Phần đuôi điểm thấp được lệch vì hai box chồng nhau sát ngưỡng NMS có thể đổi chỗ do sai số số thực (gặp thật trên YOLO11: một cặp trên 6.000 box, điểm 0,045). Báo cáo luôn ghi số box không có cặp và điểm cao nhất của chúng.
+- mAP qua ONNX chỉ báo để tham khảo, không quyết định kết quả: đường đánh giá của Ultralytics với ONNX không cắt box như hợp đồng. Khoảng lệch đo được từ 0,003 đến 0,015.
+- Báo cáo ghi độ trễ trung vị và thiết bị đã chạy.
+
+**Câu hỏi còn mở:** với `nms=False`, mAP của PyTorch và ONNX trùng khít, nhưng khi so từng box qua `predict` thì lệch (IoU 0,88, điểm lệch 0,30). Chưa rõ nguyên nhân. Đường này không được dùng nên chưa điều tra tiếp.
 
 ### 9.5 TensorRT, tùy chọn
 
@@ -456,6 +479,27 @@ Theo `docs/design/`: dùng lại token và quy tắc (không gradient, không sh
 
 Mỗi mốc kết thúc bằng một bản chạy được và được báo cáo đúng những gì đã chạy.
 
+**Thay đổi vì chưa có nhãn thật:** M0 và M1 làm gộp trên dataset tổng hợp do `trainer/python/tools/make_smoke_dataset.py` sinh, với 3 class thật `dau_cos`, `day_thit`, `bang_dinh`. Vật thể được vẽ lên ảnh nền lấy từ project wire harness. Dataset ghi `ntech_synthetic: true`, nên mọi báo cáo và `model.meta.json` đều ghi rõ. Metric của nó không nói lên chất lượng thật.
+
+**Đã chạy thật (2026-11-07, image CPU, máy phát triển, imgsz 320, 80 ảnh tổng hợp):**
+
+| Phiên bản | Train 3 epoch | ONNX | Box so sánh | Không có cặp | IoU thấp nhất | Độ trễ ONNX |
+| --- | --- | --- | --- | --- | --- | --- |
+| YOLO26n | khoảng 50 s | Đạt | 6.000 | 0 | 0,99994 | 12 ms |
+| YOLO11n | khoảng 47 s | Đạt | 6.000 | 2 (điểm cao nhất 0,045) | 0,99997 | 19 ms |
+| YOLOv8n | khoảng 45 s | Đạt | 6.000 | 0 | 0,99996 | 16 ms |
+| YOLO12n | khoảng 52 s | Đạt | 6.000 | 0 | 0,99994 | 20 ms |
+
+Cũng đã chạy thật: dừng ở cuối epoch rồi train tiếp (YOLO11n), kill container sau epoch đầu thành `Interrupted` rồi train tiếp (YOLOv8n), kill lúc preflight thì từ chối và nêu lý do, chạy nền rồi nối lại bằng `follow`, không xác nhận thì không train bằng CPU, dataset và workspace có đường dẫn tiếng Việt, dataset không đổi một byte sau toàn bộ các lần chạy. Bản Linux tự chứa chạy được trong WSL Ubuntu ở các lệnh `models`, `init`, `probe`, và báo đúng khi Docker không dùng được.
+
+**Chưa chạy, cần làm tiếp:**
+
+- Dataset thật. Lúc viết chỉ có 2 ảnh có nhãn.
+- Image `cuda` và GPU thật: `lock-cuda.txt` đã có, image chưa build vì máy phát triển không chạy được. Vì vậy VRAM đỉnh, batch tự động và cảnh báo GPU chưa có số đo.
+- Train từ phía Linux: Docker Desktop chưa bật WSL Integration cho Ubuntu, nên `--user` và quyền ghi chưa kiểm.
+- Lỗi hết VRAM và các cảnh báo mới chỉ có test logic, chưa tạo lỗi thật.
+- Trên máy này mới dùng cỡ `n` với 3 đến 5 epoch; chưa có run dài.
+
 | Mốc | Nội dung | Điều kiện đạt |
 | --- | --- | --- |
 | **M0. Thử trên dataset thật** | Image `cpu` và `cuda`, script tối thiểu chạy dataset wire harness → train → ONNX với YOLO26, YOLO11, YOLOv8 và thử YOLO12. Khóa phiên bản, chốt tham số export của từng bản | Máy phát triển: vài epoch trên tập nhỏ bằng CPU, ra ONNX cho từng phiên bản. Máy train: GPU chạy được trong container, có số liệu thật |
@@ -481,7 +525,7 @@ Lưu ý với NVision: theo quyết định 0003, NVision chỉ nhận `.nvmodel
 
 | # | Câu hỏi | Ảnh hưởng | Mốc cần trả lời |
 | --- | --- | --- | --- |
-| 1 | Dataset wire harness ở đâu, có `data.yaml` chưa, bao nhiêu ảnh, những class nào | Không có thì không bắt đầu được M0 | M0 |
+| 1 | Khi nào có bản xuất dataset wire harness có nhãn. Class đã chốt: `dau_cos`, `day_thit`, `bang_dinh`. Ảnh ở `C:\Users\ndev\Documents\wire-harness-check` | Thay dataset tổng hợp để có metric thật | Khi gán nhãn xong |
 | 2 | Công ty đã có hoặc sẽ mua Ultralytics Enterprise License chưa | Điều kiện để đưa model vào sản xuất | Trước khi triển khai |
 | 3 | Máy train cụ thể: hệ điều hành, GPU, VRAM, có cài được Docker không | Điều kiện đạt của M0 và M1 | M0 |
 | 4 | Runtime trong image dùng chung thay vì trong thư mục project có chấp nhận được không | Mục 4.2 và 8 | Trước M1 |
@@ -490,14 +534,9 @@ Lưu ý với NVision: theo quyết định 0003, NVision chỉ nhận `.nvmodel
 
 ## 15. Quyết định cần ghi vào `decisions/`
 
-Ghi khi đã kiểm chứng ở M0, tiếp số từ 0009:
+Đã ghi, vì đã có code và đã chạy thật: 0009 (YOLO nhiều phiên bản qua `ultralytics`, danh mục tách khỏi `profiles/`, điều kiện license), 0010 (workspace và log sự kiện thay HTTP local), 0011 (runtime trong Docker, TensorRT tùy chọn), 0012 (ONNX bằng `nms=True` và hợp đồng cho bên dùng).
 
-- Trainer dùng Avalonia, WPF giữ nguyên.
-- Luồng đầu tiên là YOLO detect nhiều phiên bản qua gói `ultralytics`, thay thứ tự "mặc định RF-DETR" trong `DESIGN_DOC`, kèm điều kiện license.
-- Danh mục model tách khỏi `profiles/`, phiên bản chỉ được ghi `supported` sau khi qua kiểm thử.
-- Workspace là nguồn sự thật, giao tiếp bằng log sự kiện, thay "HTTP local" trong `DESIGN_DOC`.
-- Runtime trong Docker, image dùng chung, trạng thái theo workspace.
-- TensorRT là tùy chọn theo profile máy.
+Ghi khi làm M2: Trainer dùng Avalonia, WPF giữ nguyên.
 
 ## Nguồn đã tham khảo
 

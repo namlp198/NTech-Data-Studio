@@ -9,3 +9,7 @@ publish/
 dist/
 *.db-wal
 *.db-shm
+__pycache__/
+.pytest_cache/
+*.pt
+*.onnx

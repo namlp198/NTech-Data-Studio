@@ -4,9 +4,9 @@
 
 ## Trainer
 
-Luồng: dataset có sẵn (kiểm tra wire harness) → chọn phiên bản YOLO, train detect → xuất ONNX. Phải train được nhiều phiên bản: YOLO26, YOLO11, YOLOv8 trước, YOLO12 thử nghiệm. Thiết kế ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md` (v0.3, bản nháp), chưa có code.
+Luồng dataset → YOLO detect (YOLO26, YOLO11, YOLOv8, YOLO12 thử nghiệm) → ONNX đã chạy thật bằng CLI, trên image CPU và dataset tổng hợp. Thiết kế ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md` (v0.4), cách dùng ở `trainer/README.md`, tình trạng ở `handoff/trainer.md`.
 
-Việc tiếp theo là mốc M0: dựng image `cpu` và `cuda`, chạy thử luồng trên dataset thật với từng phiên bản, khóa phiên bản thư viện, chốt tham số export của từng bản. Trước khi làm cần chủ dự án cho biết đường dẫn và định dạng dataset, cùng thông tin máy train (mục 14 của thiết kế). Ghi các quyết định vào `decisions/` sau khi kiểm chứng (mục 15).
+Việc còn lại của M0 và M1 cần máy hoặc dữ liệu chưa có: build image `cuda` và chạy trên máy train có GPU; chạy trên dataset wire harness thật khi gán nhãn xong; train từ phía Linux. Việc làm được ngay là M2 (Desktop bằng Avalonia).
 
 ## Data Studio
 
