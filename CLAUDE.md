@@ -86,6 +86,9 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Test Desktop đặt `Polling: false` trong `TrainerServices` rồi tự gọi `RefreshAsync`; để timer chạy trong test sẽ có hai lượt đọc chen nhau.
 - Test giao diện dùng `HeadlessUnitTestSession` trực tiếp vì repo dùng xunit 2; `Avalonia.Headless.XUnit` cần xunit v3.
 - Trên Linux, app cần thư viện X11 của hệ điều hành (`libice6`, `libsm6` thiếu trong WSL Ubuntu).
+- Lượt làm mới định kỳ gọi `TryAsync(..., refresh: true)`: nó chỉ xóa lỗi do chính nó gây ra. Đừng bỏ cờ này, nếu không lỗi của nút bấm biến mất sau 2 giây.
+- Workspace không chuyển được giữa Windows và Linux: `workspace.json` giữ đường dẫn tuyệt đối của dataset. Mọi chỗ mount dataset phải gọi `Workspace.RequireDataset()` trước.
+- Trong WSLg cửa sổ app không có cây UI Automation: chỉ kiểm được bằng ảnh chụp và bấm theo tọa độ.
 
 ## Kiểm tra
 

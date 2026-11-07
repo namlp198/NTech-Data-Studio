@@ -443,6 +443,17 @@ public sealed class JobServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MissingDataset_IsRefusedBeforeDocker()
+    {
+        var (workspace, run) = NewRun();
+        File.Delete(workspace.File_.DataYaml); // as a Windows path seen from Linux
+        var containers = new FakeContainers();
+        var problem = await Assert.ThrowsAsync<TrainerException>(() => new JobService(containers).StartTrainAsync(workspace, run, resume: false));
+        Assert.Contains("Không thấy dataset", problem.Message);
+        Assert.Empty(containers.Started);
+    }
+
+    [Fact]
     public async Task Export_NeedsABestCheckpoint()
     {
         var (workspace, run) = NewRun();

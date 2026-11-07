@@ -499,13 +499,18 @@ Cũng đã chạy thật: dừng ở cuối epoch rồi train tiếp (YOLO11n), 
 - **Export:** ONNX đạt kiểm chứng (6.000 box, IoU thấp nhất 0,99994).
 - **Đóng app:** đóng khi đang train thì job vẫn chạy; mở lại, app nối vào run và theo tới Hoàn tất.
 
-App điều khiển bằng UI Automation; từng màn hình còn được dựng headless và lưu PNG trong test. Bản Linux build được, nhưng chưa mở được trong WSL vì thiếu `libice6`, `libsm6`.
+App điều khiển bằng UI Automation; từng màn hình còn được dựng headless và lưu PNG trong test.
+
+**M2 trên Ubuntu 24.04 trong WSLg:**
+- App chạy được, sau khi cài `libice6`, `libsm6`.
+- Train bắt đầu từ CLI Linux, với workspace trên đĩa Linux. App Linux theo dõi tới Hoàn tất rồi export ONNX đạt kiểm chứng.
+- Container chạy với `--user 1000:1000`, mọi file kết quả thuộc user Linux.
+- Chưa thử trên máy Ubuntu thật, và chưa thử hộp chọn file trên Linux.
 
 **Chưa chạy, cần làm tiếp:**
 
 - Dataset thật. Lúc viết chỉ có 2 ảnh có nhãn.
 - Image `cuda` và GPU thật: `lock-cuda.txt` đã có, image chưa build vì máy phát triển không chạy được. Vì vậy VRAM đỉnh, batch tự động và cảnh báo GPU chưa có số đo.
-- Train từ phía Linux: Docker Desktop chưa bật WSL Integration cho Ubuntu, nên `--user` và quyền ghi chưa kiểm.
 - Lỗi hết VRAM và các cảnh báo mới chỉ có test logic, chưa tạo lỗi thật.
 - Trên máy này mới dùng cỡ `n` với 3 đến 5 epoch; chưa có run dài.
 

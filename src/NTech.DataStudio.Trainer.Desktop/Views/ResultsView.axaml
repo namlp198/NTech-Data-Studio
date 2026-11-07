@@ -7,7 +7,7 @@
              x:DataType="vm:ResultsViewModel">
 
     <ScrollViewer>
-        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.WideContentMaxWidth}" HorizontalAlignment="Stretch">
+        <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" HorizontalAlignment="Stretch">
             <StackPanel Spacing="{StaticResource Spacing.XS}">
                 <TextBlock Classes="pageTitle" Text="Kết quả" />
                 <TextBlock Classes="secondary wrap" Text="Metric của best.pt trên tập val, tổng và theo class. Export ONNX được kiểm chứng từng box với PyTorch." />

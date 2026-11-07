@@ -309,6 +309,33 @@ public sealed class ResultsTests : IDisposable
     }
 }
 
+public sealed class ErrorTests : IDisposable
+{
+    private readonly TestWorld _world = new();
+
+    public void Dispose() => _world.Dispose();
+
+    /// <summary>Found on Linux: the 2-second refresh cleared the export error before anyone saw it.</summary>
+    [Fact]
+    public async Task AFailedExport_StaysOnScreenAcrossRefreshes()
+    {
+        var workspace = _world.CreateWorkspace();
+        _world.AddRun(workspace, "yolo26n", DateTime.UtcNow, TestWorld.FinishedRun(), result: true);
+        File.Delete(_world.DataYaml);
+        var shell = _world.Shell(workspace);
+        shell.Start();
+        shell.Results.IsSelected = true;
+        await shell.Results.RefreshAsync();
+
+        await shell.Results.ExportCommand.ExecuteAsync(null);
+        Assert.Contains("Không thấy dataset", shell.Results.Error);
+        await shell.Results.RefreshAsync();
+        await shell.Results.RefreshAsync();
+        Assert.Contains("Không thấy dataset", shell.Results.Error);
+        Assert.Empty(_world.Containers.Started);
+    }
+}
+
 public sealed class DatasetTests : IDisposable
 {
     private readonly TestWorld _world = new();

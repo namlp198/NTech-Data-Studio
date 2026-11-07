@@ -34,7 +34,7 @@
         </Border>
 
         <ScrollViewer Grid.Column="1">
-            <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" MaxWidth="{StaticResource Layout.WideContentMaxWidth}" HorizontalAlignment="Stretch">
+            <StackPanel Margin="{StaticResource Inset.Page}" Spacing="{StaticResource Spacing.LG}" HorizontalAlignment="Stretch">
                 <StackPanel IsVisible="{Binding IsLoading}" Spacing="{StaticResource Spacing.SM}">
                     <ProgressBar IsIndeterminate="True" />
                     <TextBlock Classes="secondary" Text="Đang đọc các run..." />

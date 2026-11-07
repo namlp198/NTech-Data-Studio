@@ -6,7 +6,7 @@ Làm trên nhánh `dev/trainer`, worktree `.claude/worktrees/trainer`.
 
 ## Trạng thái (2026-11-08)
 
-Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật bằng CLI và bằng app Desktop (M2, Avalonia), trên image CPU và dataset tổng hợp. Chưa chạy trên GPU hay dataset thật. App Desktop chưa chạy được trên Ubuntu ở máy này vì WSL thiếu thư viện X11. Thiết kế v0.4 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, cách dùng ở `trainer/README.md`.
+Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật bằng CLI và bằng app Desktop (M2, Avalonia), trên Windows và trên Ubuntu 24.04 (WSLg), với image CPU và dataset tổng hợp. Chưa chạy trên GPU hay dataset thật. Thiết kế v0.4 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, cách dùng ở `trainer/README.md`.
 
 ## Chủ dự án đã chốt
 
@@ -28,7 +28,7 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
 
 ## Đã kiểm tra
 
-- Test: toàn solution 600 test C# xanh (Trainer 63, Trainer.Desktop 35), build 0 cảnh báo. Python 43, không đổi trong M2.
+- Test: toàn solution 602 test C# xanh (Trainer 64, Trainer.Desktop 36), build 0 cảnh báo. Python 43, không đổi trong M2.
 - Luồng CLI, chạy thật trên image CPU, imgsz 320, 80 ảnh tổng hợp với ảnh nền từ project wire harness:
   - YOLO26n, YOLO11n, YOLOv8n, YOLO12n đều train, đánh giá, export, và ONNX đạt kiểm chứng trên 6.000 box. YOLO11n có 2 box không có cặp, điểm cao nhất 0,045; các bản khác không có. IoU thấp nhất từ 0,99994. Số liệu ở mục 13 của thiết kế.
   - Dừng ở cuối epoch rồi train tiếp, kill rồi train tiếp, kill lúc preflight, chạy nền rồi `follow`, cổng xác nhận CPU, đường dẫn tiếng Việt, dataset không đổi một byte.
@@ -41,6 +41,13 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
   - **Đóng app khi đang train:** container vẫn chạy; mở lại thì app nối vào run ở epoch 2/4 và theo tới Hoàn tất.
   - Dataset không đổi một byte, không còn container nào sau khi xong.
 - Sau khi chuyển logic xuống phần lõi, CLI `compare` và `validate` vẫn chạy trên workspace đó; `compare` báo đúng hai run khác số epoch.
+- App Desktop chạy thật trên Ubuntu 24.04 trong WSLg (2026-11-08), sau khi chủ dự án cài `libice6`, `libsm6`:
+  - **Giao diện:** Inter hiện đủ dấu tiếng Việt. Máy đọc đúng phần cứng nhìn từ WSL (RAM 7,7 GB của máy ảo WSL, Quadro qua nvidia-smi).
+  - **Run tạo trên Windows:** app đọc được các run đó qua `/mnt/c`.
+  - **Train từ phía Linux:** workspace trên đĩa Linux (`~/…`), dataset đọc từ `/mnt/c`; CLI Linux bắt đầu train YOLO26n 3 epoch.
+  - **Theo dõi và export:** app Linux theo dõi run tới Hoàn tất, rồi export ONNX đạt kiểm chứng (6.000 box, IoU thấp nhất 0,99994, 16 ms).
+  - **Quyền ghi:** container chạy với `--user 1000:1000`, và cả 29 file kết quả thuộc user Linux. Đây là điểm trước đó chưa kiểm.
+  - Không còn container nào sau khi xong. File thử trong WSL đã xóa.
 
 ## Lỗi tìm được khi chạy thật
 
@@ -61,15 +68,18 @@ Test không bắt được, đã sửa, ghi lại để khỏi lặp.
 - Đường dẫn workspace dài đẩy các nút trên TopBar ra ngoài; nay cắt bớt và hiện đủ trong tooltip.
 - Đổi phiên bản YOLO mà cỡ giữ nguyên `s` thì không đánh giá lại.
 - Thông báo cũ còn lại sau khi run đã dừng hoặc đã xong.
+- **Lỗi bị xóa trước khi người dùng thấy.** Export hay Train tiếp thất bại thì thông báo lỗi bị lượt làm mới 2 giây sau xóa mất, cả trên Windows. Nay lượt làm mới chỉ xóa lỗi do chính nó gây ra.
+- **Workspace tạo trên Windows mở trên Linux.** `workspace.json` ghi `C:\…\data.yaml`, nên trên Linux Docker nhận nguồn mount rỗng. Nay train, export và kiểm tra dataset từ chối trước khi gọi Docker, kèm hướng dẫn tạo workspace mới trên máy đó.
 
 Xem thêm `CLAUDE.md`.
 
 ## Chưa kiểm tra
 
-- **App Desktop trên Ubuntu.** Bản Linux build được nhưng chưa mở được trong WSL vì thiếu `libice6`, `libsm6`, và `sudo` cần mật khẩu của chủ dự án. Sau khi chủ dự án cài (`sudo apt install libice6 libsm6`) thì chạy lại bằng WSLg. Chưa thử hộp chọn file trên Linux.
+- **Ubuntu thật.** Mới chạy trong WSLg, chưa chạy trên máy Ubuntu thật (Docker Engine và NVIDIA Container Toolkit). Trong WSLg cửa sổ không có cây UI Automation, nên phần nhập liệu ở Cấu hình được làm bằng CLI Linux; app Linux chỉ được bấm chuyển tab và Export ONNX.
+- **App Linux tự thoát một lần.** Một lần app Linux thoát với mã 0, log rỗng, trong khoảng export. Làm lại đúng các bước thì không bị. Chưa rõ nguyên nhân; thử lại trên Ubuntu thật.
+- **Hộp chọn file trên Linux.** Chưa thử.
 - **Dataset thật.** Lúc này chỉ có 2 ảnh có nhãn (48 box). Metric hiện có không nói lên chất lượng thật.
 - **GPU.** Image `cuda` chưa build. VRAM đỉnh, batch tự động (`-1`), cảnh báo GPU, phần GPU trên màn hình Train, ONNX Runtime GPU đều chưa chạy.
-- **Train từ phía Linux.** Docker Desktop chưa bật WSL Integration cho Ubuntu nên chưa chạy `train` từ Linux, và `--user` với quyền ghi chưa kiểm.
 - **Hộp chọn file trên Windows.** Tạo workspace và mở workspace bằng hộp chọn file chỉ có test với hộp chọn giả; lần chạy thật mở workspace bằng thiết lập đã lưu.
 - **Cảnh báo.** Lỗi hết VRAM, overfit, GPU nóng, sắp hết đĩa: chỉ có test logic.
 - **Run dài.** Chưa chạy run dài, cỡ model lớn hay `imgsz` lớn. Các ngưỡng trong thiết kế vẫn là giả định.

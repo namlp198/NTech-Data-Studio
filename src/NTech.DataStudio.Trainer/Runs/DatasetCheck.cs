@@ -77,6 +77,7 @@ public sealed class DatasetChecker(IContainerRuntime containers)
 {
     public async Task<DatasetReport> CheckAsync(Workspace workspace, string image, int imgsz, CancellationToken cancellationToken = default)
     {
+        workspace.RequireDataset();
         if (await containers.ImageDigestAsync(image, cancellationToken) is null)
             throw new TrainerException($"Không có image {image}. Build bằng docker/trainer/Dockerfile.");
         var result = await containers.RunToEndAsync(JobService.ValidateSpec(workspace, image, imgsz), cancellationToken);

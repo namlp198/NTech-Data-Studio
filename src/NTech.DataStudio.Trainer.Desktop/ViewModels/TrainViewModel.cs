@@ -211,7 +211,7 @@ public sealed partial class TrainViewModel : PageViewModel
                 var running = await Services.Jobs.RunningRunsAsync();
                 var states = _tracker.Refresh(workspace, running);
                 Merge(states);
-            });
+            }, refresh: true);
         }
         finally
         {

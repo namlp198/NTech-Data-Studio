@@ -75,18 +75,25 @@ public abstract partial class PageViewModel : ObservableObject, IActivatable
         _polling = null;
     }
 
-    /// <summary>Runs an action and turns the failures a user can act on into the page's error text.</summary>
-    protected async Task<bool> TryAsync(Func<Task> action)
+    private bool _errorFromRefresh;
+
+    /// <summary>
+    /// Runs an action and turns the failures a user can act on into the page's error text. A
+    /// periodic refresh only clears an error it raised itself: a failed button press must stay on
+    /// screen until the next press, not vanish at the next tick.
+    /// </summary>
+    protected async Task<bool> TryAsync(Func<Task> action, bool refresh = false)
     {
         try
         {
             await action();
-            Error = null;
+            if (!refresh || _errorFromRefresh) Error = null;
             return true;
         }
         catch (Exception problem) when (IsExpected(problem))
         {
             Error = problem.Message;
+            _errorFromRefresh = refresh;
             return false;
         }
     }

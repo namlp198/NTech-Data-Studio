@@ -15,11 +15,12 @@ Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER
 - [x] M0, M1 trên image CPU và dataset tổng hợp: CLI, worker, danh mục, sự kiện, kiểm chứng ONNX cho cả 4 phiên bản
 - [ ] M0, M1 trên máy train: build image `cuda`, chạy với GPU thật, đo VRAM, hiệu chỉnh ngưỡng
 - [ ] M0, M1 trên dataset wire harness thật khi gán nhãn xong; chốt `imgsz` và gợi ý tăng cường
-- [ ] Train từ phía Linux: bật WSL Integration hoặc dùng máy Ubuntu, kiểm `--user` và quyền ghi
+- [x] Train từ phía Linux (WSL Ubuntu): `--user 1000:1000`, mọi file kết quả thuộc user Linux
 - [ ] Kiểm thử danh mục tự động: script chạy train, export, kiểm chứng cho mọi phiên bản `supported` (hiện chạy bằng tay)
 - [ ] Test đọc một bản xuất thật của Data Studio (hiện test dựng lại đúng dạng `data.yaml`, chưa chạy `ExportService`)
 - [x] M2 trên Windows: Desktop Avalonia 5 màn hình, chạy thật cả luồng bằng UI Automation (quyết định 0013)
-- [ ] M2 trên Ubuntu: chạy app bằng WSLg sau khi cài `libice6`, `libsm6`; thử hộp chọn file trên Linux
+- [x] M2 trên Ubuntu trong WSLg: app chạy, theo dõi run train từ Linux, export ONNX đạt; `--user` cho file thuộc user Linux
+- [ ] M2 trên máy Ubuntu thật: thử hộp chọn file, nhập liệu ở Cấu hình; xem lại lần app Linux tự thoát (mã 0, log rỗng) chưa tái hiện được
 - [ ] Desktop: thử tạo và mở workspace bằng hộp chọn file thật (hiện chỉ test với hộp chọn giả)
 - [ ] Tìm hiểu vì sao metric val của epoch 2 trùng epoch 1 trong run 3 epoch (cả `results.csv` của Ultralytics cũng trùng)
 - [x] M3 một phần: train tiếp, phát hiện `Interrupted`, nối lại, bảng `compare`, luật cảnh báo

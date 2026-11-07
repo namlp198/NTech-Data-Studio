@@ -115,7 +115,7 @@ public sealed partial class ResultsViewModel : PageViewModel
                 }
 
                 Replace(rows);
-            });
+            }, refresh: true);
         }
         finally
         {

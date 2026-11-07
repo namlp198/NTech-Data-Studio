@@ -43,6 +43,7 @@ public sealed class JobService(IContainerRuntime containers)
 
     public async Task StartTrainAsync(Workspace workspace, RunFolder run, bool resume, CancellationToken cancellationToken = default)
     {
+        workspace.RequireDataset();
         var record = run.Record();
         if (await containers.IsRunningAsync(RunLabel, run.Id, cancellationToken))
             throw new TrainerException($"Run {run.Id} đang chạy.");
@@ -54,6 +55,7 @@ public sealed class JobService(IContainerRuntime containers)
     public async Task StartExportAsync(Workspace workspace, RunFolder run, CancellationToken cancellationToken = default)
     {
         if (!run.HasBest) throw new TrainerException($"Run {run.Id} chưa có best.pt để export.");
+        workspace.RequireDataset(); // export measures ONNX against PyTorch on val images
         if (await containers.IsRunningAsync(RunLabel, run.Id, cancellationToken))
             throw new TrainerException($"Run {run.Id} đang chạy.");
         await containers.StartDetachedAsync(ExportSpec(workspace, run, run.Record()), cancellationToken);

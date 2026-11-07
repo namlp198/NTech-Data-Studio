@@ -74,6 +74,18 @@ public sealed class Workspace
         return new Workspace(root, file);
     }
 
+    /// <summary>
+    /// The dataset must be where workspace.json says before anything mounts it. A workspace made
+    /// on Windows keeps a path like C:\..., which on Linux has no folder and would reach Docker
+    /// as an empty mount source.
+    /// </summary>
+    public void RequireDataset()
+    {
+        if (!File.Exists(File_.DataYaml))
+            throw new TrainerException(
+                $"Không thấy dataset {File_.DataYaml}. Nếu workspace được tạo trên máy hoặc hệ điều hành khác, hãy tạo workspace mới trên máy này từ data.yaml của dataset.");
+    }
+
     public RunFolder CreateRun(ModelVariant model, TrainOptions options, string compute, string image, string digest, DateTime utcNow)
     {
         var id = $"{utcNow:yyyyMMdd-HHmmss}-{model.Name}";
