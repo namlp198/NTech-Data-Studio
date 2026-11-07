@@ -4,9 +4,9 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 
 ## Bố cục
 
-- **Tool rail (trái):** Chọn (V), Box (B), Polygon (P), Rotated box (R), Tag (T); Undo, Redo, Xóa, Ẩn/hiện nhãn; Vừa khung, Phóng to, Thu nhỏ.
-- **Panel phải:** danh sách class (phím tắt, màu, số nhãn), ô tên class với Thêm, Đổi tên, Xóa, bảng 10 màu, Gộp vào; danh sách nhãn của ảnh (Ẩn, Khóa, bấm để zoom tới nhãn); thanh độ trong suốt.
-- **Dải đáy:** lọc theo trạng thái và class, nút Chép nhãn ảnh trước, Null, Duyệt, và các thumbnail có chấm trạng thái và số nhãn.
+- **Tool rail (trái):** Chọn (V), Box (B), Polygon (P), Rotated box (R), Tag (T); Undo, Redo, Xóa, Ẩn/hiện nhãn; Vừa khung, Pan (G), Phóng to, Thu nhỏ. Pan là công cụ: giữ chuột trái kéo là dịch ảnh, không vẽ hay chọn gì.
+- **Panel phải:** danh sách class (phím tắt, màu, số nhãn), ô tên class với Thêm, Đổi tên, Xóa, bảng 10 màu, Gộp vào; danh sách nhãn của ảnh (Ẩn, Khóa, bấm để zoom tới nhãn); thanh độ trong suốt. Có một nút tròn (hai mũi tên lồng nhau chỉ hướng panel sẽ đi) đè lên giữa cạnh trái của panel để thu gọn hoặc mở lại; thu gọn thì chỉ còn nút ở mép phải.
+- **Dải đáy:** lọc theo trạng thái và class, nút Chép nhãn ảnh trước, Null, Duyệt, và các thumbnail có chấm trạng thái và số nhãn. Có một nút tròn tương tự đè lên giữa cạnh trên của dải; thu gọn thì chỉ còn nút ở giữa mép dưới. Trạng thái thu gọn không được lưu giữa các lần mở app.
 - **Strip Kết thúc / Bỏ đỉnh / Hủy** hiện giữa màn hình khi đang vẽ.
 
 ## Vẽ và sửa
@@ -28,11 +28,13 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 | Phím | Chức năng |
 | --- | --- |
 | V (hoặc S), B, P, R, T | Chọn, Box, Polygon, Rotated box, Tag |
-| Q, Shift+Q | Công cụ kế, công cụ trước trong thanh công cụ (Chọn, Box, Polygon, Rotated box, Tag, rồi quay vòng); đang vẽ dở thì bỏ hình dở |
+| Q, Shift+Q | Công cụ kế, công cụ trước trong thanh công cụ (Chọn, Box, Polygon, Rotated box, Tag, Pan, rồi quay vòng); đang vẽ dở thì bỏ hình dở |
 | + và - | Phóng to, thu nhỏ quanh tâm khung |
 | 1–9 | Chọn class. Công cụ Tag: gắn hoặc bỏ tag. Công cụ Chọn đang chọn một hình: đổi class của hình |
 | A, D hoặc ←, → | Ảnh trước, ảnh sau (theo bộ lọc đang bật) |
-| Enter, Backspace, Esc | Kết thúc, bỏ đỉnh vừa vẽ, hủy (không vẽ thì bỏ chọn) |
+| Enter, Backspace | Kết thúc, bỏ đỉnh vừa vẽ |
+| Esc | Thoát lệnh đang dùng: bỏ hình đang vẽ dở và về công cụ Chọn (từ bất kỳ công cụ nào, kể cả Pan và Tag). Đang ở công cụ Chọn thì bỏ chọn nhãn |
+| G | Công cụ Pan |
 | Ctrl+Z, Ctrl+Y | Undo, Redo (riêng cho từng ảnh) |
 | Ctrl+C, Ctrl+V | Sao chép và dán một hình. Dán trên cùng ảnh thì lệch 12 px mỗi lần; sang ảnh khác cỡ thì co theo tỉ lệ |
 | Delete | Xóa hình đang chọn |
@@ -40,7 +42,7 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 | H | Ẩn/hiện mọi nhãn |
 | F | Vừa khung |
 | Space + kéo, chuột giữa kéo | Pan |
-| Kéo chuột trái trên chỗ trống khi đã zoom lớn hơn vừa khung | Pan. Chỉ với công cụ Chọn (bấm vào nhãn thì vẫn chọn và kéo nhãn) và công cụ Tag; công cụ vẽ cần cú kéo để vẽ nên dùng Space hoặc chuột giữa. Bấm không kéo vẫn bỏ chọn |
+| Kéo chuột trái trên chỗ trống, ở mọi mức zoom (kể cả vừa khung) | Pan. Với công cụ Chọn (bấm vào nhãn thì vẫn chọn và kéo nhãn) và Tag. Công cụ Pan kéo được ở bất kỳ chỗ nào, kể cả trên nhãn. Công cụ vẽ cần cú kéo để vẽ nên dùng Space hoặc chuột giữa. Bấm không kéo vẫn bỏ chọn |
 | Cuộn chuột | Zoom quanh con trỏ |
 
 Phím tắt không chạy khi đang gõ trong ô tên class hay mở combobox.

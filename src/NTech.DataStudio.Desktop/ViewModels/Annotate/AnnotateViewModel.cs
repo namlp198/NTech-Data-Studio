@@ -49,6 +49,20 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     private bool _syncing;
     private bool _active;
 
+    /// <summary>The class and label panel on the right is open. Closed, only its tab stays on the edge.</summary>
+    [ObservableProperty]
+    private bool _isPanelOpen = true;
+
+    /// <summary>The thumbnail strip at the bottom is open.</summary>
+    [ObservableProperty]
+    private bool _isStripOpen = true;
+
+    [RelayCommand]
+    private void TogglePanel() => IsPanelOpen = !IsPanelOpen;
+
+    [RelayCommand]
+    private void ToggleStrip() => IsStripOpen = !IsStripOpen;
+
     [ObservableProperty]
     private AnnotationEditor? _editor;
 
@@ -166,6 +180,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public bool IsPolygonTool { get => Tool == AnnotateTool.Polygon; set => ChooseTool(value, AnnotateTool.Polygon); }
     public bool IsObbTool { get => Tool == AnnotateTool.RotatedBox; set => ChooseTool(value, AnnotateTool.RotatedBox); }
     public bool IsTagTool { get => Tool == AnnotateTool.Tag; set => ChooseTool(value, AnnotateTool.Tag); }
+    public bool IsPanTool { get => Tool == AnnotateTool.Pan; set => ChooseTool(value, AnnotateTool.Pan); }
 
     private AnnotateTool Tool => Editor?.Tool ?? AnnotateTool.Select;
 
@@ -183,6 +198,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         OnPropertyChanged(nameof(IsPolygonTool));
         OnPropertyChanged(nameof(IsObbTool));
         OnPropertyChanged(nameof(IsTagTool));
+        OnPropertyChanged(nameof(IsPanTool));
     }
 
     // ---- activation ----
@@ -810,8 +826,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             case Key.Enter: Editor.Finish(); return true;
             case Key.Back: Editor.UndoPoint(); return true;
             case Key.Delete: Editor.DeleteSelected(); return true;
+            case Key.G: Editor.SetTool(AnnotateTool.Pan); return true;
             case Key.Escape:
-                if (Editor.Drawing is not null) Editor.Cancel(); else Editor.Select(null);
+                Editor.Escape();
                 return true;
             case Key.A:
             case Key.Left:

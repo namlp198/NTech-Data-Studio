@@ -53,6 +53,63 @@ public class AnnotationEditorTests : IDisposable
         _editor.SetTool(AnnotateTool.Select);
     }
 
+    [Theory]
+    [InlineData(AnnotateTool.Box)]
+    [InlineData(AnnotateTool.Polygon)]
+    [InlineData(AnnotateTool.RotatedBox)]
+    [InlineData(AnnotateTool.Tag)]
+    [InlineData(AnnotateTool.Pan)]
+    public void Escape_FromAnyOtherToolGoesBackToSelect(AnnotateTool tool)
+    {
+        _editor.SetTool(tool);
+
+        _editor.Escape();
+
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+    }
+
+    [Fact]
+    public void Escape_WhileDrawingDropsTheShapeAndGoesBackToSelectInOnePress()
+    {
+        _editor.SetTool(AnnotateTool.Polygon);
+        Click(10, 10);
+        Click(60, 10);
+        Assert.NotNull(_editor.Drawing);
+
+        _editor.Escape();
+
+        Assert.Null(_editor.Drawing);
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+        Assert.Empty(Document.Annotations);
+    }
+
+    [Fact]
+    public void Escape_InSelectClearsTheSelectionAndKeepsTheLabel()
+    {
+        DrawBox(20, 20, 80, 60);
+        Assert.NotNull(_editor.SelectedId);
+
+        _editor.Escape();
+
+        Assert.Null(_editor.SelectedId);
+        Assert.Equal(AnnotateTool.Select, _editor.Tool);
+        Assert.Single(Document.Annotations);
+    }
+
+    [Fact]
+    public void PanTool_NeitherDrawsNorSelects()
+    {
+        DrawBox(20, 20, 80, 60);
+        _editor.Select(null);
+        _editor.SetTool(AnnotateTool.Pan);
+
+        Drag(30, 30, 70, 50);
+        Click(50, 40);
+
+        Assert.Single(Document.Annotations);
+        Assert.Null(_editor.SelectedId);
+    }
+
     [Fact]
     public void CycleTool_StepsThroughTheRailInBothDirectionsAndWraps()
     {
@@ -62,7 +119,7 @@ public class AnnotationEditorTests : IDisposable
         Assert.Equal(AnnotateTool.Box, _editor.Tool);
         _editor.CycleTool(-1);
         _editor.CycleTool(-1);
-        Assert.Equal(AnnotateTool.Tag, _editor.Tool);
+        Assert.Equal(AnnotateTool.Pan, _editor.Tool);
         _editor.CycleTool(1);
         Assert.Equal(AnnotateTool.Select, _editor.Tool);
     }

@@ -10,6 +10,29 @@
         <converters:StatusBrushConverter x:Key="StatusBrush" />
         <converters:ThumbnailConverter x:Key="Thumbnail" />
         <converters:EqualsToVisibilityConverter x:Key="EqualsToVisibility" />
+
+        <!-- Two chevrons point where the panel goes: toward its edge when open, back out when closed.
+             Open, the disc straddles the panel's edge; closed, it sits alone at the screen edge. -->
+        <Style x:Key="PanelTab.Right" TargetType="Button" BasedOn="{StaticResource Button.CircleTab}">
+            <Setter Property="Tag" Value="{StaticResource Icon.ChevronDoubleRight}" />
+            <Setter Property="Margin" Value="-14,0,0,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsPanelOpen}" Value="False">
+                    <Setter Property="Tag" Value="{StaticResource Icon.ChevronDouble}" />
+                    <Setter Property="Margin" Value="0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PanelTab.Bottom" TargetType="Button" BasedOn="{StaticResource Button.CircleTab}">
+            <Setter Property="Tag" Value="{StaticResource Icon.ChevronDoubleDown}" />
+            <Setter Property="Margin" Value="0,-14,0,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsStripOpen}" Value="False">
+                    <Setter Property="Tag" Value="{StaticResource Icon.ChevronDoubleUp}" />
+                    <Setter Property="Margin" Value="0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -63,7 +86,7 @@
                     Margin="{StaticResource Layout.AnnotateRailMargin}">
                 <StackPanel Margin="{StaticResource Inset.XS}">
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Select}" ToolTip="Chọn và sửa (V hoặc S). Q và Shift+Q: công cụ kế và trước. Kéo vùng trống khi đã zoom: pan"
+                                 Tag="{StaticResource Icon.Select}" ToolTip="Chọn và sửa (V hoặc S). Q và Shift+Q: công cụ kế và trước. Kéo vùng trống: pan ảnh. Esc: về công cụ này"
                                  AutomationProperties.Name="Công cụ Chọn" IsChecked="{Binding IsSelectTool}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
                                  Tag="{StaticResource Icon.Box}" ToolTip="Bounding box (B)"
@@ -93,6 +116,9 @@
 
                     <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.FitFrame}" ToolTip="Vừa khung (F)"
                             AutomationProperties.Name="Vừa khung" Command="{Binding FitCommand}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Pan}" ToolTip="Pan: kéo ảnh bằng chuột trái (G). Cũng giữ Space rồi kéo, hoặc kéo chuột giữa"
+                                 AutomationProperties.Name="Công cụ Pan" IsChecked="{Binding IsPanTool}" />
                     <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomIn}" ToolTip="Phóng to (+)"
                             AutomationProperties.Name="Phóng to" Command="{Binding ZoomInCommand}" />
                     <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomOut}" ToolTip="Thu nhỏ (-)"
@@ -120,8 +146,9 @@
             </Border>
 
             <!-- Right panel: classes and the labels of this image -->
-            <Border Style="{StaticResource Overlay.FloatingPanel}" HorizontalAlignment="Right" VerticalAlignment="Top"
-                    Margin="{StaticResource Layout.AnnotatePanelMargin}">
+            <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Layout.AnnotatePanelMargin}">
+            <Border Style="{StaticResource Overlay.FloatingPanel}"
+                    Visibility="{Binding IsPanelOpen, Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="{StaticResource Inset.MD}">
                         <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Class" />
@@ -252,6 +279,12 @@
                 </ScrollViewer>
             </Border>
 
+            <!-- Round tab on the middle of the panel's left edge: opens and closes the panel -->
+            <Button Style="{StaticResource PanelTab.Right}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    ToolTip="Thu gọn hoặc mở panel Class và nhãn" AutomationProperties.Name="Thu gọn panel Class"
+                    Command="{Binding TogglePanelCommand}" />
+            </Grid>
+
             <!-- Finish / undo point / cancel while a shape is being drawn -->
             <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                     Margin="{StaticResource Layout.AnnotateActionMargin}"
@@ -266,8 +299,10 @@
             </Border>
 
             <!-- Filters, image actions and the thumbnail strip -->
-            <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                    Height="{StaticResource Layout.ThumbnailStripHeight}" Margin="{StaticResource Layout.AnnotateStripMargin}">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="{StaticResource Layout.AnnotateStripMargin}">
+            <Border Style="{StaticResource Overlay.Strip}" HorizontalAlignment="Stretch"
+                    Height="{StaticResource Layout.ThumbnailStripHeight}"
+                    Visibility="{Binding IsStripOpen, Converter={StaticResource BoolToVisibility}}">
                 <DockPanel Margin="{StaticResource Inset.SM}">
                     <DockPanel DockPanel.Dock="Top">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -327,6 +362,12 @@
                     </ListBox>
                 </DockPanel>
             </Border>
+
+            <!-- Round tab on the middle of the strip's top edge: opens and closes the strip -->
+            <Button Style="{StaticResource PanelTab.Bottom}" HorizontalAlignment="Center" VerticalAlignment="Top"
+                    ToolTip="Thu gọn hoặc mở dải ảnh" AutomationProperties.Name="Thu gọn dải ảnh"
+                    Command="{Binding ToggleStripCommand}" />
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

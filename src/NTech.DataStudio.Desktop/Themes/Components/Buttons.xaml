@@ -86,6 +86,34 @@
         </Setter>
     </Style>
 
+    <!-- Round tab on the edge of a floating panel: two chevrons side by side point where the panel goes. Tag is the icon. -->
+    <Style x:Key="Button.CircleTab" TargetType="Button">
+        <Setter Property="Width" Value="{StaticResource Layout.PanelTabSize}" />
+        <Setter Property="Height" Value="{StaticResource Layout.PanelTabSize}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse x:Name="disc" Fill="{StaticResource Brush.Overlay.Widget}"
+                                 Stroke="{StaticResource Brush.Overlay.PanelBorder}" StrokeThickness="1" />
+                        <Path x:Name="icon" Width="14" Height="14" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                              Stroke="{StaticResource Brush.Text.Secondary}" StrokeThickness="1.5"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="disc" Property="Fill" Value="{StaticResource Brush.Background.Hover}" />
+                            <Setter TargetName="icon" Property="Stroke" Value="{StaticResource Brush.Text.Primary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- A rail button with a disruptive effect (destructive action): red icon, red hover. -->
     <Style x:Key="ToolRail.Button.Danger" TargetType="Button" BasedOn="{StaticResource ToolRail.Button}">
         <Setter Property="Template">

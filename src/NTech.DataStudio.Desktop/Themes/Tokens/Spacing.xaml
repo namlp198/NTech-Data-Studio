@@ -28,6 +28,8 @@
     <Thickness x:Key="Gap.Left.SM">8,0,0,0</Thickness>
     <Thickness x:Key="Gap.Left.MD">12,0,0,0</Thickness>
     <Thickness x:Key="Gap.Left.LG">16,0,0,0</Thickness>
+    <Thickness x:Key="Gap.Right.SM">0,0,8,0</Thickness>
+    <Thickness x:Key="Gap.Bottom.SM">0,0,0,8</Thickness>
 
     <Thickness x:Key="Border.Bottom">0,0,0,1</Thickness>
 

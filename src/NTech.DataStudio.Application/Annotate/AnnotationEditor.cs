@@ -73,6 +73,18 @@ public sealed class AnnotationEditor
         RaiseChanged();
     }
 
+    /// <summary>
+    /// Esc: leaves whatever is going on and goes back to the Select tool, dropping a half-drawn shape.
+    /// Already in Select with nothing being drawn, it clears the selection instead.
+    /// </summary>
+    public void Escape()
+    {
+        if (Drawing is not null || Tool != AnnotateTool.Select)
+            SetTool(AnnotateTool.Select);
+        else
+            Select(null);
+    }
+
     /// <summary>The next tool (+1) or the previous one (-1) in rail order, wrapping around.</summary>
     public void CycleTool(int step)
     {

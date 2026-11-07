@@ -47,3 +47,13 @@ Xem `tasks/active.md`. Chưa push, repo không có remote.
 - **Chạy app thật:** mặc định làm sạch đọc lại đúng (chỉ SHA-256 bật); `maskrcnn-segment` có trong danh sách profile; kéo chuột trái khi đã zoom làm ảnh dịch đúng, công cụ Box không pan; Q và Shift+Q đi hết 5 công cụ hai chiều.
 - **Lỗi tìm được khi chạy app:** máy kiểm có bộ gõ tiếng Việt Telex bật, nên gõ `e` lặp thành `ê` làm app nhận Backspace và bỏ mất phím. Vì vậy dùng Q thay E. Phím chữ đơn có sẵn (A, D, S, R...) vẫn có thể bị Telex làm hỏng khi bật tiếng Việt; tắt IME ở WPF không chặn được. Ghi ở `ANNOTATE.md` và `CLAUDE.md`. Cần cân nhắc phím tắt không phải chữ nếu người dùng thường gõ tiếng Việt khi gán nhãn.
 - **Chưa kiểm tra:** pan khi kéo trên polygon lõm hoặc khi nhiều nhãn chồng nhau (chỉ kiểm tra vùng trống); pan trên màn hình cảm ứng; `maskrcnn-segment` chưa train thật (imgsz 800 và stride 32 là giả định).
+
+## Phiên tiếp: pan mọi trạng thái, công cụ Pan, tab thu gọn, Esc (2026-11-07)
+
+- **Pan ở mọi mức zoom:** kéo chuột trái trên chỗ trống (công cụ Chọn, Tag) dịch ảnh kể cả khi ảnh đang vừa khung; không còn điều kiện phải zoom. Thêm công cụ Pan (`AnnotateTool.Pan`, phím G) ở thanh công cụ, ngay trên nút Phóng to; kéo ở bất kỳ chỗ nào, kể cả trên nhãn. Con trỏ thành bàn tay khi ở công cụ Pan. Q và Shift+Q giờ quay vòng qua cả Pan (6 công cụ).
+- **Nút thu gọn:** panel Class và dải ảnh có nút tròn (hai mũi tên lồng nhau) đè lên left-center của panel và top-center của dải; bấm thu gọn hoặc mở lại (`Button.CircleTab`, icon `Icon.ChevronDouble*`). Chỉ lưu trong bộ nhớ, mở lại app thì về mở.
+- **Esc:** thoát lệnh đang dùng về công cụ Chọn (bỏ hình dở nếu đang vẽ); đang ở Chọn thì bỏ chọn. `AnnotationEditor.Escape` (8 test).
+- Thêm token `Gap.Right.SM`, `Gap.Bottom.SM`, icon `Icon.Pan`, `Icon.ChevronUp/Left/Right`.
+- Test 500/500, build 0 cảnh báo. Chạy app thật: kéo trái ở mức vừa khung dịch ảnh; nút Pan nằm trên Phóng to và chọn được; G vào Pan; Esc từ Polygon đang vẽ, Box, Tag, Pan đều về Chọn và bỏ hình dở; thu gọn và mở lại panel và dải ảnh (ảnh chụp kiểm tra).
+- **Lưu ý:** thanh công cụ nằm bên trái (theo thiết kế), không phải bên phải; nút Pan đã đặt vào đó. Khi thu gọn dải ảnh, panel Class vẫn chừa lề dưới cũ (168 px) và strip Kết thúc/Bỏ đỉnh/Hủy vẫn nằm cao hơn mép dưới. Chưa chỉnh.
+- **Chưa kiểm tra:** thu gọn khi cửa sổ rất nhỏ; kéo bằng Pan trên ảnh rất lớn ở zoom cao; Esc khi hộp chọn class đang mở (phím tắt không chạy khi combobox có focus, nên Esc cũng không).

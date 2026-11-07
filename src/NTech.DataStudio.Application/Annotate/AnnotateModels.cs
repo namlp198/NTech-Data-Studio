@@ -9,7 +9,10 @@ public enum AnnotateTool
     Box,
     Polygon,
     RotatedBox,
-    Tag
+    Tag,
+
+    /// <summary>Dragging with the left button moves the picture; nothing is drawn or selected.</summary>
+    Pan
 }
 
 /// <summary>One active master image as the annotation screen lists it.</summary>

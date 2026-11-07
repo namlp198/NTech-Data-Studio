@@ -155,14 +155,17 @@ public sealed class AnnotationCanvas : FrameworkElement
 
     private Point Center() => new(ActualWidth / 2, ActualHeight / 2);
 
-    /// <summary>The picture is larger on screen than in the fitted view, so part of it is out of sight.</summary>
-    private bool IsZoomedIn =>
-        Image is not null && ActualWidth > 0 && ActualHeight > 0
-        && _scale > Math.Min(ActualWidth / Image.PixelWidth, ActualHeight / Image.PixelHeight) * FitMargin * 1.001;
+    private Cursor IdleCursor() => Editor?.Tool switch
+    {
+        AnnotateTool.Pan => Cursors.Hand,
+        { } when Editor.IsDrawingTool => Cursors.Cross,
+        _ => Cursors.Arrow
+    };
+
 
     /// <summary>
     /// Where a left press may drag the picture instead of the editor: with the Select tool when nothing
-    /// is under the pointer, and with the Tag tool, which has nothing to do on the canvas. A drawing tool
+    /// is under the pointer, with the Tag tool (nothing to do on the canvas) and with the Pan tool. A drawing tool
     /// needs the drag for drawing; there Space or the middle button pans.
     /// </summary>
     private bool StartsOnBarePicture(Point screen)
@@ -171,7 +174,7 @@ public sealed class AnnotationCanvas : FrameworkElement
         return Editor.Tool switch
         {
             AnnotateTool.Select => !Editor.IsOverLabel(ToImage(screen), Tolerance),
-            AnnotateTool.Tag => true,
+            AnnotateTool.Tag or AnnotateTool.Pan => true,
             _ => false
         };
     }
@@ -229,7 +232,7 @@ public sealed class AnnotationCanvas : FrameworkElement
 
     private void OnEditorStateChanged(object? sender, EventArgs e)
     {
-        Cursor = Editor?.IsDrawingTool == true ? Cursors.Cross : Cursors.Arrow;
+        Cursor = IdleCursor();
         RenderLayers();
     }
 
@@ -441,10 +444,10 @@ public sealed class AnnotationCanvas : FrameworkElement
         var position = e.GetPosition(this);
         var wantsPan = e.ChangedButton == MouseButton.Middle
                        || (e.ChangedButton == MouseButton.Left && Keyboard.IsKeyDown(Key.Space));
-        // Zoomed in past the fitted view, a drag that starts on bare picture moves the picture.
+        // At any zoom, a drag that starts on bare picture moves the picture (and with the Pan tool, anywhere).
         // The press still reaches the editor, so a plain click on bare picture deselects as before.
-        var dragsPicture = !wantsPan && e.ChangedButton == MouseButton.Left && IsZoomedIn && StartsOnBarePicture(position);
-        if (dragsPicture && Editor is not null)
+        var dragsPicture = !wantsPan && e.ChangedButton == MouseButton.Left && StartsOnBarePicture(position);
+        if (dragsPicture && Editor is { Tool: not AnnotateTool.Pan })
             Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount);
         if (wantsPan || dragsPicture)
         {
@@ -495,7 +498,7 @@ public sealed class AnnotationCanvas : FrameworkElement
         if (_panning && (e.ChangedButton == MouseButton.Middle || e.ChangedButton == MouseButton.Left))
         {
             _panning = false;
-            Cursor = Editor?.IsDrawingTool == true ? Cursors.Cross : Cursors.Arrow;
+            Cursor = IdleCursor();
             ReleaseMouseCapture();
             RenderOverlay();
             return;

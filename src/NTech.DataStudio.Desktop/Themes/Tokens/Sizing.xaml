@@ -15,6 +15,7 @@
     <!-- HUD shell layout -->
     <sys:Double x:Key="Layout.TopBarHeight">48</sys:Double>
     <sys:Double x:Key="Layout.ToolRailWidth">56</sys:Double>
+    <sys:Double x:Key="Layout.PanelTabSize">28</sys:Double>
     <sys:Double x:Key="Layout.FloatingPanelWidth">320</sys:Double>
     <sys:Double x:Key="Layout.FloatingPanelMaxHeight">640</sys:Double>
 
