@@ -76,6 +76,7 @@ public enum ExportImageFormat
 }
 
 /// <param name="Imgsz">The size the training will use; only checked against object sizes and written into the sample command.</param>
+/// <param name="TargetTask">The project's target task (decision 0014); the service fills it in and it goes into version.json.</param>
 /// <param name="OutputFolder">Parent folder of the dataset folder; the project's <c>exports</c> folder when null.</param>
 public sealed record ExportRequest(
     long VersionId,
@@ -85,7 +86,8 @@ public sealed record ExportRequest(
     int JpegQuality = 95,
     bool Zip = false,
     bool Overwrite = false,
-    string? OutputFolder = null);
+    string? OutputFolder = null,
+    TaskKind? TargetTask = null);
 
 public enum ExportPhase
 {

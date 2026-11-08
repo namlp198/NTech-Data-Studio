@@ -35,6 +35,15 @@
                                TextTrimming="CharacterEllipsis" ToolTip="{Binding Current.RootPath}"
                                Text="{Binding Current.RootPath}" />
 
+                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}" Text="Task mục tiêu" />
+                    <ComboBox Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Left"
+                              Width="{StaticResource Layout.FormFieldWidth}"
+                              AutomationProperties.Name="Task mục tiêu của project"
+                              ItemsSource="{Binding TaskOptions}" DisplayMemberPath="Label"
+                              SelectedItem="{Binding CurrentTask}" />
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               Text="Quyết định công cụ vẽ ở Annotate. Đổi task không xóa hay sửa nhãn đã có." />
+
                     <Grid Margin="{StaticResource Gap.Top.LG}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -92,6 +101,15 @@
                                     Margin="{StaticResource Gap.Left.SM}"
                                     Command="{Binding BrowseParentFolderCommand}" />
                         </StackPanel>
+
+                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Task mục tiêu" />
+                        <ComboBox Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Left"
+                                  Width="{StaticResource Layout.FormFieldWidth}"
+                                  AutomationProperties.Name="Task mục tiêu"
+                                  ItemsSource="{Binding TaskOptions}" DisplayMemberPath="Label"
+                                  SelectedItem="{Binding NewTask}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   Text="Segment (polygon) xuất được cả Segment lẫn Detect; chọn Detect nếu chỉ cần box và muốn vẽ nhanh. Đổi được sau." />
 
                         <Button Style="{StaticResource Button.Primary}" Content="Tạo project"
                                 HorizontalAlignment="Left" Margin="{StaticResource Gap.Top.LG}"

@@ -36,7 +36,8 @@ public sealed record ValidationInput(
     DatasetConfig Config,
     ModelProfile Profile,
     int Imgsz,
-    Func<string, bool> MasterExists);
+    Func<string, bool> MasterExists,
+    TaskKind? TargetTask = null);
 
 /// <summary>
 /// Checks a version against a profile before anything is written (docs/DESIGN_DOC.md, Module 4).
@@ -156,6 +157,7 @@ public static class DatasetValidator
         AddProblemIssues(issues, problems, input, kind);
         AddCountIssues(issues, counts, names, input, kind);
         AddProfileIssues(issues, input);
+        AddTargetIssue(issues, input);
         return new ValidationReport(issues);
     }
 
@@ -272,6 +274,16 @@ public static class DatasetValidator
             .ToList();
         if (missingInVal.Count > 0)
             issues.Add(Warning($"Tập val thiếu class: {string.Join(", ", missingInVal)}."));
+    }
+
+    /// <summary>Decision 0014: a profile of another task than the project's is allowed (polygons give boxes) but worth saying.</summary>
+    private static void AddTargetIssue(List<ValidationIssue> issues, ValidationInput input)
+    {
+        if (input.TargetTask is not { } target || input.Profile.Task == target) return;
+
+        issues.Add(Warning(
+            $"Project nhắm {TargetTasks.Label(target)} nhưng profile {input.Profile.Id} là {TargetTasks.Label(input.Profile.Task)}; "
+            + "nhãn được chuyển sang hình của profile khi xuất."));
     }
 
     private static void AddProfileIssues(List<ValidationIssue> issues, ValidationInput input)

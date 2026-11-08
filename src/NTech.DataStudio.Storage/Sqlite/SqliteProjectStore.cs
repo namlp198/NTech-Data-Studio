@@ -1,14 +1,18 @@
 using Microsoft.Data.Sqlite;
 using NTech.DataStudio.Application.Abstractions;
 using NTech.DataStudio.Application.Projects;
+using NTech.DataStudio.Domain.Profiles;
 using NTech.DataStudio.Storage.Files;
 
 namespace NTech.DataStudio.Storage.Sqlite;
 
 public sealed class SqliteProjectStore : IProjectStore
 {
-    public Task<ProjectSummary> CreateAsync(string folder, string name, CancellationToken cancellationToken = default) =>
-        Task.Run(() => Guarded(() => Create(folder, name), folder), cancellationToken);
+    public Task<ProjectSummary> CreateAsync(string folder, string name, TaskKind? targetTask = null, CancellationToken cancellationToken = default) =>
+        Task.Run(() => Guarded(() => Create(folder, name, targetTask), folder), cancellationToken);
+
+    public Task<ProjectSummary> SetTargetTaskAsync(string folder, TaskKind? targetTask, CancellationToken cancellationToken = default) =>
+        Task.Run(() => Guarded(() => SetTargetTask(folder, targetTask), folder), cancellationToken);
 
     public Task<ProjectSummary> OpenAsync(string folder, CancellationToken cancellationToken = default) =>
         Task.Run(() => Guarded(() => Open(folder), folder), cancellationToken);
@@ -19,7 +23,7 @@ public sealed class SqliteProjectStore : IProjectStore
 
     public IDatasetStore OpenDatasetStore(string folder) => new SqliteDatasetStore(new ProjectFolderLayout(folder));
 
-    private static ProjectSummary Create(string folder, string name)
+    private static ProjectSummary Create(string folder, string name, TaskKind? targetTask)
     {
         var layout = new ProjectFolderLayout(folder);
         if (Directory.Exists(layout.RootPath) && Directory.EnumerateFileSystemEntries(layout.RootPath).Any())
@@ -37,8 +41,40 @@ public sealed class SqliteProjectStore : IProjectStore
         command.Parameters.AddWithValue("$name", name);
         command.Parameters.AddWithValue("$createdAt", DateTimeOffset.UtcNow.ToString("O"));
         command.ExecuteNonQuery();
+        WriteTargetTask(connection, targetTask);
 
         return ReadSummary(connection, layout);
+    }
+
+    private static ProjectSummary SetTargetTask(string folder, TaskKind? targetTask)
+    {
+        var layout = new ProjectFolderLayout(folder);
+        if (!File.Exists(layout.DatabasePath))
+            throw new ProjectException($"Thư mục \"{layout.RootPath}\" không phải project: thiếu {ProjectFolderLayout.DatabaseFileName}.");
+
+        var db = new ProjectDb(layout.DatabasePath);
+        using var connection = db.Open();
+        if (!db.TryMigrate(connection))
+            throw new ProjectException("Project này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
+
+        WriteTargetTask(connection, targetTask);
+        return ReadSummary(connection, layout);
+    }
+
+    private static void WriteTargetTask(SqliteConnection connection, TaskKind? targetTask)
+    {
+        using var command = connection.CreateCommand();
+        if (targetTask is { } task)
+        {
+            command.CommandText = "INSERT INTO project_meta (key, value) VALUES ('target_task', $value) ON CONFLICT (key) DO UPDATE SET value = excluded.value;";
+            command.Parameters.AddWithValue("$value", TargetTasks.Key(task));
+        }
+        else
+        {
+            command.CommandText = "DELETE FROM project_meta WHERE key = 'target_task';";
+        }
+
+        command.ExecuteNonQuery();
     }
 
     private static ProjectSummary Open(string folder)
@@ -65,7 +101,8 @@ public sealed class SqliteProjectStore : IProjectStore
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM active_images;"),
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM active_images WHERE status IN ('labeled', 'reviewed', 'null');"),
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM classes;"),
-            ProjectDb.Count(connection, "SELECT COUNT(*) FROM versions;"));
+            ProjectDb.Count(connection, "SELECT COUNT(*) FROM versions;"),
+            TargetTasks.Parse(ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'target_task';") as string));
     }
 
     private static ProjectSummary Guarded(Func<ProjectSummary> action, string folder)

@@ -66,6 +66,8 @@ internal static class ExportDocuments
             writer.WriteStartObject();
             writer.WriteString("format", kind.Id());
             writer.WriteString("profile", request.Profile.Id);
+            if (request.TargetTask is { } target)
+                writer.WriteString("targetTask", TargetTasks.Key(target));
             writer.WriteNumber("imgsz", request.Imgsz);
             writer.WriteString("imageFormat", request.ImageFormat.ToString().ToLowerInvariant());
             if (request.ImageFormat == ExportImageFormat.Jpeg)

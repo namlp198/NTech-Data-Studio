@@ -68,6 +68,7 @@ public sealed class ExportService
     /// <exception cref="OperationCanceledException">Stopped by the user; nothing is left behind.</exception>
     public ExportResult Export(ExportRequest request, IProgress<ExportProgress>? progress = null, CancellationToken cancellationToken = default)
     {
+        request = request with { TargetTask = _projects.Current?.TargetTask };
         var kind = ExportKinds.For(request.Profile)
             ?? throw new InvalidOperationException($"Profile {request.Profile.Id} không có định dạng xuất.");
         var exporter = _exporters.FirstOrDefault(candidate => candidate.Kind == kind)
@@ -178,7 +179,7 @@ public sealed class ExportService
         return new Loaded(version, config, images, split, annotations, store.LoadClasses());
     }
 
-    private static ValidationReport ValidateLoaded(string root, Loaded data, ModelProfile profile, int imgsz) =>
+    private ValidationReport ValidateLoaded(string root, Loaded data, ModelProfile profile, int imgsz) =>
         DatasetValidator.Validate(new ValidationInput(
             data.Images,
             data.Split,
@@ -187,7 +188,8 @@ public sealed class ExportService
             data.Config,
             profile,
             imgsz,
-            master => File.Exists(Path.Combine(root, master))));
+            master => File.Exists(Path.Combine(root, master)),
+            _projects.Current?.TargetTask));
 
     // ---- building the picture list ----
 

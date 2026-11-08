@@ -13,6 +13,7 @@ using NTech.DataStudio.Desktop.Shell;
 using NTech.DataStudio.Desktop.ViewModels.Prepare;
 using NTech.DataStudio.Domain.Geometry;
 using NTech.DataStudio.Domain.Images;
+using NTech.DataStudio.Domain.Profiles;
 
 namespace NTech.DataStudio.Desktop.ViewModels.Annotate;
 
@@ -182,6 +183,32 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public bool IsTagTool { get => Tool == AnnotateTool.Tag; set => ChooseTool(value, AnnotateTool.Tag); }
     public bool IsPanTool { get => Tool == AnnotateTool.Pan; set => ChooseTool(value, AnnotateTool.Pan); }
 
+    private TaskKind? TargetTask => _projects.Current?.TargetTask;
+
+    public bool IsBoxToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Box);
+    public bool IsPolygonToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Polygon);
+    public bool IsObbToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.RotatedBox);
+    public bool IsTagToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Tag);
+
+    public string BoxToolTip => ToolTip("Bounding box (B)", AnnotateTool.Box);
+    public string PolygonToolTip => ToolTip("Polygon (P)", AnnotateTool.Polygon);
+    public string ObbToolTip => ToolTip("Rotated box (R)", AnnotateTool.RotatedBox);
+    public string TagToolTip => ToolTip("Tag cả ảnh (T)", AnnotateTool.Tag);
+
+    private string ToolTip(string text, AnnotateTool tool) =>
+        TaskTools.WhyOff(TargetTask, tool) is { } why ? $"{text} - {why}" : text;
+
+    private void RaiseTargetTaskChanged()
+    {
+        if (Editor is { } editor) editor.TargetTask = TargetTask;
+        foreach (var name in new[]
+                 {
+                     nameof(IsBoxToolEnabled), nameof(IsPolygonToolEnabled), nameof(IsObbToolEnabled), nameof(IsTagToolEnabled),
+                     nameof(BoxToolTip), nameof(PolygonToolTip), nameof(ObbToolTip), nameof(TagToolTip)
+                 })
+            OnPropertyChanged(name);
+    }
+
     private AnnotateTool Tool => Editor?.Tool ?? AnnotateTool.Select;
 
     private void ChooseTool(bool selected, AnnotateTool tool)
@@ -241,7 +268,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             _allImages = images.Select(image => new ImageRowViewModel(image, store.ProjectRoot)).ToList();
             HasImages = _allImages.Count > 0;
 
-            var editor = new AnnotationEditor(_service, _clipboard);
+            var editor = new AnnotationEditor(_service, _clipboard) { TargetTask = TargetTask };
             editor.Changed += OnEditorChanged;
             editor.Edited += OnEdited;
             Editor = editor;
@@ -302,6 +329,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     private void OnProjectChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(HasProject));
+        RaiseTargetTaskChanged();
         NotifyVisibility();
         if (!HasProject) Deactivate();
     }

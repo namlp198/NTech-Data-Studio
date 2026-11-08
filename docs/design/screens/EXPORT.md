@@ -63,3 +63,7 @@ Bảng gộp class của version được áp trước khi kiểm tra: nhãn c�
 ## Segmentation
 
 Ba profile segmentation: `yolo26-segment` (YOLO txt, polygon chuẩn hóa), `rf-detr-segment` và `maskrcnn-segment` (COCO json, trường `segmentation` là polygon pixel kèm `bbox` và `area` của polygon). Nhãn polygon vẽ bằng công cụ Polygon ở Annotate. Ảnh chỉ có box bị chặn xuất ở profile này (xem Kiểm tra); polygon bị biên ảnh cắt được cắt lại bằng Sutherland–Hodgman. Chưa có mặt nạ điểm ảnh (PNG), RLE hay segmentation ngữ nghĩa. `maskrcnn-segment` chỉ khác `rf-detr-segment` ở `imgsz` mặc định và ghi chú train trong README.
+
+## Task mục tiêu của project
+
+Profile có task khác task mục tiêu của project (quyết định 0014) thì kiểm tra báo một cảnh báo, không chặn: polygon vẫn xuất được thành box. Lỗi thật vẫn do các kiểm tra sẵn có bắt (ví dụ ảnh chỉ có box mà profile là Segment). Màn hình chọn sẵn profile đầu tiên cùng task với project, và `version.json` ghi `targetTask`.

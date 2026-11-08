@@ -103,3 +103,7 @@ Nhả chuột phải lên một nhãn (đang hiện, không đang vẽ dở, cô
 | Icon + Xóa (chữ đỏ) | Xóa nhãn (undo được) |
 
 Nhãn bị khóa thì Class và Xóa bị làm mờ. Chuột phải lên chỗ trống không hiện menu. `AnnotationEditor.LabelAt` tìm nhãn dưới con trỏ; mọi thay đổi vẫn đi qua `AnnotateService.Execute`.
+
+## Công cụ theo task mục tiêu
+
+Project có task mục tiêu (quyết định 0014, chọn ở màn hình Project). Rail chỉ bật công cụ vẽ hợp với task: Detect bật Box, Segment bật Polygon, OBB bật Rotated box, Classify bật Tag. Chọn và Pan luôn bật. Công cụ tắt bị làm mờ, tooltip nói vì sao ("tắt vì project nhắm ..."), phím tắt của nó không làm gì (hiện lời nhắc ở thanh trạng thái), và Q / Shift+Q bỏ qua nó. Đổi task giữa lúc đang dùng một công cụ vừa bị tắt thì về Chọn. Nhãn đã có thuộc loại khác vẫn hiện và sửa được. Project chưa chọn task (project cũ) bật mọi công cụ như trước. Logic ở `TaskTools` và `AnnotationEditor.TargetTask`.

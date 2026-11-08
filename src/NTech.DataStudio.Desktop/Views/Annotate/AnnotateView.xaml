@@ -89,17 +89,17 @@
                                  Tag="{StaticResource Icon.Select}" ToolTip="Chọn và sửa (V hoặc S). Q và Shift+Q: công cụ kế và trước. Kéo vùng trống: pan ảnh. Esc: về công cụ này"
                                  AutomationProperties.Name="Công cụ Chọn" IsChecked="{Binding IsSelectTool}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Box}" ToolTip="Bounding box (B)"
-                                 AutomationProperties.Name="Công cụ Box" IsChecked="{Binding IsBoxTool}" />
+                                 Tag="{StaticResource Icon.Box}" ToolTip="{Binding BoxToolTip}" ToolTipService.ShowOnDisabled="True"
+                                 AutomationProperties.Name="Công cụ Box" IsChecked="{Binding IsBoxTool}" IsEnabled="{Binding IsBoxToolEnabled}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Polygon}" ToolTip="Polygon (P)"
-                                 AutomationProperties.Name="Công cụ Polygon" IsChecked="{Binding IsPolygonTool}" />
+                                 Tag="{StaticResource Icon.Polygon}" ToolTip="{Binding PolygonToolTip}" ToolTipService.ShowOnDisabled="True"
+                                 AutomationProperties.Name="Công cụ Polygon" IsChecked="{Binding IsPolygonTool}" IsEnabled="{Binding IsPolygonToolEnabled}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Obb}" ToolTip="Rotated box (R)"
-                                 AutomationProperties.Name="Công cụ OBB" IsChecked="{Binding IsObbTool}" />
+                                 Tag="{StaticResource Icon.Obb}" ToolTip="{Binding ObbToolTip}" ToolTipService.ShowOnDisabled="True"
+                                 AutomationProperties.Name="Công cụ OBB" IsChecked="{Binding IsObbTool}" IsEnabled="{Binding IsObbToolEnabled}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Tag}" ToolTip="Tag cả ảnh (T)"
-                                 AutomationProperties.Name="Công cụ Tag" IsChecked="{Binding IsTagTool}" />
+                                 Tag="{StaticResource Icon.Tag}" ToolTip="{Binding TagToolTip}" ToolTipService.ShowOnDisabled="True"
+                                 AutomationProperties.Name="Công cụ Tag" IsChecked="{Binding IsTagTool}" IsEnabled="{Binding IsTagToolEnabled}" />
 
                     <Border Height="{StaticResource Layout.DividerThickness}" Margin="{StaticResource Inset.SM}" Background="{StaticResource Brush.Border.Default}" />
 

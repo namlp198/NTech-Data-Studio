@@ -1,5 +1,6 @@
 using NTech.DataStudio.Domain.Annotations;
 using NTech.DataStudio.Domain.Geometry;
+using NTech.DataStudio.Domain.Profiles;
 
 namespace NTech.DataStudio.Application.Annotate;
 
@@ -20,6 +21,7 @@ public sealed class AnnotationEditor
     private readonly HashSet<Guid> _hidden = new();
     private readonly HashSet<Guid> _locked = new();
     private Drag? _drag;
+    private TaskKind? _targetTask;
 
     public AnnotationEditor(AnnotateService service, AnnotationClipboard clipboard)
     {
@@ -35,6 +37,19 @@ public sealed class AnnotationEditor
 
     public ImageDocument? Document { get; private set; }
     public AnnotateTool Tool { get; private set; } = AnnotateTool.Select;
+    /// <summary>What the project is for; the drawing tools that do not fit it are off (decision 0014). Null allows all.</summary>
+    public TaskKind? TargetTask
+    {
+        get => _targetTask;
+        set
+        {
+            if (_targetTask == value) return;
+            _targetTask = value;
+            if (!TaskTools.Allows(value, Tool)) SetTool(AnnotateTool.Select);
+            else RaiseChanged();
+        }
+    }
+
     public long? ActiveClassId { get; set; }
     public Guid? SelectedId { get; private set; }
     public AnnotationDrawingSession? Drawing { get; private set; }
@@ -68,6 +83,13 @@ public sealed class AnnotationEditor
 
     public void SetTool(AnnotateTool tool)
     {
+        if (!TaskTools.Allows(TargetTask, tool))
+        {
+            Message = $"Công cụ này {TaskTools.WhyOff(TargetTask, tool)}. Đổi task ở màn hình Project.";
+            RaiseChanged();
+            return;
+        }
+
         Cancel();
         Tool = tool;
         RaiseChanged();
@@ -88,7 +110,7 @@ public sealed class AnnotationEditor
     /// <summary>The next tool (+1) or the previous one (-1) in rail order, wrapping around.</summary>
     public void CycleTool(int step)
     {
-        var tools = Enum.GetValues<AnnotateTool>();
+        var tools = Enum.GetValues<AnnotateTool>().Where(tool => TaskTools.Allows(TargetTask, tool)).ToArray();
         var index = Array.IndexOf(tools, Tool);
         SetTool(tools[((index + step) % tools.Length + tools.Length) % tools.Length]);
     }

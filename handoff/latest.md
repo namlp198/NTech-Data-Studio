@@ -69,3 +69,14 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 - `AnnotationEditor.LabelAt` (2 test). Test 502, build 0 cảnh báo.
 - **Chạy app thật:** vẽ box, chuột phải trong lúc đang ở công cụ Box: đủ 3 mục; mở Class thấy connector và tape; chọn tape đổi class; mục Chọn đưa công cụ từ Box về Chọn; Xóa xóa nhãn (nhãn về 0); chuột phải chỗ trống không hiện menu. Ảnh chụp xác nhận giao diện.
 - **Chưa kiểm tra:** menu trên nhãn bị khóa (logic làm mờ có, chưa bấm thử); phím mũi tên và Esc trong menu; nhãn polygon và rotated box (dùng cùng đường hit-test đã có test); nhãn chồng nhau (lấy nhãn trên cùng).
+
+## Phiên: task mục tiêu của project (2026-11-08, nhánh `dev/data-studio`)
+
+- **Quyết định 0014.** Project khai báo task mục tiêu (Detect, Segment, OBB, Classify), lưu ở `project_meta.target_task`, không thêm migration; project cũ không có khóa này nên chưa đặt task và mọi công cụ vẫn bật. `TargetTasks` (Domain), `ProjectSummary.TargetTask`, `ProjectService.SetTargetTaskAsync`, `IProjectStore.SetTargetTaskAsync`.
+- **Project:** chọn task khi tạo (mặc định Segment, vì polygon xuất được cả Segment lẫn Detect) và đổi được ở project đang mở; đổi lưu ngay và không đụng tới nhãn.
+- **Annotate:** `TaskTools.Allows` quyết định công cụ nào bật; rail làm mờ công cụ không hợp, tooltip nêu lý do, phím tắt và Q bỏ qua chúng.
+- **Export:** `DatasetValidator` cảnh báo (không chặn) khi task của profile khác task của project; màn hình chọn sẵn profile cùng task; `version.json` ghi `targetTask`.
+- **Kiểm tra:** build 0 cảnh báo; test Data Studio 523 (thêm 21 ở `Projects/TargetTaskTests.cs`: lưu và đọc lại task, đặt và xóa, từ chối Anomaly và project chưa mở, bảng công cụ theo task, editor từ chối công cụ và Q bỏ qua, đổi task khi đang dùng công cụ bị tắt, cảnh báo của validator). Chạy app thật qua UI Automation: ô task khi tạo project mặc định Segment; ở project Segment chỉ Chọn và Polygon bật, tooltip của Box nói "tắt vì project nhắm Segment", phím B không đổi công cụ, Q nhảy Chọn → Polygon rồi bỏ qua Box, OBB, Tag, phím P chọn Polygon; đổi sang Detect thì chỉ Box bật và vẽ được box (1 nhãn); đổi về "Chưa chọn" thì cả 4 công cụ bật.
+- **Lỗi tìm được khi chạy app:** ô task của project đang mở trống vì setter bỏ qua giá trị khi đang đồng bộ. Đã sửa; test không bắt được vì `ProjectViewModel` chưa có test.
+- **Chưa kiểm tra:** `version.json` có ghi `targetTask` hay không (chưa có test, chưa xuất lại bằng app); chọn Classify, OBB trong app; thay đổi task trong lúc đang vẽ polygon dở; project cũ mở bằng bản này (kiểm bằng test lưu trữ, chưa mở project thật). Không làm: khóa task ở cấp version trong DB, tự chuyển box thành polygon (xem quyết định 0014).
+- Ổ D: đầy lúc build (0 byte trống); đã xóa `bin` và `obj` của thư mục chính theo ý bạn để lấy chỗ.
