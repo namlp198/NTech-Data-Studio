@@ -13,9 +13,20 @@ Hai tool ở chung repo vì phát hành chung trong một sản phẩm. Trainer 
 | | Data Studio | Trainer |
 | --- | --- | --- |
 | Nhánh | `dev/data-studio` | `dev/trainer` |
+| Thư mục làm việc | `.claude/worktrees/data-studio` | `.claude/worktrees/trainer` |
 | Code | `src/` còn lại, `profiles/`, `installer/` | `src/NTech.DataStudio.Trainer*`, `trainer/`, `docker/trainer/`, `docs/trainer/` |
 | Bàn giao | `handoff/latest.md` | `handoff/trainer.md` |
 | Task | Mục Data Studio trong `tasks/active.md` | Mục Trainer trong `tasks/active.md` |
+
+Thư mục gốc của repo giữ nhánh `main`, chỉ dùng để merge và phát hành. Mỗi phần làm trong worktree của mình; thư mục `.claude/worktrees/` nằm trong `.git/info/exclude` nên git của thư mục gốc không thấy nó. Tạo lại trên máy mới:
+
+```bash
+git worktree add .claude/worktrees/data-studio dev/data-studio
+git worktree add .claude/worktrees/trainer dev/trainer
+echo .claude/worktrees/ >> .git/info/exclude
+```
+
+Một nhánh chỉ checkout được ở một thư mục: muốn làm `dev/trainer` ở chỗ khác thì phải gỡ worktree của nó trước (`git worktree remove`). Tìm kiếm trong thư mục gốc sẽ gặp cả bản trong worktree, nên mở đúng worktree khi làm việc.
 
 **Quy tắc:**
 

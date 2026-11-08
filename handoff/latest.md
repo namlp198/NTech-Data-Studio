@@ -2,6 +2,8 @@
 
 Ngày: 2026-11-07
 
+Làm trên nhánh `dev/data-studio`, worktree `.claude/worktrees/data-studio` (từ 2026-11-08). Thư mục gốc của repo giữ `main`.
+
 ## Đã làm
 
 - Module 4 Export: kiểm tra trước khi xuất (`DatasetValidator`), xuất YOLO26 detect, segment, OBB, classify và COCO detect, segment (`ExportService` + `NTech.DataStudio.Exporters`), `README.dataset.md` và `version.json` trong mỗi bản xuất, tùy chọn zip, màn hình Export. Xem `docs/design/screens/EXPORT.md`.
