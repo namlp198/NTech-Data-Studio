@@ -96,52 +96,7 @@ uv run --no-project --python 3.12 --with pytest --with pillow --with pyyaml --wi
 
 ## Docker trên Linux có GPU
 
-Train bằng GPU trên Linux cần **Docker Engine** cùng NVIDIA Container Toolkit. **Docker Desktop for Linux không dùng được**: nó chạy container trong một VM, không truyền GPU NVIDIA vào, và giới hạn RAM của VM thường thấp hơn nhiều so với máy (màn hình Máy báo RAM "Weak" và `runtime nvidia: không`). Nhận biết: `docker info --format '{{.Name}} | {{.OperatingSystem}}'` ra `docker-desktop | Docker Desktop`. Máy chỉ train bằng CPU thì Docker Desktop vẫn chạy được, chỉ cần tăng RAM ở Settings → Resources.
-
-Các lệnh dưới đây dành cho Ubuntu 24.04, cần `sudo`, và driver NVIDIA đã có sẵn trên host.
-
-1. Gỡ Docker Desktop và Engine cũ. **Việc này xóa mọi image, container, volume**: `docker save` trước nếu cần giữ.
-
-   ```bash
-   systemctl --user stop docker-desktop; sudo apt purge -y docker-desktop
-   rm -rf ~/.docker ~/.config/systemd/user/docker-desktop.service
-   sudo apt purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras docker.io docker-compose docker-doc podman-docker containerd runc
-   sudo apt autoremove -y --purge
-   sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker /etc/apt/sources.list.d/docker.* /etc/apt/keyrings/docker.asc
-   ```
-
-   Xóa `~/.docker` là cần thiết: `config.json` của Desktop có thể còn trỏ credential helper `desktop`, làm Engine mới lỗi khi pull. `apt purge` báo vài gói "không được cài" là bình thường.
-
-2. Cài Docker Engine từ kho của Docker, rồi cho user dùng docker không cần sudo (mở shell mới để nhóm có hiệu lực):
-
-   ```bash
-   sudo apt update && sudo apt install -y ca-certificates curl && sudo install -m 0755 -d /etc/apt/keyrings
-   sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && sudo chmod a+r /etc/apt/keyrings/docker.asc
-   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-   sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-   sudo usermod -aG docker $USER && newgrp docker
-   ```
-
-3. Cài NVIDIA Container Toolkit và đăng ký runtime:
-
-   ```bash
-   curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-   curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-   sudo apt update && sudo apt install -y nvidia-container-toolkit
-   sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker
-   ```
-
-4. Kiểm tra:
-
-   ```bash
-   docker info --format '{{.Name}} | {{.OperatingSystem}} | {{.MemTotal}} | {{.Runtimes}}'
-   docker context ls
-   docker run --rm --gpus all ubuntu nvidia-smi
-   ```
-
-   Kết quả đúng: tên host thật (không có "Docker Desktop"), `MemTotal` bằng RAM máy, `nvidia` nằm trong danh sách runtime, chỉ còn context `default` (còn `desktop-linux` thì `docker context rm desktop-linux`), và `nvidia-smi` trong container in ra bảng GPU.
-
-5. Build lại image worker, vì Engine mới có kho image trống: `image/build-image.sh --compute cuda`. Rồi mở Trainer, bấm "Đọc lại" ở màn hình Máy và "Kiểm tra trong container".
+Train bằng GPU trên Linux cần Docker Engine và NVIDIA Container Toolkit; Docker Desktop for Linux không truyền GPU vào container và giới hạn RAM. Cách gỡ Docker đã cài và cài lại từ đầu: [DOCKER_LINUX.md](../docs/trainer/DOCKER_LINUX.md).
 
 ## Dùng bằng app
 

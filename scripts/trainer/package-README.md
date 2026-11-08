@@ -15,7 +15,7 @@ Bản này tự chứa .NET, không cần cài runtime.
 
 - Windows: Docker Desktop.
 - Linux: Docker Engine. Máy có GPU NVIDIA thì cài thêm NVIDIA Container Toolkit.
-- Không dùng Docker Desktop for Linux để train bằng GPU: nó không truyền GPU vào container và giới hạn RAM của VM. Dùng Docker Engine (xem mục "Docker trên Linux có GPU" trong `trainer/README.md` của repo).
+- Không dùng Docker Desktop for Linux để train bằng GPU: nó không truyền GPU vào container và giới hạn RAM của VM. Dùng Docker Engine (cách gỡ và cài: `docs/trainer/DOCKER_LINUX.md` trong repo).
 
 ## 2. Có image worker
 
