@@ -6,6 +6,8 @@
 
 Luồng dataset → YOLO detect (YOLO26, YOLO11, YOLOv8, YOLO12 thử nghiệm) → ONNX đã chạy thật bằng CLI và bằng app Desktop Avalonia (M2), trên Windows và Ubuntu trong WSLg, với image CPU và dataset tổng hợp. Thiết kế ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md` (v0.4), cách dùng ở `trainer/README.md`, tình trạng ở `handoff/trainer.md`.
 
+Đóng gói: `scripts/trainer/deploy` ra gói Windows và Linux, có thư mục `image/` để build image trên máy train.
+
 Việc còn lại của M0 và M1 cần máy hoặc dữ liệu chưa có:
 - Build image `cuda` và chạy trên máy train có GPU.
 - Chạy trên dataset wire harness thật khi gán nhãn xong.

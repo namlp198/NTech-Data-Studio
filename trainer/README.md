@@ -25,14 +25,36 @@ dotnet build NTech.DataStudio.Trainer.slnf -c Debug
 dotnet test NTech.DataStudio.Trainer.slnf
 ```
 
-Bản Linux tự chứa:
+## Build và đóng gói
+
+Script ở `scripts/trainer/`. Trên Windows dùng `.bat` (gọi `.ps1` cùng tên), trên Linux dùng `.sh`. Hai bên cùng tham số và cùng kết quả.
+
+| Script | Làm gì |
+| --- | --- |
+| `build` | Publish app và CLI tự chứa vào cùng thư mục `publish\NTechTrainer-<runtime>`, kèm thư mục `image\` để build image trên máy train mà không cần repo |
+| `deploy` | Chạy test Trainer, gọi `build`, nén vào `dist\` (`.zip` cho Windows, `.tar.gz` cho Linux), ghi `.sha256`; tùy chọn lưu image và chép đi |
+| `build-image` | Build image worker với tag `ntech-trainer:dev-cpu` hoặc `dev-cuda`. Chạy được từ repo và từ gói đã giải nén |
 
 ```powershell
-dotnet publish src\NTech.DataStudio.Trainer.Cli -c Release -r linux-x64 --self-contained true -o publish\trainer-linux
-dotnet publish src\NTech.DataStudio.Trainer.Desktop -c Release -r linux-x64 --self-contained true -o publish\trainer-desktop-linux
+scripts\trainer\deploy.bat                                   # win-x64
+scripts\trainer\deploy.bat -Runtime win-x64,linux-x64        # cả hai
+scripts\trainer\deploy.bat -SaveImage cuda -Destination \\server\releases\Trainer
+scripts\trainer\build-image.bat -Compute cpu
 ```
 
-App Desktop trên Ubuntu cần thư viện X11 của hệ điều hành. Ubuntu desktop thường có sẵn; WSL Ubuntu thì thiếu, cài bằng `sudo apt install libice6 libsm6`.
+```bash
+scripts/trainer/deploy.sh                                    # linux-x64
+scripts/trainer/deploy.sh --runtime linux-x64,win-x64 --save-image cuda --destination /srv/releases/trainer
+scripts/trainer/build-image.sh --compute cuda
+```
+
+- Version lấy từ `Directory.Build.props`; `-Version` hoặc `--version` để ghi đè.
+- Gói Linux tạo trên Windows vẫn giữ quyền thực thi của `NTechTrainer`, `ntech-trainer` và file `.sh`.
+- `-SaveImage` build image rồi `docker save` ra `dist\ntech-trainer-<compute>-<version>.tar.gz`, cho máy train không có internet (`docker load -i <file>`).
+- Test Python của worker chỉ chạy khi có `uv` trên PATH; không có thì script cảnh báo rõ là đã bỏ qua.
+- Đích đã có file cùng tên mà khác nội dung thì không ghi đè, trừ khi thêm `-Force` hoặc `--force`. Mỗi lần build cho ra hash mới, nên giao lại cùng version thì phải tăng version hoặc dùng `-Force`.
+
+Trên Linux, app và CLI cần `libicu`, app cần thêm thư viện X11. Ubuntu desktop thường có sẵn; bản tối giản hoặc WSL thì cài bằng `sudo apt install libicu-dev libice6 libsm6`.
 
 Ảnh chụp từng màn hình do test dựng ra nằm ở `tests\NTech.DataStudio.Trainer.Desktop.Tests\bin\Debug\net10.0\screens\` sau khi chạy test.
 

@@ -24,6 +24,7 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
 - `src/NTech.DataStudio.Trainer.Desktop` (M2): 5 màn hình Máy, Dataset, Cấu hình, Train, Kết quả. Token port từ WPF ở `Themes/Tokens`, style ở `Themes/Components`, biểu đồ tự vẽ ở `Controls/LineChart.cs`. Composition root ở `Bootstrap/AppComposition.cs`.
 - `tests/NTech.DataStudio.Trainer.Desktop.Tests`: test ViewModel với Docker giả, dựng từng màn hình bằng Avalonia Headless và lưu PNG, so token với WPF, kiểm mọi `StaticResource` có tồn tại.
 - `docker/trainer`: Dockerfile, file khóa phiên bản `lock-cpu.txt`, `lock-cuda.txt`, `update-locks.ps1`.
+- `scripts/trainer` (2026-11-08): `build`, `deploy`, `build-image`, mỗi lệnh có `.ps1`, `.bat` và `.sh`. Gói `dist/NTechTrainer-<version>-<runtime>.zip` hoặc `.tar.gz` chứa app, CLI và thư mục `image/` để build image trên máy train không cần repo; `-SaveImage` lưu kèm file image. Cách dùng ở `trainer/README.md`.
 - Quyết định 0009 đến 0013.
 
 ## Đã kiểm tra
@@ -49,6 +50,14 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
   - **Quyền ghi:** container chạy với `--user 1000:1000`, và cả 29 file kết quả thuộc user Linux. Đây là điểm trước đó chưa kiểm.
   - Không còn container nào sau khi xong. File thử trong WSL đã xóa.
 
+- Script đóng gói chạy thật (2026-11-08). Máy lúc này đọc ra RTX 4060 Ti 16 GB (SM 8.9), WSL là Ubuntu 26.04:
+  - `deploy.bat -Runtime win-x64,linux-x64`: 100 test Trainer xanh, ra gói zip 71 MB và tar.gz 44 MB. Test Python bị bỏ qua vì máy không có `uv`, script cảnh báo rõ.
+  - **Gói Windows:** giải nén, `ntech-trainer.exe models` chạy, app Desktop mở cửa sổ.
+  - **Gói Linux tạo trên Windows:** `sha256sum -c` khớp; `NTechTrainer`, `ntech-trainer`, `createdump`, `build-image.sh` có quyền 0755. Trong WSL, `models` và `probe` chạy (với `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`, vì WSL này thiếu `libicu`).
+  - **Image từ gói:** `image/build-image.sh --compute cpu` trong gói đã giải nén build ra `ntech-trainer:dev-cpu`.
+  - **`-SaveImage cpu -Destination`:** file image 582 MB, chép đi khớp hash, `docker load` lại được và import được `ntech_worker`.
+  - **`deploy.sh` trong Git Bash trên Windows:** ra cả hai gói, chép đi được; đích có file khác nội dung thì từ chối và thoát mã 1.
+
 ## Lỗi tìm được khi chạy thật
 
 Test không bắt được, đã sửa, ghi lại để khỏi lặp.
@@ -71,9 +80,15 @@ Test không bắt được, đã sửa, ghi lại để khỏi lặp.
 - **Lỗi bị xóa trước khi người dùng thấy.** Export hay Train tiếp thất bại thì thông báo lỗi bị lượt làm mới 2 giây sau xóa mất, cả trên Windows. Nay lượt làm mới chỉ xóa lỗi do chính nó gây ra.
 - **Workspace tạo trên Windows mở trên Linux.** `workspace.json` ghi `C:\…\data.yaml`, nên trên Linux Docker nhận nguồn mount rỗng. Nay train, export và kiểm tra dataset từ chối trước khi gọi Docker, kèm hướng dẫn tạo workspace mới trên máy đó.
 
+**Script đóng gói:**
+- `tar` của Windows không đặt được quyền thực thi từ NTFS, nên gói Linux tạo trên Windows mất bit `x`. Nay `deploy.ps1` mô tả từng file trong manifest mtree.
+- `python3` trên PATH có thể chỉ là lối tắt Microsoft Store: `command -v` thấy nhưng không chạy. Nay `deploy.sh` chạy thử trước khi dùng nó để nén zip.
+
 Xem thêm `CLAUDE.md`.
 
 ## Chưa kiểm tra
+
+- **`deploy.sh` trên Linux thật.** Mới chạy trong Git Bash trên Windows; WSL này chưa có .NET SDK. App Desktop từ gói Linux chưa mở (WSL thiếu `libicu`, `libice6`, `libsm6`). `-SaveImage cuda` chưa chạy.
 
 - **Ubuntu thật.** Mới chạy trong WSLg, chưa chạy trên máy Ubuntu thật (Docker Engine và NVIDIA Container Toolkit). Trong WSLg cửa sổ không có cây UI Automation, nên phần nhập liệu ở Cấu hình được làm bằng CLI Linux; app Linux chỉ được bấm chuyển tab và Export ONNX.
 - **App Linux tự thoát một lần.** Một lần app Linux thoát với mã 0, log rỗng, trong khoảng export. Làm lại đúng các bước thì không bị. Chưa rõ nguyên nhân; thử lại trên Ubuntu thật.
@@ -90,7 +105,7 @@ Xem thêm `CLAUDE.md`.
 - Ultralytics nêu rõ model train ra thuộc AGPL-3.0 kể cả dùng nội bộ nếu không có Enterprise License, áp dụng cho mọi phiên bản trong gói. Chủ dự án chưa trả lời. Cần kết luận trước khi đưa model vào sản xuất hoặc bán.
 - **Metric val ở epoch 2 trùng epoch 1.** Gặp ở mọi run 3 epoch trên máy này; run 5 epoch thì không. `results.csv` của chính Ultralytics cũng trùng, nên worker và app báo đúng số mà Ultralytics đưa ra. Nguyên nhân chưa rõ; xem lại khi có run dài trên máy train.
 - Dữ liệu chạy thử nằm trong scratchpad của phiên, không nằm trong repo. Không commit ảnh của project wire harness.
-- Image `ntech-trainer:dev-cpu` đang có trên máy, 2,65 GB.
+- Image `ntech-trainer:dev-cpu` đang có trên máy, 2,66 GB, build lại ngày 2026-11-08 bằng `scripts/trainer`.
 - App lưu workspace gần nhất ở `%APPDATA%\NTechTrainer\settings.json` (Ubuntu: `~/.config/NTechTrainer/`).
 
 ## Tiếp theo
