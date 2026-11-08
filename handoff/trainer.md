@@ -24,7 +24,7 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
 - `src/NTech.DataStudio.Trainer.Desktop` (M2): 5 màn hình Máy, Dataset, Cấu hình, Train, Kết quả. Token port từ WPF ở `Themes/Tokens`, style ở `Themes/Components`, biểu đồ tự vẽ ở `Controls/LineChart.cs`. Composition root ở `Bootstrap/AppComposition.cs`.
 - `tests/NTech.DataStudio.Trainer.Desktop.Tests`: test ViewModel với Docker giả, dựng từng màn hình bằng Avalonia Headless và lưu PNG, so token với WPF, kiểm mọi `StaticResource` có tồn tại.
 - `docker/trainer`: Dockerfile, file khóa phiên bản `lock-cpu.txt`, `lock-cuda.txt`, `update-locks.ps1`.
-- `scripts/trainer` (2026-11-08): `build`, `deploy`, `build-image`, mỗi lệnh có `.ps1`, `.bat` và `.sh`. Gói `dist/NTechTrainer-<version>-<runtime>.zip` hoặc `.tar.gz` chứa app, CLI và thư mục `image/` để build image trên máy train không cần repo; `-SaveImage` lưu kèm file image. Cách dùng ở `trainer/README.md`.
+- `scripts/trainer` (2026-11-08): `build`, `deploy`, `build-image`, mỗi lệnh có `.ps1`, `.bat` và `.sh`; `package` (`.ps1`, `.bat`) build installer Inno Setup từ `trainer/installer/NTech-Trainer.iss`, AppId riêng `{374AE65E-1993-4389-BA78-DDA65F15E499}`. Trên Windows, `deploy` ra installer cho win-x64 và `.tar.gz` cho Linux; `deploy.sh` ra `.tar.gz` và `.zip`. Gói nào cũng có app, CLI và thư mục `image/` để build image trên máy train không cần repo; `-SaveImage` lưu kèm file image. Cách dùng ở `trainer/README.md`.
 - Quyết định 0009 đến 0013.
 
 ## Đã kiểm tra
@@ -51,7 +51,8 @@ Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật
   - Không còn container nào sau khi xong. File thử trong WSL đã xóa.
 
 - Script đóng gói chạy thật (2026-11-08). Máy lúc này đọc ra RTX 4060 Ti 16 GB (SM 8.9), WSL là Ubuntu 26.04:
-  - `deploy.bat -Runtime win-x64,linux-x64`: 100 test Trainer xanh, ra gói zip 71 MB và tar.gz 44 MB. Test Python bị bỏ qua vì máy không có `uv`, script cảnh báo rõ.
+  - `deploy.bat -Runtime win-x64,linux-x64`: 100 test Trainer xanh, ra installer 50,5 MB và tar.gz 44 MB. Test Python bị bỏ qua vì máy không có `uv`, script cảnh báo rõ. (Trước khi có installer, gói zip 71 MB cũng đã chạy được.)
+  - **Installer:** cài `/VERYSILENT /CURRENTUSER /DIR=` vào thư mục tạm có dấu cách; có shortcut Start Menu và khóa gỡ cài đặt. `ntech-trainer.exe models` và app đã cài chạy; `image\build-image.bat` trong thư mục cài build lại được image. Gỡ ra thì thư mục, khóa registry và shortcut đều mất.
   - **Gói Windows:** giải nén, `ntech-trainer.exe models` chạy, app Desktop mở cửa sổ.
   - **Gói Linux tạo trên Windows:** `sha256sum -c` khớp; `NTechTrainer`, `ntech-trainer`, `createdump`, `build-image.sh` có quyền 0755. Trong WSL, `models` và `probe` chạy (với `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`, vì WSL này thiếu `libicu`).
   - **Image từ gói:** `image/build-image.sh --compute cpu` trong gói đã giải nén build ra `ntech-trainer:dev-cpu`.

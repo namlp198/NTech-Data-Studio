@@ -105,6 +105,6 @@ Báo đúng những gì đã chạy và kết quả, cùng những gì còn cầ
 ## Phát hành
 
 - Version chỉ khai báo ở `Directory.Build.props`. Đừng ghi cứng version vào script hay `.iss`.
-- `AppId` trong `.iss` không bao giờ đổi, vì installer mới dùng nó để nhận ra bản đã cài và nâng cấp.
+- `AppId` trong `.iss` không bao giờ đổi, vì installer mới dùng nó để nhận ra bản đã cài và nâng cấp. Trainer có `.iss` và AppId riêng (`trainer/installer/NTech-Trainer.iss`); đừng chép AppId giữa hai file.
 - File `.ps1` giữ ASCII, vì Windows PowerShell 5.1 đọc file không có BOM theo bảng mã ANSI. File `.bat` giữ CRLF (`.gitattributes` đã quy định).
 - Thêm file vào thư mục cài (profile mới, native DLL) thì phải khớp với danh sách kiểm tra ở cuối `scripts\build.ps1`.

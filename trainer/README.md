@@ -27,12 +27,13 @@ dotnet test NTech.DataStudio.Trainer.slnf
 
 ## Build và đóng gói
 
-Script ở `scripts/trainer/`. Trên Windows dùng `.bat` (gọi `.ps1` cùng tên), trên Linux dùng `.sh`. Hai bên cùng tham số và cùng kết quả.
+Script ở `scripts/trainer/`. Trên Windows dùng `.bat` (gọi `.ps1` cùng tên), trên Linux dùng `.sh`. Hai bên cùng tham số; riêng installer chỉ build được trên Windows.
 
 | Script | Làm gì |
 | --- | --- |
 | `build` | Publish app và CLI tự chứa vào cùng thư mục `publish\NTechTrainer-<runtime>`, kèm thư mục `image\` để build image trên máy train mà không cần repo |
-| `deploy` | Chạy test Trainer, gọi `build`, nén vào `dist\` (`.zip` cho Windows, `.tar.gz` cho Linux), ghi `.sha256`; tùy chọn lưu image và chép đi |
+| `package` | Chỉ Windows: publish win-x64 rồi build installer Inno Setup `dist\NTech-Trainer-Setup-<version>.exe` từ `trainer/installer/NTech-Trainer.iss` |
+| `deploy` | Chạy test Trainer, gọi `build`, đóng gói vào `dist\`, ghi `.sha256`; tùy chọn lưu image và chép đi. Trên Windows, win-x64 ra installer, Linux ra `.tar.gz`. `deploy.sh` không có Inno Setup nên win-x64 ra `.zip` |
 | `build-image` | Build image worker với tag `ntech-trainer:dev-cpu` hoặc `dev-cuda`. Chạy được từ repo và từ gói đã giải nén |
 
 ```powershell
