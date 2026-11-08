@@ -55,7 +55,35 @@ scripts/trainer/build-image.sh --compute cuda
 - Test Python của worker chỉ chạy khi có `uv` trên PATH; không có thì script cảnh báo rõ là đã bỏ qua.
 - Đích đã có file cùng tên mà khác nội dung thì không ghi đè, trừ khi thêm `-Force` hoặc `--force`. Mỗi lần build cho ra hash mới, nên giao lại cùng version thì phải tăng version hoặc dùng `-Force`.
 
-Trên Linux, app và CLI cần `libicu`, app cần thêm thư viện X11. Ubuntu desktop thường có sẵn; bản tối giản hoặc WSL thì cài bằng `sudo apt install libicu-dev libice6 libsm6`.
+Trên Linux, app và CLI cần `libicu`, app cần thêm thư viện X11. Ubuntu desktop thường có sẵn; bản tối giản hoặc WSL thì phải cài (xem mục dưới).
+
+### Chạy bản Linux trong WSL
+
+Bản Linux không có installer: giải nén `.tar.gz` là chạy. WSLg hiện cửa sổ app, không cần cài gì thêm cho phần hiển thị.
+
+1. Cài thư viện hệ thống. Tên gói ICU theo bản Ubuntu: `libicu78` trên 26.04, `libicu74` trên 24.04 (`apt-cache search --names-only '^libicu[0-9]+$'` để xem).
+
+   ```bash
+   sudo apt update && sudo apt install -y libicu78 libice6 libsm6
+   ```
+
+2. Giải nén vào ổ Linux (chạy từ ổ Windows qua `/mnt` thì chậm):
+
+   ```bash
+   mkdir -p ~/apps && tar -xzf /mnt/d/<repo>/dist/NTechTrainer-<version>-linux-x64.tar.gz -C ~/apps
+   ```
+
+3. Mở app, hoặc dùng CLI cùng thư mục:
+
+   ```bash
+   ~/apps/NTechTrainer-<version>-linux-x64/NTechTrainer &
+   ~/apps/NTechTrainer-<version>-linux-x64/ntech-trainer probe
+   ```
+
+- Docker trong WSL dùng chung daemon với Docker Desktop, nên image đã build bên Windows dùng được ngay. Thiếu image thì chạy `image/build-image.sh --compute cpu` (hoặc `cuda`) trong thư mục đã giải nén.
+- Workspace tạo trên Windows không mở được trong WSL: tạo workspace mới trên ổ Linux (`~/train/...`). Dataset đọc từ `/mnt/c`, `/mnt/d` được.
+- Thiếu `libicu` thì app và CLI thoát ngay với thông báo `Couldn't find a valid ICU package`. Thiếu `libice6`, `libsm6` thì app không mở cửa sổ.
+- Cửa sổ app trong WSLg không có cây UI Automation: tự kiểm chỉ làm được bằng ảnh chụp và bấm theo tọa độ.
 
 Ảnh chụp từng màn hình do test dựng ra nằm ở `tests\NTech.DataStudio.Trainer.Desktop.Tests\bin\Debug\net10.0\screens\` sau khi chạy test.
 

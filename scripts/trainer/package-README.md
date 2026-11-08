@@ -42,7 +42,11 @@ Image `cuda` chỉ dùng được với GPU NVIDIA từ Turing (SM 7.5) trở l�
 ./ntech-trainer models                   # CLI
 ```
 
-Trên Linux, app và CLI cần `libicu`; app cần thêm thư viện X11. Ubuntu desktop thường có sẵn. Bản cài tối giản hoặc WSL Ubuntu thì cài bằng `sudo apt install libicu-dev libice6 libsm6` (hoặc gói `libicuNN` đúng số phiên bản của bản Ubuntu đó).
+Trên Linux, app và CLI cần `libicu`; app cần thêm thư viện X11. Ubuntu desktop thường có sẵn. Bản cài tối giản hoặc WSL Ubuntu thì cài, với tên gói ICU theo bản Ubuntu (`libicu78` trên 26.04, `libicu74` trên 24.04):
+
+```bash
+sudo apt install -y libicu78 libice6 libsm6
+```
 
 Workspace không chuyển được giữa Windows và Linux: tạo workspace mới trên máy train.
 
