@@ -16,7 +16,7 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 | Box | Kéo hai góc. Có đường gióng toàn ảnh. Bấm không kéo thì không tạo gì |
 | Polygon | Bấm từng đỉnh. Enter hoặc bấm lại đỉnh đầu để đóng; Backspace bỏ đỉnh vừa vẽ (đỉnh cuối cùng thì hủy cả hình); Esc hủy. Hình tự cắt không kết thúc được và có thông báo |
 | Rotated box | Kéo trục chính, rồi bấm để chốt bề rộng. Bấm-bấm-bấm cũng được |
-| Chọn | Bấm để chọn hình trên cùng. Kéo hình để di chuyển. Kéo ô vuông ở đỉnh để sửa. Bấm đúp lên cạnh polygon để thêm đỉnh. Delete để xóa |
+| Chọn | Bấm để chọn hình trên cùng. Kéo hình để di chuyển. Kéo ô vuông ở đỉnh để sửa. Bấm đúp lên cạnh polygon để thêm đỉnh, bấm đúp lên đỉnh để bỏ đỉnh (giữ tối thiểu 3 đỉnh, không để polygon tự cắt). Delete để xóa |
 | Tag | Gắn nhãn phân loại cho cả ảnh: tick ô cạnh class, hoặc bấm phím số |
 
 - Mọi điểm bị kẹp trong ảnh. Kéo đỉnh polygon vào chỗ làm hình tự cắt thì đỉnh dừng ở vị trí hợp lệ gần nhất. Kéo góc box giữ cạnh song song trục; kéo góc rotated box giữ nguyên góc xoay và chân vào góc đối diện, nếu vượt biên thì hộp co lại chứ không méo.

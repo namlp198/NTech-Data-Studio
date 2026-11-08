@@ -442,6 +442,40 @@ public class AnnotationEditorTests : IDisposable
     }
 
     [Fact]
+    public void Select_DoubleClickOnAPolygonVertexRemovesIt()
+    {
+        _editor.SetTool(AnnotateTool.Polygon);
+        foreach (var (x, y) in new[] { (10.0, 10.0), (90.0, 10.0), (90.0, 60.0), (10.0, 60.0) })
+            Click(x, y);
+        _editor.Finish();
+        _editor.SetTool(AnnotateTool.Select);
+        Click(50, 30);
+
+        Click(90, 10, count: 2);
+
+        var points = Document.Annotations.Single().Points;
+        Assert.Equal(3, points.Count);
+        Assert.DoesNotContain(new PixelPoint(90, 10), points);
+    }
+
+    [Fact]
+    public void Select_DoubleClickOnATriangleVertexKeepsItAndSaysWhy()
+    {
+        _editor.SetTool(AnnotateTool.Polygon);
+        Click(10, 10);
+        Click(90, 10);
+        Click(50, 80);
+        _editor.Finish();
+        _editor.SetTool(AnnotateTool.Select);
+        Click(50, 30);
+
+        Click(90, 10, count: 2);
+
+        Assert.Equal(3, Document.Annotations.Single().Points.Count);
+        Assert.NotNull(_editor.Message);
+    }
+
+    [Fact]
     public void Select_PolygonVertexDragThatWouldCrossItselfKeepsTheLastValidShape()
     {
         _editor.SetTool(AnnotateTool.Polygon);

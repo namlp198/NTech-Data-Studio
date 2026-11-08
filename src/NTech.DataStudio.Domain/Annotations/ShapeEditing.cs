@@ -108,6 +108,19 @@ public static class ShapeEditing
     }
 
     /// <summary>
+    /// The polygon without one vertex, or null when that is not allowed: a polygon keeps at least three
+    /// vertices, and the rest must not cross itself.
+    /// </summary>
+    public static IReadOnlyList<PixelPoint>? RemoveVertex(IReadOnlyList<PixelPoint> points, int index)
+    {
+        if (points.Count <= 3 || index < 0 || index >= points.Count) return null;
+
+        var result = points.ToList();
+        result.RemoveAt(index);
+        return PolygonMath.HasSelfIntersection(result, closed: true) ? null : result;
+    }
+
+    /// <summary>
     /// Drags one vertex. A box keeps its sides axis-aligned and a rotated box
     /// keeps its angle, both pinned on the opposite corner; a polygon vertex
     /// moves freely unless that would make the polygon cross itself.

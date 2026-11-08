@@ -194,6 +194,25 @@ public class ShapeEditingTests
         Assert.Equal(Triangle[1], result[2]);
     }
 
+    [Fact]
+    public void RemoveVertex_DropsItAndKeepsTheOrder()
+    {
+        var result = ShapeEditing.RemoveVertex(Box, 1)!;
+
+        Assert.Equal(new[] { Box[0], Box[2], Box[3] }, result);
+    }
+
+    [Fact]
+    public void RemoveVertex_RefusesBelowThreeAndBadIndexAndCrossing()
+    {
+        Assert.Null(ShapeEditing.RemoveVertex(Triangle, 0));
+        Assert.Null(ShapeEditing.RemoveVertex(Box, 9));
+
+        // Dropping the notch of an arrow-like shape is fine, dropping a corner of a bow-tie-making one is not.
+        PixelPoint[] shape = { new(10, 10), new(90, 10), new(90, 60), new(50, 30), new(10, 60) };
+        Assert.NotNull(ShapeEditing.RemoveVertex(shape, 3));
+    }
+
     // Dot product of the vectors at a corner: 0 for a right angle.
     private static double Dot(PixelPoint corner, PixelPoint a, PixelPoint b) =>
         (a.X - corner.X) * (b.X - corner.X) + (a.Y - corner.Y) * (b.Y - corner.Y);

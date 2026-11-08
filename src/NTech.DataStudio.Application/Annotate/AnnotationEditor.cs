@@ -472,6 +472,19 @@ public sealed class AnnotationEditor
     {
         if (Selected is { } selected && !_locked.Contains(selected.Id))
         {
+            // Double click on a vertex takes it away; on an edge it adds one.
+            if (clickCount >= 2 && selected.Kind == ShapeKind.Polygon
+                && ShapeEditing.HitVertex(selected.Points, point, tolerance) is >= 0 and var doomed)
+            {
+                if (ShapeEditing.RemoveVertex(selected.Points, doomed) is { } fewer)
+                    Run(EditRequest.Replace(selected, selected.WithPoints(fewer, _service.Now)));
+                else
+                    Message = selected.Points.Count <= 3
+                        ? "Polygon cần ít nhất 3 đỉnh."
+                        : "Bỏ đỉnh này làm polygon tự cắt nhau.";
+                return;
+            }
+
             if (clickCount >= 2 && selected.Kind == ShapeKind.Polygon
                 && ShapeEditing.HitEdge(selected.Points, point, tolerance) is { } edge)
             {
