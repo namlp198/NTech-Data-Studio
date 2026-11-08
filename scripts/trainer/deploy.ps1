@@ -6,8 +6,9 @@
     1. Runs the Trainer tests in Release (NTech.DataStudio.Trainer.slnf) and the
        worker's Python tests when uv is on PATH. Skip both with -SkipTests.
     2. Publishes each runtime through build.ps1.
-    3. Packs dist\NTechTrainer-<version>-<runtime>.zip (Windows runtimes) or
-       .tar.gz (Linux runtimes, with the executable bit set on the programs).
+    3. win-x64 becomes the Inno Setup installer dist\NTech-Trainer-Setup-<version>.exe
+       (package.ps1); Linux runtimes become dist\NTechTrainer-<version>-<runtime>.tar.gz
+       with the executable bit set on the programs.
     4. With -SaveImage cpu|cuda|all, builds the worker image and saves it as
        dist\ntech-trainer-<compute>-<version>.tar.gz for machines without
        internet (docker load -i <file>).
@@ -31,6 +32,7 @@ param(
     [string]$Destination,
     [switch]$SkipTests,
     [switch]$Force,
+    [string]$InnoSetupPath,
     [string]$DotnetPath
 )
 
@@ -49,6 +51,11 @@ $computes = switch ($SaveImage) {
 }
 
 # Fail before the long steps when a tool is missing.
+$otherWin = @($runtimes | Where-Object { $_ -like "win-*" -and $_ -ne "win-x64" })
+if ($otherWin.Count -gt 0) {
+    throw "The installer is x64 only; $($otherWin -join ', ') is not supported."
+}
+if ($runtimes -contains "win-x64") { $null = Resolve-Iscc -Explicit $InnoSetupPath }
 $bsdtar = Join-Path $env:SystemRoot "System32\tar.exe"
 if (($runtimes | Where-Object { $_ -notlike "win-*" }) -and -not (Test-Path -LiteralPath $bsdtar)) {
     throw "$bsdtar not found; it is needed to pack Linux runtimes (Windows 10 1803 or later)."
@@ -131,9 +138,17 @@ function New-TarGz {
     }
 }
 
-Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.IO.Compression
 
 foreach ($rid in $runtimes) {
+    if ($rid -eq "win-x64") {
+        $packageArgs = @{ Version = $Version; SkipBuild = $true }
+        if ($InnoSetupPath) { $packageArgs.InnoSetupPath = $InnoSetupPath }
+        & (Join-Path $PSScriptRoot "package.ps1") @packageArgs
+        $outputs.Add((Join-Path $distDir "NTech-Trainer-Setup-$Version.exe"))
+        continue
+    }
+
     $source = Join-Path $publishRoot "NTechTrainer-$rid"
     $baseName = "NTechTrainer-$Version-$rid"
 
@@ -144,18 +159,10 @@ foreach ($rid in $runtimes) {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $staging) | Out-Null
     Copy-Item -LiteralPath $source -Destination $staging -Recurse
 
-    if ($rid -like "win-*") {
-        $archive = Join-Path $distDir "$baseName.zip"
-        if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
-        Write-Host "==> Packing $archive" -ForegroundColor Cyan
-        [IO.Compression.ZipFile]::CreateFromDirectory($staging, $archive, [IO.Compression.CompressionLevel]::Optimal, $true)
-    }
-    else {
-        $archive = Join-Path $distDir "$baseName.tar.gz"
-        if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
-        Write-Host "==> Packing $archive" -ForegroundColor Cyan
-        New-TarGz -SourceDir $staging -Archive $archive
-    }
+    $archive = Join-Path $distDir "$baseName.tar.gz"
+    if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
+    Write-Host "==> Packing $archive" -ForegroundColor Cyan
+    New-TarGz -SourceDir $staging -Archive $archive
 
     Remove-Item -LiteralPath (Split-Path -Parent $staging) -Recurse -Force
     $outputs.Add($archive)

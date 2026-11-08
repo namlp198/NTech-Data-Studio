@@ -5,7 +5,8 @@
 #     worker's Python tests when uv is on PATH. Skip both with --skip-tests.
 #  2. Publishes each runtime through build.sh.
 #  3. Packs dist/NTechTrainer-<version>-<runtime>.tar.gz (Linux runtimes, with
-#     the executable bit on the programs) or .zip (Windows runtimes).
+#     the executable bit on the programs) or .zip (Windows runtimes; the Inno
+#     Setup installer needs Windows, see deploy.ps1).
 #  4. With --save-image cpu|cuda|all, builds the worker image and saves it as
 #     dist/ntech-trainer-<compute>-<version>.tar.gz (docker load -i <file>).
 #  5. Writes a .sha256 next to each file.
