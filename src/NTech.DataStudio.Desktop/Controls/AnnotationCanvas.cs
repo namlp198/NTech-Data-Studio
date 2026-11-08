@@ -236,8 +236,24 @@ public sealed class AnnotationCanvas : FrameworkElement
 
     private void OnMagicChanged(object? sender, EventArgs e) => RenderOverlay();
 
+    /// <summary>
+    /// Tells the Magic polygon tool which part of the picture is on screen, so that zoomed in it analyses just that part
+    /// (a small object then has more pixels to be seen by). The tool waits for the view to settle before doing anything.
+    /// </summary>
+    private void ReportView()
+    {
+        if (Image is null || Editor is not { IsMagicTool: true, Magic: { } magic } || ActualWidth <= 0 || ActualHeight <= 0) return;
+
+        var topLeft = ToImage(new Point(0, 0));
+        var bottomRight = ToImage(new Point(ActualWidth, ActualHeight));
+        magic.SetView(
+            PixelRect.FromCorners(topLeft, bottomRight),
+            Image.PixelWidth, Image.PixelHeight);
+    }
+
     private void OnEditorStateChanged(object? sender, EventArgs e)
     {
+        ReportView();
         Cursor = IdleCursor();
         RenderLayers();
     }
@@ -260,6 +276,7 @@ public sealed class AnnotationCanvas : FrameworkElement
     private void UpdateView()
     {
         _imageVisual.Transform = new MatrixTransform(_scale, 0, 0, _scale, _tx, _ty);
+        ReportView();
         // Show real pixels when zoomed far in, and a smooth picture when zoomed out.
         RenderOptions.SetBitmapScalingMode(_imageVisual, _scale >= PixelGridScale ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.Linear);
         RenderLayers();
@@ -425,8 +442,23 @@ public sealed class AnnotationCanvas : FrameworkElement
     {
         var color = editor.ActiveClassId is { } classId ? ColorOf(classId) : Colors.Gray;
         var (fill, pen) = LookOf(color, true);
+        // The part of the picture the tool is looking at when zoomed in: outside it nothing can be picked.
+        if (magic.Region is { } region)
+        {
+            var topLeft = ToScreen(new PixelPoint(region.X, region.Y));
+            var bottomRight = ToScreen(new PixelPoint(region.Right, region.Bottom));
+            context.DrawRectangle(null, new Pen(_crosshair, 1) { DashStyle = DashStyles.Dot }, new Rect(topLeft, bottomRight));
+        }
+
         if (magic.Preview is { Count: >= 3 } outline)
             context.DrawGeometry(fill, pen, Outline(outline, closed: true));
+
+        if (editor.MagicDragBox is { } box)
+        {
+            var corner = ToScreen(new PixelPoint(box.X, box.Y));
+            var opposite = ToScreen(new PixelPoint(box.Right, box.Bottom));
+            context.DrawRectangle(null, new Pen(pen.Brush, 1.5) { DashStyle = DashStyles.Dash }, new Rect(corner, opposite));
+        }
 
         foreach (var prompt in magic.Prompts)
         {

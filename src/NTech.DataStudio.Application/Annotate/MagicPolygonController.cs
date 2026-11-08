@@ -5,12 +5,20 @@ namespace NTech.DataStudio.Application.Annotate;
 
 /// <summary>
 /// The state behind the Magic polygon tool (decision 0016). Hovering shows the outline of the object under the pointer,
-/// a click turns it into a label, Shift+click and right click add points to refine it first. The segmenter is slow, so
-/// hover work is latest-wins: while one outline is being worked out, newer pointer positions replace each other and only
-/// the last one is computed. Events are posted to the thread that created the controller (the UI thread).
+/// a click turns it into a label, dragging a box around the object does the same for things a point cannot pick out
+/// (black tape on black cable, cable ties), and Shift+click / right click add points to refine the outline first.
+/// When the picture is zoomed in, only the part on screen is analysed, so a small object has more pixels to be seen by.
+/// The segmenter is slow, so hover work is latest-wins: while one outline is being worked out, newer pointer positions
+/// replace each other and only the last one is computed. Events are posted to the thread that created the controller.
 /// </summary>
 public sealed class MagicPolygonController
 {
+    /// <summary>Zoomed in until the screen shows less than this share of the picture, the part on screen is analysed instead of the whole.</summary>
+    public const double ZoomThreshold = 0.6;
+
+    private const double RegionMargin = 0.25;
+    private static readonly TimeSpan ViewSettleTime = TimeSpan.FromMilliseconds(300);
+
     private readonly ISmartSegmenter _segmenter;
     private readonly SynchronizationContext? _context = SynchronizationContext.Current;
     private readonly object _gate = new();
@@ -22,6 +30,8 @@ public sealed class MagicPolygonController
     private CancellationTokenSource _cancel = new();
     private PixelPoint? _hover;
     private int _hoverVersion;
+    private int _viewVersion;
+    private PixelRect? _region;
     private bool _ready;
     private bool _working;
 
@@ -45,9 +55,43 @@ public sealed class MagicPolygonController
     /// <summary>The outline under the pointer, in master pixels.</summary>
     public IReadOnlyList<PixelPoint>? Preview { get; private set; }
 
+    /// <summary>The part of the picture being analysed, or null for the whole picture.</summary>
+    public PixelRect? Region
+    {
+        get { lock (_gate) return _region; }
+    }
+
     public IReadOnlyList<SegmentPrompt> Prompts
     {
         get { lock (_gate) return _prompts.ToList(); }
+    }
+
+    /// <summary>
+    /// The part to analyse for what is on screen: the whole picture (null) unless the screen shows well under
+    /// <see cref="ZoomThreshold"/> of it. A region that already holds the screen and is not much bigger than needed is kept,
+    /// so panning a little never starts a new analysis.
+    /// </summary>
+    public static PixelRect? ChooseRegion(PixelRect visible, double imageWidth, double imageHeight, PixelRect? current)
+    {
+        var left = Math.Max(visible.X, 0);
+        var top = Math.Max(visible.Y, 0);
+        var right = Math.Min(visible.Right, imageWidth);
+        var bottom = Math.Min(visible.Bottom, imageHeight);
+        if (right <= left || bottom <= top) return current;
+
+        var area = (right - left) * (bottom - top);
+        if (area >= ZoomThreshold * imageWidth * imageHeight) return null;
+
+        if (current is { } held
+            && held.X <= left && held.Y <= top && held.Right >= right && held.Bottom >= bottom
+            && held.Area <= area * 3)
+            return held;
+
+        var marginX = (right - left) * RegionMargin;
+        var marginY = (bottom - top) * RegionMargin;
+        var x = Math.Max(left - marginX, 0);
+        var y = Math.Max(top - marginY, 0);
+        return new PixelRect(x, y, Math.Min(right + marginX, imageWidth) - x, Math.Min(bottom + marginY, imageHeight) - y);
     }
 
     /// <summary>The picture the tool works on; null when none is open. Throws away everything about the previous one.</summary>
@@ -66,6 +110,29 @@ public sealed class MagicPolygonController
         _active = active;
         if (active) StartPrepare();
         else Reset();
+    }
+
+    /// <summary>The part of the picture on screen changed (zoom or pan). Settles for a moment, then may start a new analysis.</summary>
+    public void SetView(PixelRect visible, double imageWidth, double imageHeight)
+    {
+        if (!_active) return;
+
+        int version;
+        lock (_gate) version = ++_viewVersion;
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(ViewSettleTime).ConfigureAwait(false);
+            lock (_gate)
+            {
+                if (version != _viewVersion || !_active) return;
+
+                var wanted = ChooseRegion(visible, imageWidth, imageHeight, _region);
+                if (Equals(wanted, _region)) return;
+                _region = wanted;
+            }
+
+            StartPrepare();
+        });
     }
 
     /// <summary>The pointer moved over the picture.</summary>
@@ -126,32 +193,41 @@ public sealed class MagicPolygonController
     }
 
     /// <summary>Click: the object at this point (with the points added so far) becomes a label.</summary>
-    public async Task AcceptAsync(PixelPoint point)
+    public Task AcceptAsync(PixelPoint point) => AcceptAsync(point, null);
+
+    /// <summary>A box dragged around the object (with the points added so far) becomes a label.</summary>
+    public Task AcceptBoxAsync(PixelRect box) => AcceptAsync(null, box);
+
+    private async Task AcceptAsync(PixelPoint? point, PixelRect? box)
     {
         if (!_active) return;
 
         string? path;
         List<SegmentPrompt> prompts;
+        PixelRect? region;
         int generation;
+        CancellationToken token;
         lock (_gate)
         {
             path = _path;
             generation = _generation;
+            region = _region;
+            token = _cancel.Token;
             prompts = _prompts.ToList();
         }
 
         if (path is null) return;
-        prompts.Add(new SegmentPrompt(point, true));
+        if (point is { } clicked) prompts.Add(new SegmentPrompt(clicked, true));
 
         try
         {
-            var outline = await _segmenter.SegmentAsync(path, prompts, _cancel.Token).ConfigureAwait(false);
+            var outline = await _segmenter.SegmentAsync(path, region, new SegmentRequest(prompts, box), token).ConfigureAwait(false);
             lock (_gate)
             {
                 if (generation != _generation) return;
                 _prompts.Clear();
                 Preview = null;
-                Status = outline is null ? "Không tách được vật thể ở chỗ này. Thử bấm chỗ khác." : null;
+                Status = outline is null ? "Không tách được vật thể ở chỗ này. Thử bấm hoặc kéo khung chỗ khác." : null;
             }
 
             Raise();
@@ -178,6 +254,8 @@ public sealed class MagicPolygonController
             _prompts.Clear();
             _hover = null;
             _hoverVersion++;
+            _viewVersion++;
+            _region = null;
             _ready = false;
             Preview = null;
             Status = null;
@@ -189,12 +267,18 @@ public sealed class MagicPolygonController
     private void StartPrepare()
     {
         string? path;
+        PixelRect? region;
         int generation;
         CancellationToken token;
         lock (_gate)
         {
             path = _path;
-            generation = _generation;
+            generation = ++_generation;
+            region = _region;
+            _ready = false;
+            Preview = null;
+            _cancel.Cancel();
+            _cancel = new CancellationTokenSource();
             token = _cancel.Token;
         }
 
@@ -207,13 +291,13 @@ public sealed class MagicPolygonController
 
         if (path is null) return;
 
-        Status = "Đang phân tích ảnh...";
+        Status = region is null ? "Đang phân tích ảnh..." : "Đang phân tích vùng đang xem...";
         Raise();
         _ = Task.Run(async () =>
         {
             try
             {
-                await _segmenter.PrepareAsync(path, token).ConfigureAwait(false);
+                await _segmenter.PrepareAsync(path, region, token).ConfigureAwait(false);
                 lock (_gate)
                 {
                     if (generation != _generation) return;
@@ -251,6 +335,7 @@ public sealed class MagicPolygonController
                 string path;
                 int generation;
                 int version;
+                PixelRect? region;
                 List<SegmentPrompt> prompts;
                 CancellationToken token;
                 lock (_gate)
@@ -264,16 +349,19 @@ public sealed class MagicPolygonController
                     path = _path;
                     generation = _generation;
                     version = _hoverVersion;
+                    region = _region;
                     token = _cancel.Token;
                     prompts = _prompts.ToList();
-                    if (_hover is { } hover) prompts.Add(new SegmentPrompt(hover, true));
+                    // A pointer outside the analysed part has nothing to say until the view settles on it.
+                    if (_hover is { } hover && (region is not { } held || Inside(held, hover)))
+                        prompts.Add(new SegmentPrompt(hover, true));
                 }
 
                 IReadOnlyList<PixelPoint>? outline = null;
                 try
                 {
                     if (prompts.Count > 0)
-                        outline = await _segmenter.SegmentAsync(path, prompts, token).ConfigureAwait(false);
+                        outline = await _segmenter.SegmentAsync(path, region, new SegmentRequest(prompts), token).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -300,6 +388,9 @@ public sealed class MagicPolygonController
             }
         });
     }
+
+    private static bool Inside(PixelRect region, PixelPoint point) =>
+        point.X >= region.X && point.X <= region.Right && point.Y >= region.Y && point.Y <= region.Bottom;
 
     private void Fail(int generation, string message)
     {

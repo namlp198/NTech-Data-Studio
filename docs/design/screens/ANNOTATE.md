@@ -115,6 +115,8 @@ Project có task mục tiêu (quyết định 0014, chọn ở màn hình Projec
 Công cụ thứ ba trên thanh công cụ (biểu tượng đũa phép, phím M), để gán nhãn segment nhanh (quyết định 0016). Chỉ bật khi project nhắm Segment (hoặc chưa chọn task) và đã có model SAM.
 
 - **Rê chuột:** đa giác xem trước của vật thể dưới con trỏ hiện ngay, màu class đang chọn. Ảnh mới thì chờ vài giây ("Đang phân tích ảnh..." ở đầu khung), sau đó mỗi vị trí chuột mất khoảng 0,1 đến 0,2 giây; rê nhanh thì các vị trí trung gian bị bỏ, chỉ vị trí cuối được tính.
+- **Kéo khung:** kéo một khung quanh vật thể rồi nhả chuột: lấy vật trong khung. Dùng cho vật nhỏ hoặc ít tương phản mà bấm một điểm không chọn đúng (băng dính đen trên dây đen, dây thít).
+- **Phóng to:** khi zoom đến lúc màn hình chỉ còn dưới 60% ảnh, app phân tích riêng phần đang xem (dòng "Đang phân tích vùng đang xem..." khoảng 1,5 giây, đường chấm là vùng đó), nên vật nhỏ được tách chính xác hơn. Ngoài vùng chấm thì chưa có xem trước cho đến khi phân tích lại.
 - **Bấm trái:** lấy đa giác thành nhãn Polygon của class đang chọn (như nhãn vẽ tay: sửa đỉnh, undo, lưu). Công cụ vẫn bật để lấy vật thể tiếp theo.
 - **Tinh chỉnh trước khi lấy:** Shift+bấm thêm điểm trong vật thể, bấm phải thêm điểm ngoài vật thể (đánh dấu xanh và đỏ); Backspace bỏ điểm vừa thêm. Ở công cụ này bấm phải không mở menu nhãn.
 - **Thiếu model:** nút bị làm mờ, tooltip nói lý do và chỉ sang Cài đặt, nơi có nút Tải model (xem `SETTINGS.md`). Thư mục model: `%LOCALAPPDATA%\NTech\DataStudio\models\sam\` (`mobile_sam_image_encoder.onnx`, `sam_mask_decoder_single.onnx`).

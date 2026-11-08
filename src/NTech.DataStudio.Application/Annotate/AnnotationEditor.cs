@@ -23,6 +23,8 @@ public sealed class AnnotationEditor
     private Drag? _drag;
     private TaskKind? _targetTask;
     private MagicPolygonController? _magic;
+    private PixelPoint? _magicStart;
+    private bool _magicRefine;
 
     public AnnotationEditor(AnnotateService service, AnnotationClipboard clipboard)
     {
@@ -85,6 +87,9 @@ public sealed class AnnotationEditor
     public bool IsDrawingTool => Tool is AnnotateTool.Box or AnnotateTool.Polygon or AnnotateTool.RotatedBox;
     public bool IsMagicTool => Tool == AnnotateTool.MagicPolygon;
 
+    /// <summary>The box being dragged with the Magic polygon tool; null when no drag is going on.</summary>
+    public PixelRect? MagicDragBox { get; private set; }
+
     public void Open(ImageDocument? document)
     {
         Document = document;
@@ -112,6 +117,8 @@ public sealed class AnnotationEditor
         Cancel();
         Tool = tool;
         Magic?.SetActive(tool == AnnotateTool.MagicPolygon);
+        _magicStart = null;
+        MagicDragBox = null;
         RaiseChanged();
     }
 
@@ -206,9 +213,37 @@ public sealed class AnnotationEditor
             return;
         }
 
+        // What it means waits for the button to come up: a click takes the object under it, a drag takes what the box holds.
         SelectedId = null;
-        if (refine) Magic.AddPrompt(point, positive: true);
-        else _ = Magic.AcceptAsync(point);
+        _magicStart = point;
+        _magicRefine = refine;
+        MagicDragBox = null;
+    }
+
+    private void MagicMove(PixelPoint point, double tolerance)
+    {
+        if (_magicStart is not { } start)
+        {
+            Magic?.Hover(point);
+            return;
+        }
+
+        MagicDragBox = start.DistanceTo(point) > tolerance * 2 ? PixelRect.FromCorners(start, point) : null;
+        RaiseChanged();
+    }
+
+    private void MagicUp()
+    {
+        if (_magicStart is not { } start) return;
+
+        var box = MagicDragBox;
+        _magicStart = null;
+        MagicDragBox = null;
+        if (Magic is null) return;
+
+        if (box is { } dragged) _ = Magic.AcceptBoxAsync(dragged);
+        else if (_magicRefine) Magic.AddPrompt(start, positive: true);
+        else _ = Magic.AcceptAsync(start);
     }
 
     /// <summary>Makes an outline from the Magic polygon tool a polygon label of the active class.</summary>
@@ -247,7 +282,7 @@ public sealed class AnnotationEditor
 
         if (Tool == AnnotateTool.MagicPolygon)
         {
-            Magic?.Hover(point);
+            MagicMove(point, tolerance);
         }
         else if (Drawing is not null)
         {
@@ -264,6 +299,13 @@ public sealed class AnnotationEditor
     public void PointerUp(PixelPoint point, double tolerance)
     {
         if (Document is null) return;
+
+        if (Tool == AnnotateTool.MagicPolygon)
+        {
+            MagicUp();
+            RaiseChanged();
+            return;
+        }
 
         if (Drawing is { } session)
         {

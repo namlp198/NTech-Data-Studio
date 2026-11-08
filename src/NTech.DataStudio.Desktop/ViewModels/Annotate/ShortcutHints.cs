@@ -33,7 +33,7 @@ public sealed class ShortcutHints : INotifyPropertyChanged
         ShortcutAction.BoxTool => With("Bounding box", action),
         ShortcutAction.PolygonTool => With("Polygon", action),
         ShortcutAction.MagicPolygonTool =>
-            $"Magic polygon ({Keys(action)}): rê chuột để xem vật thể tự tách, bấm để lấy. Shift+bấm thêm điểm trong vật thể, bấm phải thêm điểm ngoài vật thể, {Keys(ShortcutAction.UndoPoint)} bỏ điểm vừa thêm",
+            $"Magic polygon ({Keys(action)}): rê chuột để xem vật thể tự tách, bấm để lấy, hoặc kéo khung quanh vật thể (hợp với vật nhỏ, ít tương phản). Phóng to thì app phân tích riêng phần đang xem nên chính xác hơn. Shift+bấm thêm điểm trong vật thể, bấm phải thêm điểm ngoài vật thể, {Keys(ShortcutAction.UndoPoint)} bỏ điểm vừa thêm",
         ShortcutAction.RotatedBoxTool => With("Rotated box", action),
         ShortcutAction.TagTool => With("Tag cả ảnh", action),
         ShortcutAction.PanTool =>

@@ -135,8 +135,8 @@ public class SamModelDownloaderTests : IDisposable
     {
         public bool Ready { get; set; }
         public string? Unavailable => Ready ? null : "missing";
-        public Task PrepareAsync(string imagePath, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<PixelPoint>?> SegmentAsync(string imagePath, IReadOnlyList<SegmentPrompt> prompts, CancellationToken cancellationToken = default) =>
+        public Task PrepareAsync(string imagePath, PixelRect? region, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<PixelPoint>?> SegmentAsync(string imagePath, PixelRect? region, SegmentRequest request, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<PixelPoint>?>(null);
     }
 

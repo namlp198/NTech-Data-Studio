@@ -51,4 +51,4 @@ Máy 8 luồng, RAM 16 GB. 67 file 5472 × 3648 tổng hợp có nhiễu kiểu 
 
 Bộ đo lẫn cả PNG, TIFF và JPEG vốn đã nén, nên tỉ lệ thấp hơn bộ toàn BMP. Trung bình một master JPEG giữ nguyên cỡ nặng 5,6 MB, so với 60 MB của một BMP 20MP, tức khoảng 10,7 lần; đây là phép tính, chưa đo trực tiếp trên bộ toàn BMP. Ảnh thật có thể nén khác ảnh tổng hợp. Suy ra 1.000 ảnh mất khoảng 9 phút phân tích và 5–8 phút chuẩn hóa.
 
-Toàn bộ test Data Studio: 579 (Domain 134, Imaging 86, Exporters 23, Application và Storage 336); Trainer có thêm 100 (Trainer 64, Trainer.Desktop 36). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, ExportViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.
+Toàn bộ test Data Studio: 594 (Domain 134, Imaging 90, Exporters 23, Application và Storage 347); Trainer có thêm 100 (Trainer 64, Trainer.Desktop 36). Desktop chưa có project test; AnnotateViewModel, DatasetViewModel, ExportViewModel, AnnotationCanvas, LabelPreview và các view chỉ được kiểm tra bằng chạy app thật qua UI Automation.
