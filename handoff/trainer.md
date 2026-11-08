@@ -89,6 +89,7 @@ Xem thêm `CLAUDE.md`.
 
 ## Chưa kiểm tra
 
+- **Docker Desktop trên Ubuntu không dùng được cho GPU (2026-11-08).** Máy Ubuntu 24.04 thật có RTX 5090 dùng Docker Desktop: RAM Docker chỉ 7,7 GB trên 60,5 GB, không có runtime nvidia, nên màn hình Máy báo Weak. Cách xử lý (gỡ Desktop, cài Docker Engine và NVIDIA Container Toolkit) đã ghi ở `trainer/README.md`, mục "Docker trên Linux có GPU". Người dùng làm xong bước cài nhưng kết quả `nvidia-smi` trong container và "Kiểm tra trong container" chưa được ghi lại. Trainer chưa cảnh báo khi gặp Docker Desktop trên Linux, và tiêu chí GPU vẫn báo Excellent dù container không thấy GPU.
 - **`deploy.sh` trên Linux thật.** Mới chạy trong Git Bash trên Windows; WSL này chưa có .NET SDK. App Desktop từ gói Linux chưa mở (WSL thiếu `libicu`, `libice6`, `libsm6`). `-SaveImage cuda` chưa chạy.
 
 - **Ubuntu thật.** Mới chạy trong WSLg, chưa chạy trên máy Ubuntu thật (Docker Engine và NVIDIA Container Toolkit). Trong WSLg cửa sổ không có cây UI Automation, nên phần nhập liệu ở Cấu hình được làm bằng CLI Linux; app Linux chỉ được bấm chuyển tab và Export ONNX.
