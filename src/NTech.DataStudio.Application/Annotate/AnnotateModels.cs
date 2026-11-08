@@ -8,6 +8,9 @@ public enum AnnotateTool
     Select,
     Box,
     Polygon,
+
+    /// <summary>Hover shows the outline of the object under the pointer, a click makes it a polygon label (decision 0016).</summary>
+    MagicPolygon,
     RotatedBox,
     Tag,
 

@@ -22,6 +22,7 @@ public sealed class AnnotationEditor
     private readonly HashSet<Guid> _locked = new();
     private Drag? _drag;
     private TaskKind? _targetTask;
+    private MagicPolygonController? _magic;
 
     public AnnotationEditor(AnnotateService service, AnnotationClipboard clipboard)
     {
@@ -50,6 +51,22 @@ public sealed class AnnotationEditor
         }
     }
 
+    /// <summary>The state of the Magic polygon tool; null when the app has no segmenter.</summary>
+    public MagicPolygonController? Magic
+    {
+        get => _magic;
+        set
+        {
+            if (_magic is not null) _magic.Accepted -= OnMagicAccepted;
+            _magic = value;
+            if (_magic is not null)
+            {
+                _magic.Accepted += OnMagicAccepted;
+                _magic.SetActive(Tool == AnnotateTool.MagicPolygon);
+            }
+        }
+    }
+
     public long? ActiveClassId { get; set; }
     public Guid? SelectedId { get; private set; }
     public AnnotationDrawingSession? Drawing { get; private set; }
@@ -66,6 +83,7 @@ public sealed class AnnotationEditor
 
     public Annotation? Selected => SelectedId is { } id ? Document?.Find(id) : null;
     public bool IsDrawingTool => Tool is AnnotateTool.Box or AnnotateTool.Polygon or AnnotateTool.RotatedBox;
+    public bool IsMagicTool => Tool == AnnotateTool.MagicPolygon;
 
     public void Open(ImageDocument? document)
     {
@@ -76,6 +94,7 @@ public sealed class AnnotationEditor
         PreviewPoints = null;
         SelectedId = null;
         Message = null;
+        Magic?.Reset();
         _hidden.Clear();
         _locked.Clear();
         RaiseChanged();
@@ -92,6 +111,7 @@ public sealed class AnnotationEditor
 
         Cancel();
         Tool = tool;
+        Magic?.SetActive(tool == AnnotateTool.MagicPolygon);
         RaiseChanged();
     }
 
@@ -143,7 +163,8 @@ public sealed class AnnotationEditor
 
     // ---- pointer ----
 
-    public void PointerDown(PixelPoint point, double tolerance, int clickCount = 1)
+    /// <param name="refine">Shift held: with the Magic polygon tool, add a point to refine the outline instead of accepting it.</param>
+    public void PointerDown(PixelPoint point, double tolerance, int clickCount = 1, bool refine = false)
     {
         if (Document is null) return;
         Message = null;
@@ -152,15 +173,83 @@ public sealed class AnnotationEditor
             SelectDown(point, tolerance, clickCount);
         else if (IsDrawingTool)
             DrawDown(point, tolerance);
+        else if (Tool == AnnotateTool.MagicPolygon)
+            MagicDown(point, refine);
 
         RaiseChanged();
+    }
+
+    /// <summary>Right click with the Magic polygon tool: a point on what the outline should leave out. True when the tool took it.</summary>
+    public bool SecondaryDown(PixelPoint point)
+    {
+        if (Document is null || Tool != AnnotateTool.MagicPolygon || Magic is null) return false;
+
+        Magic.AddPrompt(point, positive: false);
+        return true;
+    }
+
+    private void OnMagicAccepted(IReadOnlyList<PixelPoint> outline) => CommitPolygon(outline);
+
+    private void MagicDown(PixelPoint point, bool refine)
+    {
+        if (Magic is null) return;
+
+        if (Magic.Unavailable is { } why)
+        {
+            Message = why;
+            return;
+        }
+
+        if (ActiveClassId is null)
+        {
+            Message = "Hãy chọn class trước khi vẽ.";
+            return;
+        }
+
+        SelectedId = null;
+        if (refine) Magic.AddPrompt(point, positive: true);
+        else _ = Magic.AcceptAsync(point);
+    }
+
+    /// <summary>Makes an outline from the Magic polygon tool a polygon label of the active class.</summary>
+    public bool CommitPolygon(IReadOnlyList<PixelPoint> outline)
+    {
+        if (Document is null) return false;
+
+        if (ActiveClassId is not { } classId)
+        {
+            Message = "Hãy chọn class trước khi vẽ.";
+            RaiseChanged();
+            return false;
+        }
+
+        var points = outline.Select(point => point.ClampTo(Document.Width, Document.Height)).ToList();
+        if (points.Count < 3 || PolygonMath.Area(points) < 1 || PolygonMath.HasSelfIntersection(points, true))
+        {
+            Message = "Vùng tách được không thành đa giác hợp lệ. Thử bấm chỗ khác.";
+            RaiseChanged();
+            return false;
+        }
+
+        var now = _service.Now;
+        var created = new Annotation(
+            Guid.NewGuid(), Document.ImageId, classId, ShapeKind.Polygon, points, AnnotationSource.Manual, now, now);
+        if (Run(EditRequest.Add(new[] { created })) is not null)
+            SelectedId = created.Id;
+
+        RaiseChanged();
+        return true;
     }
 
     public void PointerMove(PixelPoint point, double tolerance)
     {
         if (Document is null) return;
 
-        if (Drawing is not null)
+        if (Tool == AnnotateTool.MagicPolygon)
+        {
+            Magic?.Hover(point);
+        }
+        else if (Drawing is not null)
         {
             Drawing.UpdateCandidate(point);
             RaiseChanged();
@@ -238,6 +327,12 @@ public sealed class AnnotationEditor
     /// <summary>Backspace while drawing: drops the last vertex, or the whole shape when only one is left.</summary>
     public void UndoPoint()
     {
+        if (Tool == AnnotateTool.MagicPolygon)
+        {
+            Magic?.UndoPrompt();
+            return;
+        }
+
         if (Drawing is null) return;
 
         if (!Drawing.UndoLastVertex())

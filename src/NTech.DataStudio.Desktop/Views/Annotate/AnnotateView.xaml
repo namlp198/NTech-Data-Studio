@@ -77,6 +77,15 @@
                        AutomationProperties.AutomationId="AnnotateImageError"
                        Visibility="{Binding ImageError, Converter={StaticResource NullToCollapsed}}"
                        Text="{Binding ImageError}" />
+            <!-- Magic polygon: analysing the picture, or why it cannot run -->
+            <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="{StaticResource Inset.XL}"
+                    Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.SM}"
+                    Visibility="{Binding HasMagicStatus, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap" MaxWidth="560"
+                           AutomationProperties.AutomationId="MagicStatus"
+                           Text="{Binding MagicStatus}" />
+            </Border>
+
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                        Style="{StaticResource Text.Secondary}" Text="Đang mở ảnh..."
                        Visibility="{Binding IsImageLoading, Converter={StaticResource BoolToVisibility}}" />
@@ -94,6 +103,9 @@
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
                                  Tag="{StaticResource Icon.Polygon}" ToolTip="{Binding PolygonToolTip}" ToolTipService.ShowOnDisabled="True"
                                  AutomationProperties.Name="Công cụ Polygon" IsChecked="{Binding IsPolygonTool}" IsEnabled="{Binding IsPolygonToolEnabled}" />
+                    <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
+                                 Tag="{StaticResource Icon.Magic}" ToolTip="{Binding MagicToolTip}" ToolTipService.ShowOnDisabled="True"
+                                 AutomationProperties.Name="Công cụ Magic polygon" IsChecked="{Binding IsMagicTool}" IsEnabled="{Binding IsMagicToolEnabled}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
                                  Tag="{StaticResource Icon.Obb}" ToolTip="{Binding ObbToolTip}" ToolTipService.ShowOnDisabled="True"
                                  AutomationProperties.Name="Công cụ OBB" IsChecked="{Binding IsObbTool}" IsEnabled="{Binding IsObbToolEnabled}" />

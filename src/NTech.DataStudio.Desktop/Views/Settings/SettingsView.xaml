@@ -17,6 +17,42 @@
                        Visibility="{Binding ProblemMessage, Converter={StaticResource NullToCollapsed}}"
                        Text="{Binding ProblemMessage}" />
 
+            <!-- Magic polygon model -->
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
+                    Padding="{StaticResource Inset.XL}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Model Magic polygon (SAM)" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="ModelStatus"
+                               Text="{Binding ModelStatusText}" />
+                    <TextBlock Style="{StaticResource Text.MetricSmall}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               ToolTip="{Binding ModelFolder}" Text="{Binding ModelFolder}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                               Foreground="{StaticResource Brush.Status.Error}"
+                               AutomationProperties.AutomationId="ModelError"
+                               Visibility="{Binding ModelError, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding ModelError}" />
+                    <ProgressBar Margin="{StaticResource Gap.Top.MD}" Maximum="100" Value="{Binding ModelProgressPercent, Mode=OneWay}"
+                                 Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}" />
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
+                        <Button Style="{StaticResource Button.Primary}" Content="Tải model (44,7 MB)"
+                                AutomationProperties.Name="Tải model SAM"
+                                Visibility="{Binding ModelMissing, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding DownloadModelCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Hủy"
+                                AutomationProperties.Name="Hủy tải model"
+                                Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding CancelModelDownloadCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Mở thư mục model"
+                                Margin="{StaticResource Gap.Left.SM}"
+                                AutomationProperties.Name="Mở thư mục model"
+                                Command="{Binding OpenModelFolderCommand}" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                               Text="Tải từ huggingface.co/Acly/MobileSAM (MobileSAM, giấy phép MIT/Apache-2.0), kiểm SHA-256 sau khi tải. Máy không có mạng: chép hai file mobile_sam_image_encoder.onnx và sam_mask_decoder_single.onnx vào thư mục trên." />
+                </StackPanel>
+            </Border>
+
             <!-- Hot-Key section -->
             <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
                     Padding="{StaticResource Inset.XL}">
@@ -28,19 +64,13 @@
                         <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Phím tắt (Hot-Key)" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) và Space (kéo pan) cố định." />
+                               Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) cố định. Space gán được, nhưng chạy khi nhả phím và chỉ khi bạn không kéo pan (giữ Space + kéo chuột) trong lúc giữ." />
                     <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." />
 
                     <!-- Feedback for the last change -->
-                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
-                               Foreground="{StaticResource Brush.Status.Error}"
-                               AutomationProperties.AutomationId="SettingsError"
-                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}"
-                               Text="{Binding ErrorMessage}" />
                     <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Secondary}"
-                               AutomationProperties.AutomationId="SettingsStatus"
-                               Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsed}}"
+                               AutomationProperties.AutomationId="SettingsStatus" MinHeight="20"
                                Text="{Binding StatusMessage}" />
 
                     <ItemsControl ItemsSource="{Binding Groups}">
@@ -60,8 +90,14 @@
                                                             <ColumnDefinition Width="Auto" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Body}" VerticalAlignment="Center"
-                                                                   Text="{Binding Label}" />
+                                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                            <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Label}" />
+                                                            <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                                                                       Foreground="{StaticResource Brush.Status.Error}"
+                                                                       AutomationProperties.AutomationId="SettingsError"
+                                                                       Visibility="{Binding ErrorText, Converter={StaticResource NullToCollapsed}}"
+                                                                       Text="{Binding ErrorText}" />
+                                                        </StackPanel>
                                                         <Border Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                                 Background="{StaticResource Brush.Background.Selected}"
                                                                 CornerRadius="{StaticResource Radius.SM}" Padding="{StaticResource Inset.SM}">

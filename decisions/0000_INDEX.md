@@ -17,3 +17,4 @@
 | [0013](0013_trainer-desktop-avalonia.md) | Desktop của Trainer viết bằng Avalonia, dùng chung use case với CLI | 2026-11-08 |
 | [0014](0014_project-target-task.md) | Project khai báo task mục tiêu (detect, segment, OBB, classify); Annotate bật công cụ theo task, Export cảnh báo khi lệch | 2026-11-08 |
 | [0015](0015_user-settings-and-rebindable-shortcuts.md) | Cài đặt theo người dùng (settings.json), phím tắt của Annotate đổi được, một phím một việc | 2026-11-08 |
+| [0016](0016_magic-polygon-with-sam-onnx.md) | Magic polygon: tự tách vật thể bằng SAM (MobileSAM ONNX) chạy offline, model đặt ngoài installer | 2026-11-08 |

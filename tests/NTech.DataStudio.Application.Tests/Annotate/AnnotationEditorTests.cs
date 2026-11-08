@@ -134,7 +134,7 @@ public class AnnotationEditorTests : IDisposable
         _editor.CycleTool(1);
 
         Assert.Null(_editor.Drawing);
-        Assert.Equal(AnnotateTool.RotatedBox, _editor.Tool);
+        Assert.Equal(AnnotateTool.MagicPolygon, _editor.Tool);
         Assert.Empty(Document.Annotations);
     }
 

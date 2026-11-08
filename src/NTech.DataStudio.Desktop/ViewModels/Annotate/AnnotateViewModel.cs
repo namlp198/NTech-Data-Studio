@@ -132,9 +132,16 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     [ObservableProperty]
     private string _reviewButtonText = "Duyệt ảnh";
 
-    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader, SettingsService settings)
+    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader, SettingsService settings, ISmartSegmenter segmenter, SamModelService models)
     {
+        models.Changed += (_, _) => RaiseTargetTaskChanged();
         _settings = settings;
+        Magic = new MagicPolygonController(segmenter);
+        Magic.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(MagicStatus));
+            OnPropertyChanged(nameof(HasMagicStatus));
+        };
         Hints = new ShortcutHints(settings);
         _settings.Changed += (_, _) => RaiseTargetTaskChanged();
         _projects = projects;
@@ -183,6 +190,21 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     public bool IsSelectTool { get => Tool == AnnotateTool.Select; set => ChooseTool(value, AnnotateTool.Select); }
     public bool IsBoxTool { get => Tool == AnnotateTool.Box; set => ChooseTool(value, AnnotateTool.Box); }
+    /// <summary>The Magic polygon tool's state: the outline under the pointer, the points added, what it is doing.</summary>
+    public MagicPolygonController Magic { get; }
+
+    /// <summary>"Đang phân tích ảnh...", an error, or the reason the model is missing; shown over the picture while the tool is on.</summary>
+    public string? MagicStatus => IsMagicTool ? Magic.Status : null;
+
+    public bool HasMagicStatus => MagicStatus is not null;
+
+    public bool IsMagicTool { get => Tool == AnnotateTool.MagicPolygon; set => ChooseTool(value, AnnotateTool.MagicPolygon); }
+    public bool IsMagicToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.MagicPolygon) && Magic.Unavailable is null;
+    public string MagicToolTip =>
+        TaskTools.WhyOff(TargetTask, AnnotateTool.MagicPolygon) is { } why ? $"{Hints.Text(ShortcutAction.MagicPolygonTool)} - {why}"
+        : Magic.Unavailable is { } missing ? $"Magic polygon - {missing} Mở Cài đặt để tải model."
+        : Hints.Text(ShortcutAction.MagicPolygonTool);
+
     public bool IsPolygonTool { get => Tool == AnnotateTool.Polygon; set => ChooseTool(value, AnnotateTool.Polygon); }
     public bool IsObbTool { get => Tool == AnnotateTool.RotatedBox; set => ChooseTool(value, AnnotateTool.RotatedBox); }
     public bool IsTagTool { get => Tool == AnnotateTool.Tag; set => ChooseTool(value, AnnotateTool.Tag); }
@@ -211,7 +233,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         if (Editor is { } editor) editor.TargetTask = TargetTask;
         foreach (var name in new[]
                  {
-                     nameof(IsBoxToolEnabled), nameof(IsPolygonToolEnabled), nameof(IsObbToolEnabled), nameof(IsTagToolEnabled),
+                     nameof(IsBoxToolEnabled), nameof(IsMagicToolEnabled), nameof(MagicToolTip), nameof(IsPolygonToolEnabled), nameof(IsObbToolEnabled), nameof(IsTagToolEnabled),
                      nameof(BoxToolTip), nameof(PolygonToolTip), nameof(ObbToolTip), nameof(TagToolTip)
                  })
             OnPropertyChanged(name);
@@ -231,6 +253,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         OnPropertyChanged(nameof(IsSelectTool));
         OnPropertyChanged(nameof(IsBoxTool));
         OnPropertyChanged(nameof(IsPolygonTool));
+        OnPropertyChanged(nameof(IsMagicTool));
+        OnPropertyChanged(nameof(MagicStatus));
+        OnPropertyChanged(nameof(HasMagicStatus));
         OnPropertyChanged(nameof(IsObbTool));
         OnPropertyChanged(nameof(IsTagTool));
         OnPropertyChanged(nameof(IsPanTool));
@@ -276,7 +301,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             _allImages = images.Select(image => new ImageRowViewModel(image, store.ProjectRoot)).ToList();
             HasImages = _allImages.Count > 0;
 
-            var editor = new AnnotationEditor(_service, _clipboard) { TargetTask = TargetTask };
+            var editor = new AnnotationEditor(_service, _clipboard) { TargetTask = TargetTask, Magic = Magic };
             editor.Changed += OnEditorChanged;
             editor.Edited += OnEdited;
             Editor = editor;
@@ -379,6 +404,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             var document = service.Open(row.Image);
             CurrentBitmap = bitmap;
             editor.Open(document);
+            Magic.SetImage(row.MasterFullPath);
             RebuildLabels();
             RefreshTags();
             UpdateImageInfo();
@@ -391,6 +417,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
             CurrentBitmap = null;
             editor.Open(null);
+            Magic.SetImage(null);
             Labels.Clear();
             ImageError = $"Không mở được ảnh {row.FileName}: {exception.Message}";
             UpdateImageInfo();
@@ -831,6 +858,11 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         return _settings.Shortcuts.Find(new Shortcut(KeyNames.Of(key), ctrl, shift)) is { } action && Run(action, Editor);
     }
 
+    /// <summary>Whether this key press is bound to an action, so the view knows to take it (Space waits for its key-up).</summary>
+    public bool IsBound(Key key, ModifierKeys modifiers) =>
+        Editor is not null && !modifiers.HasFlag(ModifierKeys.Alt)
+        && _settings.Shortcuts.Find(new Shortcut(KeyNames.Of(key), modifiers.HasFlag(ModifierKeys.Control), modifiers.HasFlag(ModifierKeys.Shift))) is not null;
+
     private bool Run(ShortcutAction action, AnnotationEditor editor)
     {
         switch (action)
@@ -838,6 +870,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             case ShortcutAction.SelectTool: editor.SetTool(AnnotateTool.Select); return true;
             case ShortcutAction.BoxTool: editor.SetTool(AnnotateTool.Box); return true;
             case ShortcutAction.PolygonTool: editor.SetTool(AnnotateTool.Polygon); return true;
+            case ShortcutAction.MagicPolygonTool: editor.SetTool(AnnotateTool.MagicPolygon); return true;
             case ShortcutAction.RotatedBoxTool: editor.SetTool(AnnotateTool.RotatedBox); return true;
             case ShortcutAction.TagTool: editor.SetTool(AnnotateTool.Tag); return true;
             case ShortcutAction.PanTool: editor.SetTool(AnnotateTool.Pan); return true;

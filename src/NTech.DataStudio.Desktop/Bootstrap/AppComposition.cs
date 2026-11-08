@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Datasets;
 using NTech.DataStudio.Application.Export;
 using NTech.DataStudio.Application.Prepare;
@@ -16,6 +17,7 @@ using NTech.DataStudio.Desktop.ViewModels.Shared;
 using NTech.DataStudio.Exporters;
 using NTech.DataStudio.Imaging.Augment;
 using NTech.DataStudio.Imaging.Codecs;
+using NTech.DataStudio.Imaging.Segmentation;
 using NTech.DataStudio.Storage.Profiles;
 using NTech.DataStudio.Storage.Settings;
 using NTech.DataStudio.Storage.Sqlite;
@@ -28,6 +30,8 @@ public static class AppComposition
     public static MainWindow CreateMainWindow()
     {
         var projects = new ProjectService(new SqliteProjectStore());
+        var sam = new SamSegmenter(SamSegmenter.DefaultFolder());
+        var samModels = new SamModelService(sam, new SamModelDownloader(), SamSegmenter.DefaultFolder());
         var settings = new SettingsService(new JsonSettingsStore(JsonSettingsStore.DefaultPath()));
         var folderPicker = new WpfFolderPicker();
         var prompt = new MessageBoxPrompt();
@@ -53,7 +57,7 @@ public static class AppComposition
         {
             ("Project", "Icon.Project", projectView),
             ("Prepare", "Icon.Prepare", prepareView),
-            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings)),
+            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings, sam, samModels)),
             ("Dataset", "Icon.Dataset", new DatasetViewModel(
                 projects, new DatasetService(projects, engine), prompt)),
             ("Export", "Icon.Export", new ExportViewModel(
@@ -63,7 +67,7 @@ public static class AppComposition
                 profiles,
                 folderPicker,
                 new ExplorerFolderOpener())),
-            ("Cài đặt", "Icon.Settings", new SettingsViewModel(settings))
+            ("Cài đặt", "Icon.Settings", new SettingsViewModel(settings, samModels, new ExplorerFolderOpener()))
         };
 
         var shell = new ShellViewModel(

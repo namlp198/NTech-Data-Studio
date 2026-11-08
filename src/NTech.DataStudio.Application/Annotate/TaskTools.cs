@@ -13,7 +13,7 @@ public static class TaskTools
         AnnotateTool.Select or AnnotateTool.Pan => true,
         _ when target is null => true,
         AnnotateTool.Box => target == TaskKind.Detect,
-        AnnotateTool.Polygon => target == TaskKind.Segment,
+        AnnotateTool.Polygon or AnnotateTool.MagicPolygon => target == TaskKind.Segment,
         AnnotateTool.RotatedBox => target == TaskKind.Obb,
         AnnotateTool.Tag => target == TaskKind.Classify,
         _ => true

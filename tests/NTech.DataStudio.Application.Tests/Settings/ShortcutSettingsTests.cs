@@ -86,7 +86,6 @@ public class ShortcutSettingsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Space")]
     [InlineData("D1")]
     [InlineData("NumPad3")]
     [InlineData("LeftCtrl")]
@@ -95,6 +94,16 @@ public class ShortcutSettingsTests : IDisposable
         var shortcut = new Shortcut(text);
         Assert.NotNull(shortcut.Problem());
         Assert.Throws<ShortcutException>(() => ShortcutMap.Defaults.With(ShortcutAction.BoxTool, new[] { shortcut }));
+    }
+
+    [Fact]
+    public void Space_CanBeBoundLikeAnyOtherKey()
+    {
+        var map = ShortcutMap.Defaults.With(ShortcutAction.Finish, new[] { Key("Space") });
+
+        Assert.Null(Key("Space").Problem());
+        Assert.Equal(ShortcutAction.Finish, map.Find(Key("Space")));
+        Assert.Equal("Space", Key("Space").Display);
     }
 
     [Fact]
@@ -158,7 +167,7 @@ public class ShortcutSettingsTests : IDisposable
             ["NoSuchAction"] = new[] { "X" },
             ["BoxTool"] = new[] { "Ctrl+" },
             ["PolygonTool"] = Array.Empty<string>(),
-            ["TagTool"] = new[] { "Space" }
+            ["TagTool"] = new[] { "D5" }
         });
 
         Assert.False(map.HasCustom);

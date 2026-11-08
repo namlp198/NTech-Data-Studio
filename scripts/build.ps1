@@ -65,6 +65,7 @@ if ($LASTEXITCODE -ne 0) {
 $required = @(
     $ExeName,
     "OpenCvSharpExtern.dll",
+    "onnxruntime.dll",
     "profiles\yolo26-detect.yaml"
 )
 foreach ($name in $required) {

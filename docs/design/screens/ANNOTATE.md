@@ -25,12 +25,12 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 
 ## Phím tắt
 
-Bảng dưới là phím mặc định. Đổi được ở màn hình Cài đặt (`SETTINGS.md`, quyết định 0015); riêng 1 đến 9, Space và chuột cố định. Tooltip trên thanh công cụ luôn ghi phím đang dùng.
+Bảng dưới là phím mặc định. Đổi được ở màn hình Cài đặt (`SETTINGS.md`, quyết định 0015); riêng 1 đến 9 và chuột cố định. Space vẫn là "giữ và kéo để pan"; nếu gán Space cho một hành động thì hành động chạy khi nhả Space mà chưa kéo pan. Tooltip trên thanh công cụ luôn ghi phím đang dùng.
 
 | Phím | Chức năng |
 | --- | --- |
-| V (hoặc S), B, P, R, T | Chọn, Box, Polygon, Rotated box, Tag |
-| Q, Shift+Q | Công cụ kế, công cụ trước trong thanh công cụ (Chọn, Box, Polygon, Rotated box, Tag, Pan, rồi quay vòng); đang vẽ dở thì bỏ hình dở |
+| V (hoặc S), B, P, M, R, T | Chọn, Box, Polygon, Magic polygon, Rotated box, Tag |
+| Q, Shift+Q | Công cụ kế, công cụ trước trong thanh công cụ (Chọn, Box, Polygon, Magic polygon, Rotated box, Tag, Pan, rồi quay vòng); đang vẽ dở thì bỏ hình dở |
 | + và - | Phóng to, thu nhỏ quanh tâm khung |
 | 1–9 | Chọn class. Công cụ Tag: gắn hoặc bỏ tag. Công cụ Chọn đang chọn một hình: đổi class của hình |
 | A, D hoặc ←, → | Ảnh trước, ảnh sau (theo bộ lọc đang bật) |
@@ -109,3 +109,13 @@ Nhãn bị khóa thì Class và Xóa bị làm mờ. Chuột phải lên chỗ t
 ## Công cụ theo task mục tiêu
 
 Project có task mục tiêu (quyết định 0014, chọn ở màn hình Project). Rail chỉ bật công cụ vẽ hợp với task: Detect bật Box, Segment bật Polygon, OBB bật Rotated box, Classify bật Tag. Chọn và Pan luôn bật. Công cụ tắt bị làm mờ, tooltip nói vì sao ("tắt vì project nhắm ..."), phím tắt của nó không làm gì (hiện lời nhắc ở thanh trạng thái), và Q / Shift+Q bỏ qua nó. Đổi task giữa lúc đang dùng một công cụ vừa bị tắt thì về Chọn. Nhãn đã có thuộc loại khác vẫn hiện và sửa được. Project chưa chọn task (project cũ) bật mọi công cụ như trước. Logic ở `TaskTools` và `AnnotationEditor.TargetTask`.
+
+## Magic polygon (tự tách vật thể)
+
+Công cụ thứ ba trên thanh công cụ (biểu tượng đũa phép, phím M), để gán nhãn segment nhanh (quyết định 0016). Chỉ bật khi project nhắm Segment (hoặc chưa chọn task) và đã có model SAM.
+
+- **Rê chuột:** đa giác xem trước của vật thể dưới con trỏ hiện ngay, màu class đang chọn. Ảnh mới thì chờ vài giây ("Đang phân tích ảnh..." ở đầu khung), sau đó mỗi vị trí chuột mất khoảng 0,1 đến 0,2 giây; rê nhanh thì các vị trí trung gian bị bỏ, chỉ vị trí cuối được tính.
+- **Bấm trái:** lấy đa giác thành nhãn Polygon của class đang chọn (như nhãn vẽ tay: sửa đỉnh, undo, lưu). Công cụ vẫn bật để lấy vật thể tiếp theo.
+- **Tinh chỉnh trước khi lấy:** Shift+bấm thêm điểm trong vật thể, bấm phải thêm điểm ngoài vật thể (đánh dấu xanh và đỏ); Backspace bỏ điểm vừa thêm. Ở công cụ này bấm phải không mở menu nhãn.
+- **Thiếu model:** nút bị làm mờ, tooltip nói lý do và chỉ sang Cài đặt, nơi có nút Tải model (xem `SETTINGS.md`). Thư mục model: `%LOCALAPPDATA%\NTech\DataStudio\models\sam\` (`mobile_sam_image_encoder.onnx`, `sam_mask_decoder_single.onnx`).
+- **Chưa làm:** phân tích trước ảnh kế, tách theo hộp, lỗ bên trong polygon.

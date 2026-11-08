@@ -18,6 +18,7 @@ public partial class AnnotateView : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         PreviewKeyDown += OnPreviewKeyDown;
+        PreviewKeyUp += OnPreviewKeyUp;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -80,13 +81,42 @@ public partial class AnnotateView : UserControl
         return new System.Windows.Shapes.Ellipse { Width = 12, Height = 12, Fill = brush, HorizontalAlignment = HorizontalAlignment.Left };
     }
 
+    private bool _spaceDown;
+    private ModifierKeys _spaceModifiers;
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         // Typing a class name must not trigger the single-letter shortcuts.
         if (Keyboard.FocusedElement is TextBox or ComboBox) return;
+        if (DataContext is not AnnotateViewModel model) return;
 
-        if (DataContext is AnnotateViewModel model && model.HandleKey(e.Key, Keyboard.Modifiers))
+        // Space is also "hold and drag to pan", so a bound Space runs when it comes up, and only if it did not pan.
+        if (e.Key == Key.Space)
+        {
+            if (!model.IsBound(Key.Space, Keyboard.Modifiers)) return;
+            if (!e.IsRepeat)
+            {
+                _spaceDown = true;
+                _spaceModifiers = Keyboard.Modifiers;
+                Canvas.SpaceUsedForPan = false;
+            }
+
             e.Handled = true;
+            return;
+        }
+
+        if (model.HandleKey(e.Key, Keyboard.Modifiers))
+            e.Handled = true;
+    }
+
+    private void OnPreviewKeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Space || !_spaceDown) return;
+
+        _spaceDown = false;
+        e.Handled = true;
+        if (!Canvas.SpaceUsedForPan && DataContext is AnnotateViewModel model)
+            model.HandleKey(Key.Space, _spaceModifiers);
     }
 
     private void OnThumbSelectionChanged(object sender, SelectionChangedEventArgs e)

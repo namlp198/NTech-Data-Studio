@@ -20,6 +20,7 @@
     <Geometry x:Key="Icon.Select">M4,2.5 L14,9.5 L9.5,10.5 L12,15 L10,16 L7.5,11.5 L4,14.5 Z</Geometry>
     <Geometry x:Key="Icon.Box">M2.5,3.5 H15.5 V14.5 H2.5 Z</Geometry>
     <Geometry x:Key="Icon.Polygon">M3,4 L13,2 L16,9 L11,16 L3,13 Z M3,4 A1.2,1.2 0 1 1 2.99,4 M13,2 A1.2,1.2 0 1 1 12.99,2 M16,9 A1.2,1.2 0 1 1 15.99,9 M11,16 A1.2,1.2 0 1 1 10.99,16 M3,13 A1.2,1.2 0 1 1 2.99,13</Geometry>
+    <Geometry x:Key="Icon.Magic">M3,15 L10,8 M12,2 V6 M10,4 H14 M14,9 V12 M12.5,10.5 H15.5 M5,3 V5.5 M3.75,4.25 H6.25</Geometry>
     <Geometry x:Key="Icon.Obb">M6.5,2 L16,7.5 L11.5,15.5 L2,10 Z</Geometry>
     <Geometry x:Key="Icon.Tag">M2.5,2.5 H9 L15.5,9 L9,15.5 L2.5,9 Z M6,5 A1,1 0 1 1 5.99,5 Z</Geometry>
 

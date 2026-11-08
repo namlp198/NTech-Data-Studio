@@ -59,13 +59,12 @@ public sealed record Shortcut(string Key, bool Ctrl = false, bool Shift = false)
     }
 
     /// <summary>
-    /// Why this cannot be a shortcut, in words for the user; null when it can. Space is the pan modifier
-    /// of the canvas and 1 to 9 pick classes, so both stay fixed.
+    /// Why this cannot be a shortcut, in words for the user; null when it can. Keys 1 to 9 pick classes and stay fixed.
+    /// Space can be bound: Annotate runs it when Space is released without a pan drag in between (decision 0015).
     /// </summary>
     public string? Problem()
     {
         if (ModifierKeys.Contains(Key)) return "Cần một phím chính, không chỉ phím Ctrl, Shift hay Alt.";
-        if (Key.Equals("Space", StringComparison.OrdinalIgnoreCase)) return "Phím Space dành cho việc kéo pan ảnh.";
         if (Key.Length == 2 && Key[0] == 'D' && char.IsDigit(Key[1]) || Key.StartsWith("NumPad", StringComparison.Ordinal))
             return "Phím số 1 đến 9 dành cho việc chọn class.";
         return null;

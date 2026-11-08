@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Settings;
 using NTech.DataStudio.Desktop.Services;
 using NTech.DataStudio.Desktop.Shell;
@@ -12,6 +13,10 @@ public sealed partial class ShortcutRowViewModel : ObservableObject
 {
     [ObservableProperty]
     private string _keysText = string.Empty;
+
+    /// <summary>Why the last key was refused. Shown under this row, because the list scrolls and a message at the top would be out of sight.</summary>
+    [ObservableProperty]
+    private string? _errorText;
 
     [ObservableProperty]
     private bool _isCustom;
@@ -58,18 +63,20 @@ public sealed class ShortcutGroupViewModel
 public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 {
     private readonly SettingsService _settings;
+    private readonly SamModelService _models;
+    private readonly IFolderOpener _opener;
     private readonly List<ShortcutRowViewModel> _rows = new();
     private ShortcutRowViewModel? _capturing;
 
     [ObservableProperty]
-    private string? _errorMessage;
-
-    [ObservableProperty]
     private string? _statusMessage;
 
-    public SettingsViewModel(SettingsService settings)
+    public SettingsViewModel(SettingsService settings, SamModelService models, IFolderOpener opener)
     {
         _settings = settings;
+        _models = models;
+        _opener = opener;
+        _models.Changed += (_, _) => RefreshModel();
 
         var groups = new List<ShortcutGroupViewModel>();
         foreach (var group in ShortcutCatalog.All.GroupBy(info => info.Group))
@@ -86,6 +93,56 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
     public IReadOnlyList<ShortcutGroupViewModel> Groups { get; }
 
+    // ---- Magic polygon model (decision 0016) ----
+
+    public bool ModelReady => _models.IsReady;
+    public bool ModelMissing => !_models.IsReady && !_models.IsDownloading;
+    public bool IsDownloadingModel => _models.IsDownloading;
+    public string ModelFolder => _models.Folder;
+    public string? ModelError => _models.Error;
+
+    public string ModelStatusText => _models.IsDownloading
+        ? DownloadText()
+        : _models.IsReady
+            ? "Đã có đủ hai file model. Công cụ Magic polygon dùng được ở Annotate (project nhắm Segment)."
+            : "Chưa có model. Cần tải hai file (khoảng 45 MB) một lần; sau đó công cụ chạy offline.";
+
+    public double ModelProgressPercent => (_models.Progress?.Fraction ?? 0) * 100;
+
+    private string DownloadText()
+    {
+        if (_models.Progress is not { } progress || progress.FileName.Length == 0) return "Đang tải model...";
+
+        var total = progress.Total is { } size ? $" / {size / 1048576.0:0.0} MB" : string.Empty;
+        return $"Đang tải {progress.FileName} ({progress.FileIndex + 1}/{progress.FileCount}): {progress.Received / 1048576.0:0.0} MB{total}";
+    }
+
+    private void RefreshModel()
+    {
+        foreach (var name in new[]
+                 {
+                     nameof(ModelReady), nameof(ModelMissing), nameof(IsDownloadingModel), nameof(ModelError),
+                     nameof(ModelStatusText), nameof(ModelProgressPercent)
+                 })
+            OnPropertyChanged(name);
+        DownloadModelCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanDownloadModel() => !_models.IsReady && !_models.IsDownloading;
+
+    [RelayCommand(CanExecute = nameof(CanDownloadModel))]
+    private Task DownloadModelAsync() => _models.DownloadAsync();
+
+    [RelayCommand]
+    private void CancelModelDownload() => _models.Cancel();
+
+    [RelayCommand]
+    private void OpenModelFolder()
+    {
+        Directory.CreateDirectory(_models.Folder);
+        _opener.Open(_models.Folder);
+    }
+
     public bool IsCapturing => _capturing is not null;
 
     /// <summary>The file could not be read or the last change could not be saved.</summary>
@@ -96,6 +153,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
     public Task ActivateAsync()
     {
         Refresh();
+        RefreshModel();
         return Task.CompletedTask;
     }
 
@@ -122,14 +180,19 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
         _capturing = row;
         row.IsCapturing = true;
-        ErrorMessage = null;
+        row.ErrorText = null;
         StatusMessage = $"Nhấn phím mới cho \"{row.Label}\". Esc để hủy.";
         OnPropertyChanged(nameof(IsCapturing));
     }
 
     private void StopCapture()
     {
-        if (_capturing is { } row) row.IsCapturing = false;
+        if (_capturing is { } row)
+        {
+            row.IsCapturing = false;
+            row.ErrorText = null;
+        }
+
         _capturing = null;
         OnPropertyChanged(nameof(IsCapturing));
     }
@@ -137,7 +200,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
     private void Reset(ShortcutRowViewModel row)
     {
         StopCapture();
-        ErrorMessage = null;
+        row.ErrorText = null;
         _settings.Reset(row.Info.Action);
         StatusMessage = $"\"{row.Label}\" về phím mặc định: {row.KeysText}.";
     }
@@ -148,7 +211,6 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
     private void ResetAll()
     {
         StopCapture();
-        ErrorMessage = null;
         _settings.ResetAll();
         StatusMessage = "Mọi phím tắt đã về mặc định.";
     }
@@ -174,7 +236,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
         if (modifiers.HasFlag(ModifierKeys.Alt))
         {
-            ErrorMessage = "Không dùng được tổ hợp có Alt. Hãy thử Ctrl hoặc Shift.";
+            row.ErrorText = "Không dùng được tổ hợp có Alt. Hãy thử Ctrl hoặc Shift.";
             return true;
         }
 
@@ -184,11 +246,10 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
             modifiers.HasFlag(ModifierKeys.Shift));
         if (_settings.Assign(row.Info.Action, shortcut) is { } problem)
         {
-            ErrorMessage = problem;
+            row.ErrorText = problem;
             return true;
         }
 
-        ErrorMessage = null;
         StopCapture();
         StatusMessage = $"\"{row.Label}\" dùng {shortcut.Display}.";
         return true;

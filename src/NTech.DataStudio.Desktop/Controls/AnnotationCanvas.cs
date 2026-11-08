@@ -74,6 +74,8 @@ public sealed class AnnotationCanvas : FrameworkElement
     private Brush _handleFill = Brushes.White;
     private Brush _handleBorder = Brushes.DodgerBlue;
     private Brush _crosshair = Brushes.Gray;
+    private Brush _promptPositive = Brushes.Green;
+    private Brush _promptNegative = Brushes.Red;
     private Brush _labelText = Brushes.Black;
     private FontFamily _font = new("Segoe UI");
     private double _fontSize = 12;
@@ -158,7 +160,7 @@ public sealed class AnnotationCanvas : FrameworkElement
     private Cursor IdleCursor() => Editor?.Tool switch
     {
         AnnotateTool.Pan => Cursors.Hand,
-        { } when Editor.IsDrawingTool => Cursors.Cross,
+        { } when Editor.IsDrawingTool || Editor.IsMagicTool => Cursors.Cross,
         _ => Cursors.Arrow
     };
 
@@ -226,9 +228,13 @@ public sealed class AnnotationCanvas : FrameworkElement
     private void OnEditorChanged(AnnotationEditor? oldEditor, AnnotationEditor? newEditor)
     {
         if (oldEditor is not null) oldEditor.Changed -= OnEditorStateChanged;
+        if (oldEditor?.Magic is { } oldMagic) oldMagic.Changed -= OnMagicChanged;
         if (newEditor is not null) newEditor.Changed += OnEditorStateChanged;
+        if (newEditor?.Magic is { } newMagic) newMagic.Changed += OnMagicChanged;
         RenderLayers();
     }
+
+    private void OnMagicChanged(object? sender, EventArgs e) => RenderOverlay();
 
     private void OnEditorStateChanged(object? sender, EventArgs e)
     {
@@ -285,6 +291,8 @@ public sealed class AnnotationCanvas : FrameworkElement
         _handleFill = Resource<Brush>("Brush.Annotation.HandleFill", _handleFill);
         _handleBorder = Resource<Brush>("Brush.Annotation.HandleBorder", _handleBorder);
         _crosshair = Resource<Brush>("Brush.Annotation.Crosshair", _crosshair);
+        _promptPositive = Resource<Brush>("Brush.Status.Success", _promptPositive);
+        _promptNegative = Resource<Brush>("Brush.Status.Error", _promptNegative);
         _labelText = Resource<Brush>("Brush.Background.App", _labelText);
         _font = Resource("Font.Primary", _font);
         _fontSize = Resource("FontSize.Caption", _fontSize);
@@ -403,6 +411,28 @@ public sealed class AnnotationCanvas : FrameworkElement
 
         if (editor.Drawing is { } session)
             DrawSession(context, editor, session);
+
+        if (editor.IsMagicTool && editor.Magic is { } magic)
+        {
+            if (_pointer is { } hover && !_panning)
+                DrawCrosshair(context, hover);
+            DrawMagic(context, editor, magic);
+        }
+    }
+
+    /// <summary>The outline of the object under the pointer, in the colour of the class it would get, and the points added so far.</summary>
+    private void DrawMagic(DrawingContext context, AnnotationEditor editor, MagicPolygonController magic)
+    {
+        var color = editor.ActiveClassId is { } classId ? ColorOf(classId) : Colors.Gray;
+        var (fill, pen) = LookOf(color, true);
+        if (magic.Preview is { Count: >= 3 } outline)
+            context.DrawGeometry(fill, pen, Outline(outline, closed: true));
+
+        foreach (var prompt in magic.Prompts)
+        {
+            var brush = prompt.Positive ? _promptPositive : _promptNegative;
+            context.DrawEllipse(brush, new Pen(_handleBorder, 1.5), ToScreen(prompt.Position), PointRadius, PointRadius);
+        }
     }
 
     private void DrawCrosshair(DrawingContext context, Point pointer)
@@ -435,6 +465,12 @@ public sealed class AnnotationCanvas : FrameworkElement
 
     // ---- mouse ----
 
+    /// <summary>
+    /// A drag started with Space held. The view clears this when Space goes down and reads it when Space comes up:
+    /// a Space that panned the picture must not also run the action Space is bound to.
+    /// </summary>
+    public bool SpaceUsedForPan { get; set; }
+
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
         base.OnMouseDown(e);
@@ -451,6 +487,7 @@ public sealed class AnnotationCanvas : FrameworkElement
             Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount);
         if (wantsPan || dragsPicture)
         {
+            if (e.ChangedButton == MouseButton.Left && Keyboard.IsKeyDown(Key.Space)) SpaceUsedForPan = true;
             _panning = true;
             _panStart = position;
             _panTx = _tx;
@@ -464,7 +501,7 @@ public sealed class AnnotationCanvas : FrameworkElement
         if (e.ChangedButton == MouseButton.Left && Editor is not null)
         {
             CaptureMouse();
-            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount);
+            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
             e.Handled = true;
         }
     }
@@ -518,6 +555,13 @@ public sealed class AnnotationCanvas : FrameworkElement
     protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
     {
         base.OnMouseRightButtonUp(e);
+        // The Magic polygon tool uses the right button for "not this part", so there is no label menu there.
+        if (Image is not null && Editor is { IsMagicTool: true } magicEditor && !_panning)
+        {
+            if (magicEditor.SecondaryDown(ToImage(e.GetPosition(this)))) e.Handled = true;
+            return;
+        }
+
         if (Image is null || Editor is not { Drawing: null } editor || _panning) return;
 
         if (editor.LabelAt(ToImage(e.GetPosition(this)), Tolerance) is { } hit)
@@ -532,6 +576,7 @@ public sealed class AnnotationCanvas : FrameworkElement
     {
         base.OnMouseLeave(e);
         _pointer = null;
+        Editor?.Magic?.LeaveHover();
         RenderOverlay();
     }
 
