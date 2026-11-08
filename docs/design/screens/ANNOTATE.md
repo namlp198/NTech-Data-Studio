@@ -25,6 +25,8 @@ Canvas ảnh full-bleed, mọi thứ khác nổi lên trên. Mỗi thao tác đ�
 
 ## Phím tắt
 
+Bảng dưới là phím mặc định. Đổi được ở màn hình Cài đặt (`SETTINGS.md`, quyết định 0015); riêng 1 đến 9, Space và chuột cố định. Tooltip trên thanh công cụ luôn ghi phím đang dùng.
+
 | Phím | Chức năng |
 | --- | --- |
 | V (hoặc S), B, P, R, T | Chọn, Box, Polygon, Rotated box, Tag |

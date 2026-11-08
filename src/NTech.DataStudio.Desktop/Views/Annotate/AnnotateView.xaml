@@ -86,7 +86,7 @@
                     Margin="{StaticResource Layout.AnnotateRailMargin}">
                 <StackPanel Margin="{StaticResource Inset.XS}">
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Select}" ToolTip="Chọn và sửa (V hoặc S). Q và Shift+Q: công cụ kế và trước. Kéo vùng trống: pan ảnh. Esc: về công cụ này"
+                                 Tag="{StaticResource Icon.Select}" ToolTip="{Binding Hints[SelectTool]}"
                                  AutomationProperties.Name="Công cụ Chọn" IsChecked="{Binding IsSelectTool}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
                                  Tag="{StaticResource Icon.Box}" ToolTip="{Binding BoxToolTip}" ToolTipService.ShowOnDisabled="True"
@@ -103,25 +103,25 @@
 
                     <Border Height="{StaticResource Layout.DividerThickness}" Margin="{StaticResource Inset.SM}" Background="{StaticResource Brush.Border.Default}" />
 
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Undo}" ToolTip="Hoàn tác (Ctrl+Z)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Undo}" ToolTip="{Binding Hints[Undo]}"
                             AutomationProperties.Name="Hoàn tác" Command="{Binding UndoCommand}" />
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Redo}" ToolTip="Làm lại (Ctrl+Y)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Redo}" ToolTip="{Binding Hints[Redo]}"
                             AutomationProperties.Name="Làm lại" Command="{Binding RedoCommand}" />
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Delete}" ToolTip="Xóa nhãn đang chọn (Delete)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Delete}" ToolTip="{Binding Hints[Delete]}"
                             AutomationProperties.Name="Xóa nhãn" Command="{Binding DeleteSelectedCommand}" />
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Visibility}" ToolTip="Ẩn/hiện mọi nhãn (H)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.Visibility}" ToolTip="{Binding Hints[ToggleShapes]}"
                             AutomationProperties.Name="Ẩn hiện nhãn" Command="{Binding ToggleHideAllCommand}" />
 
                     <Border Height="{StaticResource Layout.DividerThickness}" Margin="{StaticResource Inset.SM}" Background="{StaticResource Brush.Border.Default}" />
 
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.FitFrame}" ToolTip="Vừa khung (F)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.FitFrame}" ToolTip="{Binding Hints[FitView]}"
                             AutomationProperties.Name="Vừa khung" Command="{Binding FitCommand}" />
                     <RadioButton Style="{StaticResource ToolRail.ToggleButton}" GroupName="annotateTools"
-                                 Tag="{StaticResource Icon.Pan}" ToolTip="Pan: kéo ảnh bằng chuột trái (G). Cũng giữ Space rồi kéo, hoặc kéo chuột giữa"
+                                 Tag="{StaticResource Icon.Pan}" ToolTip="{Binding Hints[PanTool]}"
                                  AutomationProperties.Name="Công cụ Pan" IsChecked="{Binding IsPanTool}" />
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomIn}" ToolTip="Phóng to (+)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomIn}" ToolTip="{Binding Hints[ZoomIn]}"
                             AutomationProperties.Name="Phóng to" Command="{Binding ZoomInCommand}" />
-                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomOut}" ToolTip="Thu nhỏ (-)"
+                    <Button Style="{StaticResource ToolRail.Button}" Tag="{StaticResource Icon.ZoomOut}" ToolTip="{Binding Hints[ZoomOut]}"
                             AutomationProperties.Name="Thu nhỏ" Command="{Binding ZoomOutCommand}" />
                 </StackPanel>
             </Border>
@@ -309,7 +309,7 @@
                             <Button Style="{StaticResource Button.Secondary}" Content="Chép nhãn ảnh trước"
                                     ToolTip="Chép nhãn và tag từ ảnh đứng trước" Command="{Binding CopyFromPreviousCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
-                                    ToolTip="Ảnh không có vật thể (N)" Content="{Binding NullButtonText}"
+                                    ToolTip="{Binding Hints[ToggleNull]}" Content="{Binding NullButtonText}"
                                     Command="{Binding ToggleNullCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
                                     Content="{Binding ReviewButtonText}" Command="{Binding ToggleReviewedCommand}" />

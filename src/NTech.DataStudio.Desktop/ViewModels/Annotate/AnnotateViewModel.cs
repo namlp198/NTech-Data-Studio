@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using NTech.DataStudio.Application.Abstractions;
 using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Projects;
+using NTech.DataStudio.Application.Settings;
 using NTech.DataStudio.Desktop.Controls;
 using NTech.DataStudio.Desktop.Services;
 using NTech.DataStudio.Desktop.Shell;
@@ -35,6 +36,7 @@ public enum StatusFilterKind
 public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 {
     private readonly ProjectService _projects;
+    private readonly SettingsService _settings;
     private readonly IUserPrompt _prompt;
     private readonly ImageLoader _loader;
     private readonly AnnotationClipboard _clipboard = new();
@@ -130,8 +132,11 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     [ObservableProperty]
     private string _reviewButtonText = "Duyệt ảnh";
 
-    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader)
+    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader, SettingsService settings)
     {
+        _settings = settings;
+        Hints = new ShortcutHints(settings);
+        _settings.Changed += (_, _) => RaiseTargetTaskChanged();
         _projects = projects;
         _prompt = prompt;
         _loader = loader;
@@ -190,13 +195,16 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public bool IsObbToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.RotatedBox);
     public bool IsTagToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Tag);
 
-    public string BoxToolTip => ToolTip("Bounding box (B)", AnnotateTool.Box);
-    public string PolygonToolTip => ToolTip("Polygon (P)", AnnotateTool.Polygon);
-    public string ObbToolTip => ToolTip("Rotated box (R)", AnnotateTool.RotatedBox);
-    public string TagToolTip => ToolTip("Tag cả ảnh (T)", AnnotateTool.Tag);
+    /// <summary>Tooltips that name the keys an action has now (they change when the user rebinds).</summary>
+    public ShortcutHints Hints { get; }
 
-    private string ToolTip(string text, AnnotateTool tool) =>
-        TaskTools.WhyOff(TargetTask, tool) is { } why ? $"{text} - {why}" : text;
+    public string BoxToolTip => ToolTip(ShortcutAction.BoxTool, AnnotateTool.Box);
+    public string PolygonToolTip => ToolTip(ShortcutAction.PolygonTool, AnnotateTool.Polygon);
+    public string ObbToolTip => ToolTip(ShortcutAction.RotatedBoxTool, AnnotateTool.RotatedBox);
+    public string TagToolTip => ToolTip(ShortcutAction.TagTool, AnnotateTool.Tag);
+
+    private string ToolTip(ShortcutAction action, AnnotateTool tool) =>
+        TaskTools.WhyOff(TargetTask, tool) is { } why ? $"{Hints.Text(action)} - {why}" : Hints.Text(action);
 
     private void RaiseTargetTaskChanged()
     {
@@ -803,71 +811,56 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     // ---- keyboard ----
 
-    /// <summary>The shortcuts of the design. The view calls this unless a text box has the focus.</summary>
+    /// <summary>
+    /// Runs the action the pressed key is bound to (Settings, decision 0015). The view calls this unless a text
+    /// box has the focus. Keys 1 to 9 pick classes and are not rebindable.
+    /// </summary>
     public bool HandleKey(Key key, ModifierKeys modifiers)
     {
         if (Editor is null) return false;
-
-        var ctrl = modifiers.HasFlag(ModifierKeys.Control);
         if (modifiers.HasFlag(ModifierKeys.Alt)) return false;
 
-        if (ctrl)
+        var ctrl = modifiers.HasFlag(ModifierKeys.Control);
+        var shift = modifiers.HasFlag(ModifierKeys.Shift);
+        if (!ctrl)
         {
-            switch (key)
-            {
-                case Key.Z when modifiers.HasFlag(ModifierKeys.Shift):
-                case Key.Y:
-                    Redo();
-                    return true;
-                case Key.Z:
-                    Undo();
-                    return true;
-                case Key.C:
-                    Editor.Copy();
-                    return true;
-                case Key.V:
-                    Editor.Paste();
-                    return true;
-                default:
-                    return false;
-            }
+            if (key is >= Key.D1 and <= Key.D9) return UseHotkey(key - Key.D1 + 1);
+            if (key is >= Key.NumPad1 and <= Key.NumPad9) return UseHotkey(key - Key.NumPad1 + 1);
         }
 
-        if (key is >= Key.D1 and <= Key.D9) return UseHotkey(key - Key.D1 + 1);
-        if (key is >= Key.NumPad1 and <= Key.NumPad9) return UseHotkey(key - Key.NumPad1 + 1);
+        return _settings.Shortcuts.Find(new Shortcut(KeyNames.Of(key), ctrl, shift)) is { } action && Run(action, Editor);
+    }
 
-        switch (key)
+    private bool Run(ShortcutAction action, AnnotationEditor editor)
+    {
+        switch (action)
         {
-            case Key.V or Key.S: Editor.SetTool(AnnotateTool.Select); return true;
+            case ShortcutAction.SelectTool: editor.SetTool(AnnotateTool.Select); return true;
+            case ShortcutAction.BoxTool: editor.SetTool(AnnotateTool.Box); return true;
+            case ShortcutAction.PolygonTool: editor.SetTool(AnnotateTool.Polygon); return true;
+            case ShortcutAction.RotatedBoxTool: editor.SetTool(AnnotateTool.RotatedBox); return true;
+            case ShortcutAction.TagTool: editor.SetTool(AnnotateTool.Tag); return true;
+            case ShortcutAction.PanTool: editor.SetTool(AnnotateTool.Pan); return true;
             // Q steps to the next tool in the rail and Shift+Q back, so one hand can flip between tools. Not E:
             // a Vietnamese Telex IME turns a repeated "e" into "ê" (a Backspace plus a letter) and eats the press.
-            case Key.Q: Editor.CycleTool(modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1); return true;
-            case Key.OemPlus or Key.Add: ZoomInRequested?.Invoke(); return true;
-            case Key.OemMinus or Key.Subtract: ZoomOutRequested?.Invoke(); return true;
-            case Key.B: Editor.SetTool(AnnotateTool.Box); return true;
-            case Key.P: Editor.SetTool(AnnotateTool.Polygon); return true;
-            case Key.R: Editor.SetTool(AnnotateTool.RotatedBox); return true;
-            case Key.T: Editor.SetTool(AnnotateTool.Tag); return true;
-            case Key.N: Editor.ToggleNull(); return true;
-            case Key.H: Editor.ToggleShapesVisible(); return true;
-            case Key.F: FitRequested?.Invoke(); return true;
-            case Key.Enter: Editor.Finish(); return true;
-            case Key.Back: Editor.UndoPoint(); return true;
-            case Key.Delete: Editor.DeleteSelected(); return true;
-            case Key.G: Editor.SetTool(AnnotateTool.Pan); return true;
-            case Key.Escape:
-                Editor.Escape();
-                return true;
-            case Key.A:
-            case Key.Left:
-                _ = MoveAsync(-1);
-                return true;
-            case Key.D:
-            case Key.Right:
-                _ = MoveAsync(1);
-                return true;
-            default:
-                return false;
+            case ShortcutAction.NextTool: editor.CycleTool(1); return true;
+            case ShortcutAction.PreviousTool: editor.CycleTool(-1); return true;
+            case ShortcutAction.ZoomIn: ZoomInRequested?.Invoke(); return true;
+            case ShortcutAction.ZoomOut: ZoomOutRequested?.Invoke(); return true;
+            case ShortcutAction.FitView: FitRequested?.Invoke(); return true;
+            case ShortcutAction.ToggleShapes: editor.ToggleShapesVisible(); return true;
+            case ShortcutAction.PreviousImage: _ = MoveAsync(-1); return true;
+            case ShortcutAction.NextImage: _ = MoveAsync(1); return true;
+            case ShortcutAction.Finish: editor.Finish(); return true;
+            case ShortcutAction.UndoPoint: editor.UndoPoint(); return true;
+            case ShortcutAction.Escape: editor.Escape(); return true;
+            case ShortcutAction.ToggleNull: editor.ToggleNull(); return true;
+            case ShortcutAction.Delete: editor.DeleteSelected(); return true;
+            case ShortcutAction.Undo: Undo(); return true;
+            case ShortcutAction.Redo: Redo(); return true;
+            case ShortcutAction.Copy: editor.Copy(); return true;
+            case ShortcutAction.Paste: editor.Paste(); return true;
+            default: return false;
         }
     }
 

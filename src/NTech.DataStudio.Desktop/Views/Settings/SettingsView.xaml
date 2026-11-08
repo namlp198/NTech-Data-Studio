@@ -1,0 +1,91 @@
+<UserControl x:Class="NTech.DataStudio.Desktop.Views.Settings.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Inset.Page}" HorizontalAlignment="Left"
+                    Width="{StaticResource Layout.PageContentMaxWidth}">
+
+            <!-- PageHeader -->
+            <TextBlock Style="{StaticResource Text.PageTitle}" Text="Cài đặt" />
+            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
+                       Text="Cài đặt của riêng bạn trên máy này; không nằm trong project và không đi theo project khi chép sang máy khác." />
+
+            <!-- Error state: the settings file could not be read or written -->
+            <TextBlock Margin="{StaticResource Gap.Top.LG}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                       Foreground="{StaticResource Brush.Status.Warning}"
+                       AutomationProperties.AutomationId="SettingsProblem"
+                       Visibility="{Binding ProblemMessage, Converter={StaticResource NullToCollapsed}}"
+                       Text="{Binding ProblemMessage}" />
+
+            <!-- Hot-Key section -->
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
+                    Padding="{StaticResource Inset.XL}">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Secondary}" Content="Đặt lại tất cả"
+                                AutomationProperties.Name="Đặt lại tất cả phím tắt"
+                                Command="{Binding ResetAllCommand}" />
+                        <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Phím tắt (Hot-Key)" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) và Space (kéo pan) cố định." />
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." />
+
+                    <!-- Feedback for the last change -->
+                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                               Foreground="{StaticResource Brush.Status.Error}"
+                               AutomationProperties.AutomationId="SettingsError"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding ErrorMessage}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Secondary}"
+                               AutomationProperties.AutomationId="SettingsStatus"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding StatusMessage}" />
+
+                    <ItemsControl ItemsSource="{Binding Groups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="{StaticResource Gap.Top.LG}">
+                                    <TextBlock Style="{StaticResource Text.Label}" Text="{Binding Title}" />
+                                    <ItemsControl ItemsSource="{Binding Rows}" Margin="{StaticResource Gap.Top.XS}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="0,0,0,1"
+                                                        Padding="{StaticResource Inset.SM}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="200" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Body}" VerticalAlignment="Center"
+                                                                   Text="{Binding Label}" />
+                                                        <Border Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                                Background="{StaticResource Brush.Background.Selected}"
+                                                                CornerRadius="{StaticResource Radius.SM}" Padding="{StaticResource Inset.SM}">
+                                                            <TextBlock Style="{StaticResource Text.MetricSmall}" Text="{Binding KeysText}" />
+                                                        </Border>
+                                                        <Button Grid.Column="2" Style="{StaticResource Button.Secondary}"
+                                                                Content="{Binding ChangeButtonText}"
+                                                                AutomationProperties.Name="{Binding ChangeAutomationName}"
+                                                                Command="{Binding ChangeCommand}" />
+                                                        <Button Grid.Column="3" Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                                                Content="Mặc định"
+                                                                AutomationProperties.Name="{Binding ResetAutomationName}"
+                                                                Command="{Binding ResetCommand}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

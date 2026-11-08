@@ -3,6 +3,7 @@ using NTech.DataStudio.Application.Datasets;
 using NTech.DataStudio.Application.Export;
 using NTech.DataStudio.Application.Prepare;
 using NTech.DataStudio.Application.Projects;
+using NTech.DataStudio.Application.Settings;
 using NTech.DataStudio.Desktop.Services;
 using NTech.DataStudio.Desktop.Shell;
 using NTech.DataStudio.Desktop.ViewModels.Annotate;
@@ -10,11 +11,13 @@ using NTech.DataStudio.Desktop.ViewModels.Dataset;
 using NTech.DataStudio.Desktop.ViewModels.Export;
 using NTech.DataStudio.Desktop.ViewModels.Prepare;
 using NTech.DataStudio.Desktop.ViewModels.Project;
+using NTech.DataStudio.Desktop.ViewModels.Settings;
 using NTech.DataStudio.Desktop.ViewModels.Shared;
 using NTech.DataStudio.Exporters;
 using NTech.DataStudio.Imaging.Augment;
 using NTech.DataStudio.Imaging.Codecs;
 using NTech.DataStudio.Storage.Profiles;
+using NTech.DataStudio.Storage.Settings;
 using NTech.DataStudio.Storage.Sqlite;
 
 namespace NTech.DataStudio.Desktop.Bootstrap;
@@ -25,6 +28,7 @@ public static class AppComposition
     public static MainWindow CreateMainWindow()
     {
         var projects = new ProjectService(new SqliteProjectStore());
+        var settings = new SettingsService(new JsonSettingsStore(JsonSettingsStore.DefaultPath()));
         var folderPicker = new WpfFolderPicker();
         var prompt = new MessageBoxPrompt();
         var codec = new OpenCvImageCodec();
@@ -49,7 +53,7 @@ public static class AppComposition
         {
             ("Project", "Icon.Project", projectView),
             ("Prepare", "Icon.Prepare", prepareView),
-            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader())),
+            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings)),
             ("Dataset", "Icon.Dataset", new DatasetViewModel(
                 projects, new DatasetService(projects, engine), prompt)),
             ("Export", "Icon.Export", new ExportViewModel(
@@ -58,7 +62,8 @@ public static class AppComposition
                 new ExportService(projects, engine, DatasetExporters.All()),
                 profiles,
                 folderPicker,
-                new ExplorerFolderOpener()))
+                new ExplorerFolderOpener())),
+            ("Cài đặt", "Icon.Settings", new SettingsViewModel(settings))
         };
 
         var shell = new ShellViewModel(

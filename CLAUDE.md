@@ -66,6 +66,9 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Phím tắt của Annotate là chữ đơn nên bộ gõ tiếng Việt Telex (Unikey, EVKey) làm hỏng chúng (gõ `e` hai lần thành `ê`, app nhận Backspace). Tắt IME ở WPF không chặn được bộ gõ ở mức hệ điều hành. Đừng gán phím chữ lặp được hoặc là phím Telex (a, e, o, d, w, s, f, r, x, j, z) cho việc cần nhấn liên tiếp; Q dùng để đổi công cụ vì Telex không đụng tới nó. Khi tự kiểm bằng SendKeys trên máy có Telex bật, thấy phím rơi thì xem nó có thành Backspace không.
 - Menu chuột phải dựng bằng `Controls/AppContextMenu` (từ RoboStation); mục có con tự hiện mũi tên và mở menu con nhờ Popup trong template `MenuItem` ở `Menus.xaml`. Mục không có header cần tooltip để có tên cho trình đọc màn hình.
 
+- Phím tắt của Annotate đọc từ `SettingsService.Shortcuts` (quyết định 0015), không viết cứng trong `HandleKey`. Thêm hành động thì thêm vào `ShortcutAction` và `ShortcutCatalog` (phím mặc định không được trùng; test kiểm), rồi xử lý ở `AnnotateViewModel.Run`. Tooltip lấy chữ từ `ShortcutHints`; đừng viết tên phím vào tooltip. Tên trong `ShortcutAction` nằm trong `settings.json` của người dùng: không đổi tên.
+- Khi thử app bằng UI Automation, `settings.json` thật nằm ở `%APPDATA%\NTech\DataStudio`: sao lưu và khôi phục nó trong script, đừng để lại phím đã đổi.
+
 ## Bẫy đã biết của Trainer
 
 - Trên Linux, solution có WPF không build được: dùng `NTech.DataStudio.Trainer.slnf`. Trainer không tham chiếu project nào của Data Studio.

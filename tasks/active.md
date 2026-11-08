@@ -15,4 +15,4 @@ Việc làm được ngay là phần còn lại của M3: hàng đợi nhiều p
 
 ## Data Studio
 
-Đã xong: task mục tiêu của project (quyết định 0014), chờ chủ dự án thử trên ảnh thật. Module 1 đến 4 vẫn còn cần chủ dự án thử trên ảnh thật. Nhập nhãn có sẵn vào project lùi lại vì luồng Trainer đọc thẳng dataset YOLO (xem `tasks/backlog.md`).
+Đã xong, chờ chủ dự án thử trên ảnh thật: task mục tiêu của project (quyết định 0014) và màn hình Cài đặt với phím tắt đổi được (quyết định 0015). Module 1 đến 4 vẫn còn cần chủ dự án thử trên ảnh thật. Nhập nhãn có sẵn vào project lùi lại vì luồng Trainer đọc thẳng dataset YOLO (xem `tasks/backlog.md`).
