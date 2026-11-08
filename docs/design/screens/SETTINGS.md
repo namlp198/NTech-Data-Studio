@@ -1,6 +1,6 @@
 # Màn hình Cài đặt
 
-Tab cuối trên thanh trên cùng. Cài đặt của riêng người dùng trên máy (quyết định 0015), lưu ở `%APPDATA%\NTech\DataStudio\settings.json`, không nằm trong project.
+Tab cuối trên thanh trên cùng. Cài đặt của riêng người dùng trên máy (quyết định 0015), lưu ở `%APPDATA%\NTech\DataStudio\settings.json`, không nằm trong project. Cũng giữ project mở gần nhất (`LastProject`) để lần sau tự mở; Đóng project thì xóa.
 
 ## Phím tắt (Hot-Key)
 

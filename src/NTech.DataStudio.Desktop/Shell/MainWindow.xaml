@@ -17,7 +17,7 @@
         xmlns:sharedView="clr-namespace:NTech.DataStudio.Desktop.Views.Shared"
         Title="NTech Data Studio"
         Width="1280" Height="800" MinWidth="960" MinHeight="700"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized"
         Background="{StaticResource Brush.Background.App}"
         FontFamily="{StaticResource Font.Primary}"
         Foreground="{StaticResource Brush.Text.Primary}">

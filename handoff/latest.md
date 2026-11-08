@@ -116,3 +116,14 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 - **Kiểm tra.** Build 0 cảnh báo; test Data Studio 594 (Application 347, Imaging 90): thêm test khung, vùng, `ChooseRegion`, lặp 4 lần không lỗi ngẫu nhiên; với model thật: khung quanh khối, vùng cho đúng tọa độ ảnh gốc, điểm ngoài vùng không có đáp án, hai kết quả được giữ lại (đổi qua lại dưới 300 ms). Đo IoU trên ảnh tổng hợp khó (xem quyết định 0016). Chạy app thật qua UI Automation: phóng to bằng cuộn chuột hiện "Đang phân tích vùng đang xem...", xong thì rê chuột có xem trước, kéo khung quanh khối đỏ tạo 1 nhãn Polygon bám khít (chạy 2 lần, cả hai ra nhãn).
 - **Lỗi/bẫy gặp khi thử:** lần đầu kéo quá nhanh bằng script thì không ra nhãn (cú kéo giả lập quá ngắn); kéo chậm hơn thì ra. Chưa rõ có phải giới hạn của script hay chuột thật cũng cần kéo đủ dài; ngưỡng là hơn hai lần sai số chọn.
 - **Chưa kiểm tra:** ảnh thật (đặc biệt băng dính đen và dây thít, đúng lý do làm); ảnh rất lớn (20 MP) với vùng; độ trễ cảm nhận khi zoom liên tục (mỗi lần phân tích khoảng 1,5 giây và hover đứng lại trong lúc đó); chọn nhiều mặt nạ (chi tiết, một phần, cả vật) và model lớn hơn chưa làm.
+
+## Bỏ đỉnh polygon (2026-11-08)
+
+- Chọn polygon rồi bấm đúp lên đỉnh để bỏ đỉnh (`ShapeEditing.RemoveVertex`, gọi ở `AnnotationEditor.SelectDown`). Giữ tối thiểu 3 đỉnh, không để polygon tự cắt; bị từ chối thì có thông báo. Đi qua `EditRequest.Replace` nên undo và lưu như mọi sửa nhãn.
+- Đã chạy test Domain (136) và nhóm AnnotationEditor (51), đều qua. Chưa chạy app thật để thử bấm đúp bằng chuột.
+
+## Mở lại project gần nhất, mở toàn màn hình (2026-11-08)
+
+- `settings.json` có thêm `LastProject` (đường dẫn thư mục project). `SettingsService.RememberProject` ghi mỗi khi project đang mở đổi; Đóng project thì xóa nên lần sau không tự mở. Mở thất bại (thư mục mất hoặc không phải project) thì hiện lỗi ở màn Project và giữ nguyên lựa chọn cũ. Mở lúc khởi động qua `ProjectViewModel.RestoreAsync`, nối ở `AppComposition`.
+- `MainWindow` mở với `WindowState="Maximized"`.
+- Kiểm tra: build 0 cảnh báo, toàn bộ test qua (Application 351, Domain 136). Chạy app thật qua UI Automation: cửa sổ Maximized, project tự mở với đủ số liệu; `LastProject` trỏ thư mục không tồn tại thì hiện "không phải project: thiếu project.db". Chưa thử đóng app rồi mở lại bằng tay sau khi Đóng project (có test cho phần lưu).

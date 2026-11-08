@@ -122,6 +122,13 @@ public sealed partial class ProjectViewModel : ObservableObject
             await RunAsync(() => _projects.OpenAsync(folder));
     }
 
+    /// <summary>Opens the project of the last run. A folder that is gone or broken shows its error here; nothing opens.</summary>
+    public async Task RestoreAsync(string folder)
+    {
+        if (_projects.Current is null)
+            await RunAsync(() => _projects.OpenAsync(folder));
+    }
+
     [RelayCommand]
     private void Close()
     {

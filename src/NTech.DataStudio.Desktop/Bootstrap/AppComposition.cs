@@ -74,6 +74,11 @@ public static class AppComposition
             projects,
             views.Select(view => new ViewEntry(view.Label, Icon(view.Icon), view.ViewModel)));
 
+        // Open the project of the last run, then start remembering what is open (a failed restore keeps the old choice).
+        if (settings.LastProject is { } last)
+            _ = projectView.RestoreAsync(last);
+        projects.CurrentChanged += (_, _) => settings.RememberProject(projects.Current?.RootPath);
+
         return new MainWindow { DataContext = shell };
     }
 

@@ -15,7 +15,9 @@ public sealed class SettingsService
         _store = store;
         try
         {
-            Shortcuts = ShortcutMap.FromStored(store.Load().Shortcuts);
+            var stored = store.Load();
+            Shortcuts = ShortcutMap.FromStored(stored.Shortcuts);
+            LastProject = stored.LastProject;
         }
         catch (SettingsException exception)
         {
@@ -25,6 +27,19 @@ public sealed class SettingsService
     }
 
     public ShortcutMap Shortcuts { get; private set; }
+
+    /// <summary>Folder of the project to open at start, or null.</summary>
+    public string? LastProject { get; private set; }
+
+    /// <summary>Remembers which project is open (null: none, so the next start opens none). Does not raise <see cref="Changed"/>.</summary>
+    public void RememberProject(string? folder)
+    {
+        folder = string.IsNullOrWhiteSpace(folder) ? null : folder;
+        if (string.Equals(folder, LastProject, StringComparison.Ordinal)) return;
+
+        LastProject = folder;
+        Save();
+    }
 
     /// <summary>Set when the file could not be read at start or the last change could not be saved; cleared by a successful save.</summary>
     public string? Problem { get; private set; }
@@ -56,16 +71,20 @@ public sealed class SettingsService
 
         // The change holds for this run even when the disk refuses it; the problem says it will not survive a restart.
         Shortcuts = map;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void Save()
+    {
         try
         {
-            _store.Save(new AppSettings(map.ToStored()));
+            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject));
             Problem = null;
         }
         catch (SettingsException exception)
         {
             Problem = $"{exception.Message} Thay đổi chỉ có hiệu lực trong lần chạy này.";
         }
-
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

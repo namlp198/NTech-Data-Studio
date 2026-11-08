@@ -30,7 +30,8 @@ public sealed class JsonSettingsStore : ISettingsStore
             var file = JsonSerializer.Deserialize<SettingsFile>(File.ReadAllText(_path), Options);
             return new AppSettings(
                 file?.Shortcuts?.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Value ?? new List<string>()))
-                ?? new Dictionary<string, IReadOnlyList<string>>());
+                ?? new Dictionary<string, IReadOnlyList<string>>(),
+                string.IsNullOrWhiteSpace(file?.LastProject) ? null : file.LastProject);
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -47,7 +48,8 @@ public sealed class JsonSettingsStore : ISettingsStore
             var file = new SettingsFile
             {
                 Version = FormatVersion,
-                Shortcuts = settings.Shortcuts.ToDictionary(pair => pair.Key, pair => (List<string>?)pair.Value.ToList())
+                Shortcuts = settings.Shortcuts.ToDictionary(pair => pair.Key, pair => (List<string>?)pair.Value.ToList()),
+                LastProject = settings.LastProject
             };
             File.WriteAllText(temp, JsonSerializer.Serialize(file, Options));
             File.Move(temp, _path, overwrite: true);
@@ -62,5 +64,6 @@ public sealed class JsonSettingsStore : ISettingsStore
     {
         public int Version { get; set; }
         public Dictionary<string, List<string>?>? Shortcuts { get; set; }
+        public string? LastProject { get; set; }
     }
 }

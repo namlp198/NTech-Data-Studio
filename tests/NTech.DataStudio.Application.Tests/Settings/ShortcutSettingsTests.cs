@@ -21,6 +21,32 @@ public class ShortcutSettingsTests : IDisposable
     }
 
     [Fact]
+    public void LastProject_SurvivesARestartAndAClose()
+    {
+        var first = NewService();
+        Assert.Null(first.LastProject);
+
+        first.RememberProject(@"D:\data\wire");
+        Assert.Equal(@"D:\data\wire", NewService().LastProject);
+
+        first.RememberProject(null);
+        Assert.Null(NewService().LastProject);
+    }
+
+    [Fact]
+    public void LastProject_AndShortcutsDoNotEraseEachOther()
+    {
+        var service = NewService();
+        service.RememberProject(@"D:\data\wire");
+        Assert.Null(service.Assign(ShortcutAction.BoxTool, Key("K")));
+        service.RememberProject(@"D:\data\other");
+
+        var again = NewService();
+        Assert.Equal(@"D:\data\other", again.LastProject);
+        Assert.Equal(new[] { Key("K") }, again.Shortcuts.For(ShortcutAction.BoxTool));
+    }
+
+    [Fact]
     public void Defaults_NeverGiveOneKeyToTwoActions()
     {
         var seen = new Dictionary<Shortcut, ShortcutAction>();

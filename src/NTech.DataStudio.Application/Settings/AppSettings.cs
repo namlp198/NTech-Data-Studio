@@ -1,7 +1,9 @@
 namespace NTech.DataStudio.Application.Settings;
 
 /// <summary>What is saved in settings.json: only what the user changed.</summary>
-public sealed record AppSettings(IReadOnlyDictionary<string, IReadOnlyList<string>> Shortcuts)
+/// <param name="Shortcuts">Rebound shortcuts.</param>
+/// <param name="LastProject">Folder of the project open when the app was last used; null when none (or it was closed on purpose).</param>
+public sealed record AppSettings(IReadOnlyDictionary<string, IReadOnlyList<string>> Shortcuts, string? LastProject = null)
 {
     public static AppSettings Empty { get; } = new(new Dictionary<string, IReadOnlyList<string>>());
 }
