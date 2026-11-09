@@ -21,9 +21,11 @@ public sealed record LogFilterOption(LogFilter Value, string Label)
     public override string ToString() => Label;
 }
 
-public sealed partial class RunItem(string id, string model) : ObservableObject
+public sealed partial class RunItem(string id, string model, string task = "detect") : ObservableObject
 {
     public string Id { get; } = id;
+
+    public string Task { get; } = task;
 
     public string Model { get; } = model;
 
@@ -151,6 +153,9 @@ public sealed partial class TrainViewModel : PageViewModel
 
     public string SelectedModel => SelectedRun?.Model ?? "";
 
+    /// <summary>A segment run is judged by its masks, so its mAP says so.</summary>
+    public string MapPrefix => SelectedRun?.Task == "segment" ? "MASK " : "";
+
     public string SelectedId => SelectedRun?.Id ?? "";
 
     public string SelectedState => SelectedRun?.State ?? RunStates.Created;
@@ -189,6 +194,7 @@ public sealed partial class TrainViewModel : PageViewModel
         VisibleLog.Clear();
         Notice = null;
         NotifySelected();
+        OnPropertyChanged(nameof(MapPrefix));
         IsSynthetic = value is not null && Session.Workspace is { } workspace && SyntheticRun(workspace, value.Id);
         ReadSelected();
     }
@@ -289,7 +295,7 @@ public sealed partial class TrainViewModel : PageViewModel
             foreach (var state in ordered)
             {
                 var record = state.Run.Record();
-                Runs.Add(new RunItem(state.Run.Id, record.Model));
+                Runs.Add(new RunItem(state.Run.Id, record.Model, record.Task));
             }
 
             if (selected is not null) SelectedRun = Runs.FirstOrDefault(run => run.Id == selected);

@@ -11,7 +11,7 @@ public sealed record WorkspaceFile(int Schema, string Name, string DataYaml, str
 
 public sealed record TrainOptions(int Imgsz, int Epochs, int Batch, string Device, int Workers, int Seed, int Patience, bool Preflight, IReadOnlyDictionary<string, object>? Overrides);
 
-public sealed record RunRecord(int Schema, string Id, string Model, string ModelFamily, string Weights, string License, string Compute, string Image, string ImageDigest, string CreatedAt);
+public sealed record RunRecord(int Schema, string Id, string Model, string ModelFamily, string Weights, string License, string Compute, string Image, string ImageDigest, string CreatedAt, string Task = "detect");
 
 /// <summary>
 /// A folder for one problem, holding many runs of many YOLO versions. Files here are the source
@@ -93,7 +93,7 @@ public sealed class Workspace
         if (Directory.Exists(folder)) throw new TrainerException($"Run {id} đã tồn tại.");
         Directory.CreateDirectory(folder);
 
-        var record = new RunRecord(1, id, model.Name, model.Family.Id, model.Weights, model.Family.License, compute, image, digest, Now());
+        var record = new RunRecord(1, id, model.Name, model.Family.Id, model.Weights, model.Family.License, compute, image, digest, Now(), model.Family.Task);
         File.WriteAllText(Path.Combine(folder, "run.json"), JsonSerializer.Serialize(record, Json));
         File.WriteAllText(Path.Combine(folder, "config.yaml"), ConfigYaml(id, model, options, ContainerDataYaml, digest));
         return new RunFolder(folder);
@@ -118,6 +118,7 @@ public sealed class Workspace
             ["run_id"] = id,
             ["model"] = model.Name,
             ["model_family"] = model.Family.Id,
+            ["task"] = model.Family.Task,
             ["weights"] = model.Weights,
             ["license"] = model.Family.License,
             ["data"] = containerData,

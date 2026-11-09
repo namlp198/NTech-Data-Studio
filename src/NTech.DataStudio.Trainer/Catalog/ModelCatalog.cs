@@ -21,7 +21,15 @@ public sealed record ModelFamily(
     ModelStatus Status,
     string License,
     bool OnnxNms,
-    IReadOnlyDictionary<string, VramNeed> VramAt640);
+    IReadOnlyDictionary<string, VramNeed> VramAt640,
+    string? Display = null)
+{
+    public const string Detect = "detect";
+    public const string Segment = "segment";
+
+    /// <summary>The version as a person writes it (YOLO26): a segment family has its own id but the same name.</summary>
+    public string DisplayName => Display ?? Id.ToUpperInvariant().Replace("YOLOV", "YOLOv", StringComparison.Ordinal);
+}
 
 /// <summary>One choosable model: a family and a size, such as yolo11 + s.</summary>
 public sealed record ModelVariant(ModelFamily Family, string Size)
@@ -45,6 +53,9 @@ public sealed class ModelCatalog
     private ModelCatalog(List<ModelFamily> families) => _families = families;
 
     public IReadOnlyList<ModelFamily> Visible => _families.Where(family => family.Status != ModelStatus.Hidden).ToList();
+
+    /// <summary>The tasks the visible families train, detect first.</summary>
+    public IReadOnlyList<string> Tasks => Visible.Select(family => family.Task).Distinct().OrderByDescending(task => task == ModelFamily.Detect).ThenBy(task => task, StringComparer.Ordinal).ToList();
 
     public static ModelCatalog LoadFolder(string folder)
     {
@@ -85,7 +96,8 @@ public sealed class ModelCatalog
         Enum.Parse<ModelStatus>(entry.Status, ignoreCase: true),
         entry.License,
         entry.OnnxNms,
-        entry.VramGbAt640.ToDictionary(pair => pair.Key, pair => new VramNeed(pair.Value.Min, pair.Value.Recommended)));
+        entry.VramGbAt640.ToDictionary(pair => pair.Key, pair => new VramNeed(pair.Value.Min, pair.Value.Recommended)),
+        entry.Display);
 
     private sealed class CatalogFile
     {
@@ -102,6 +114,7 @@ public sealed class ModelCatalog
         public string Status { get; set; } = "hidden";
         public string License { get; set; } = "";
         public bool OnnxNms { get; set; }
+        public string? Display { get; set; }
 
         [YamlMember(Alias = "vram_gb_at_640")]
         public Dictionary<string, VramEntry> VramGbAt640 { get; set; } = [];

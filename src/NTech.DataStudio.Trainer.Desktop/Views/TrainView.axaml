@@ -107,10 +107,10 @@
                             <StackPanel><TextBlock Classes="label" Text="VAL LOSS" /><TextBlock Classes="metric" Text="{Binding ValLoss}" /></StackPanel>
                         </Border>
                         <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
-                            <StackPanel><TextBlock Classes="label" Text="MAP50" /><TextBlock Classes="metric" Text="{Binding Map50}" /></StackPanel>
+                            <StackPanel><TextBlock Classes="label" Text="{Binding MapPrefix, StringFormat='{}{0}MAP50'}" /><TextBlock Classes="metric" Text="{Binding Map50}" /></StackPanel>
                         </Border>
                         <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
-                            <StackPanel><TextBlock Classes="label" Text="MAP50-95" /><TextBlock Classes="metric" Text="{Binding Map50To95}" /></StackPanel>
+                            <StackPanel><TextBlock Classes="label" Text="{Binding MapPrefix, StringFormat='{}{0}MAP50-95'}" /><TextBlock Classes="metric" Text="{Binding Map50To95}" /></StackPanel>
                         </Border>
                         <Border Classes="card" Width="{StaticResource Layout.MetricTileWidth}" Margin="{StaticResource Gap.Right.SM}">
                             <StackPanel><TextBlock Classes="label" Text="PRECISION" /><TextBlock Classes="metric" Text="{Binding Precision}" /></StackPanel>

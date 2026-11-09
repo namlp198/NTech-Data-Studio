@@ -4,9 +4,11 @@ Bàn giao của Data Studio ở `handoff/latest.md`. Quy tắc làm song song �
 
 Làm trên nhánh `dev/trainer`, worktree `.claude/worktrees/trainer`.
 
-## Trạng thái (2026-11-08)
+## Trạng thái (2026-11-09)
 
-Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật bằng CLI và bằng app Desktop (M2, Avalonia), trên Windows và trên Ubuntu 24.04 (WSLg), với image CPU và dataset tổng hợp. Chưa chạy trên GPU hay dataset thật. Thiết kế v0.4 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, cách dùng ở `trainer/README.md`.
+Luồng dataset → train YOLO detect → ONNX đã kiểm chứng chạy thật bằng CLI và bằng app Desktop (M2, Avalonia), trên Windows và trên Ubuntu 24.04 (WSLg), với image CPU và dataset tổng hợp. Đã chạy trên GPU (RTX 4060 Ti, image CUDA) với dataset tổng hợp; chưa chạy dataset thật. Thiết kế v0.4 ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, cách dùng ở `trainer/README.md`.
+
+**Segment (2026-11-09, quyết định 0014):** thêm `task` vào danh mục và `run.json`/`config.yaml`; file `trainer/catalog/ultralytics-segment.yaml` với `yolo26seg`, `yolo11seg`, `yolov8seg` (đặt tên model `yolo26segn`...). Worker kiểm tra dataset theo task (segment gặp box là lỗi), báo metric mask, xuất ONNX hai output (box kèm hệ số mask, proto) và kiểm chứng cả mask. Màn hình Cấu hình có ô chọn tác vụ. Đã chạy thật bằng CLI trên GPU, dataset tổng hợp 320 px, 40 epoch, cả ba họ qua train, export và kiểm chứng ONNX (bảng số ở quyết định). Cả ba ghi `experimental`: chưa có dataset polygon thật, chưa đo VRAM (đánh giá Unknown). Bẫy: `predict` của Ultralytics trả tập box khác NMS nhúng với segment không-end2end, nên kiểm chứng đối chiếu mô hình thô; nguyên nhân chưa rõ.
 
 ## Chủ dự án đã chốt
 
@@ -88,6 +90,9 @@ Test không bắt được, đã sửa, ghi lại để khỏi lặp.
 Xem thêm `CLAUDE.md`.
 
 ## Chưa kiểm tra
+
+- **Segment trên dữ liệu thật.** Chỉ chạy dataset tổng hợp (tròn và vuông). Chưa train polygon thật, chưa đo VRAM ở 640. Màn hình Cấu hình mới được kiểm bằng test giao diện không màn hình (ScreenTests và test ViewModel), chưa mở app thật để nhìn ô chọn tác vụ.
+- **Segment trong app.** Mới chạy luồng train, export bằng CLI. Chưa chạy một run segment từ app Desktop.
 
 - **Docker Desktop trên Ubuntu không dùng được cho GPU (2026-11-08).** Máy Ubuntu 24.04 thật có RTX 5090 dùng Docker Desktop: RAM Docker chỉ 7,7 GB trên 60,5 GB, không có runtime nvidia, nên màn hình Máy báo Weak. Cách xử lý (gỡ Desktop, cài Docker Engine và NVIDIA Container Toolkit) đã ghi ở `docs/trainer/DOCKER_LINUX.md`. Người dùng làm xong bước cài nhưng kết quả `nvidia-smi` trong container và "Kiểm tra trong container" chưa được ghi lại. Trainer chưa cảnh báo khi gặp Docker Desktop trên Linux, và tiêu chí GPU vẫn báo Excellent dù container không thấy GPU.
 - **`deploy.sh` trên Linux thật.** Mới chạy trong Git Bash trên Windows; WSL này chưa có .NET SDK. App Desktop từ gói Linux chưa mở (WSL thiếu `libicu`, `libice6`, `libsm6`). `-SaveImage cuda` chưa chạy.

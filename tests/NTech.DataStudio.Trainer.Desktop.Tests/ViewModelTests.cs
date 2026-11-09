@@ -88,6 +88,23 @@ public sealed class ConfigTests : IDisposable
     }
 
     [Fact]
+    public async Task ChoosingSegment_ListsTheSegmentVersions_AndNamesTheModelAfterThem()
+    {
+        var config = (await Open(gpu: false)).Config;
+        Assert.Equal("detect", config.SelectedTask!.Id);
+        Assert.False(config.IsSegment);
+        Assert.Equal("yolo26s", config.ModelName);
+
+        config.SelectedTask = config.Tasks.Single(task => task.Id == "segment");
+
+        Assert.True(config.IsSegment);
+        Assert.NotEmpty(config.TaskNote);
+        Assert.Equal(["YOLO26", "YOLO11", "YOLOv8"], config.Families.Select(family => family.Name));
+        Assert.Equal("yolo26segs", config.ModelName);
+        Assert.All(config.Families, family => Assert.Equal("segment", family.Family.Task));
+    }
+
+    [Fact]
     public async Task ChangingTheModel_AsksForTheConfirmationAgain()
     {
         var config = (await Open(gpu: false)).Config;

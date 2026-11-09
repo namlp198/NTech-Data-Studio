@@ -114,6 +114,13 @@ def _empty_cuda_cache() -> None:
         torch.cuda.reset_peak_memory_stats()
 
 
+def primary_suffix(config: dict[str, Any]) -> str:
+    """Ultralytics names metrics ``metrics/mAP50(B)`` for boxes and ``(M)`` for masks. A segment model
+    is judged by its masks, a detect model by its boxes.
+    """
+    return "(M)" if config.get("task", "detect") == "segment" else "(B)"
+
+
 def _sum_losses(metrics: dict[str, Any], prefix: str) -> float | None:
     values = [finite(value) for key, value in metrics.items() if key.startswith(prefix) and key.endswith("_loss")]
     if not values or any(value is None for value in values):
@@ -164,16 +171,17 @@ def train(config: dict[str, Any], paths: RunPaths, events: EventLog, resume: boo
         losses = trainer.label_loss_items(trainer.tloss, prefix="train")
         train_loss = _sum_losses(losses, "train/")
         val_loss = _sum_losses(metrics, "val/")
-        map50_95 = finite(metrics.get("metrics/mAP50-95(B)"))
+        mark = primary_suffix(config)
+        map50_95 = finite(metrics.get(f"metrics/mAP50-95{mark}"))
         events.emit(
             "epoch_end",
             epoch=epoch,
             epochs=trainer.epochs,
             train_loss=train_loss,
             val_loss=val_loss,
-            precision=finite(metrics.get("metrics/precision(B)")),
-            recall=finite(metrics.get("metrics/recall(B)")),
-            map50=finite(metrics.get("metrics/mAP50(B)")),
+            precision=finite(metrics.get(f"metrics/precision{mark}")),
+            recall=finite(metrics.get(f"metrics/recall{mark}")),
+            map50=finite(metrics.get(f"metrics/mAP50{mark}")),
             map50_95=map50_95,
             vram_peak_gb=_vram_peak_gb(),
             batch=trainer.batch_size,
@@ -227,26 +235,39 @@ def evaluate(config: dict[str, Any], paths: RunPaths) -> dict[str, Any]:
         exist_ok=True,
         verbose=False,
     )
-    box = metrics.box
+    task = config.get("task", "detect")
+    # The headline numbers are the ones the task is judged by: masks for segment, boxes for detect.
+    main = metrics.seg if task == "segment" else metrics.box
     names = metrics.names
     classes = []
-    for index, class_id in enumerate(box.ap_class_index):
+    for index, class_id in enumerate(main.ap_class_index):
         class_id = int(class_id)
         classes.append(
             {
                 "id": class_id,
                 "name": names[class_id],
-                "precision": finite(box.p[index]),
-                "recall": finite(box.r[index]),
-                "map50": finite(box.ap50[index]),
-                "map50_95": finite(box.ap[index]),
+                "precision": finite(main.p[index]),
+                "recall": finite(main.r[index]),
+                "map50": finite(main.ap50[index]),
+                "map50_95": finite(main.ap[index]),
             }
         )
     shutil.rmtree(paths.root / "val", ignore_errors=True)
-    return {
-        "precision": finite(box.mp),
-        "recall": finite(box.mr),
-        "map50": finite(box.map50),
-        "map50_95": finite(box.map),
+    result = {
+        "task": task,
+        "precision": finite(main.mp),
+        "recall": finite(main.mr),
+        "map50": finite(main.map50),
+        "map50_95": finite(main.map),
         "classes": classes,
     }
+    if task == "segment":
+        # A mask that is right needs a box that is right, so the box numbers stay visible.
+        box = metrics.box
+        result["box"] = {
+            "precision": finite(box.mp),
+            "recall": finite(box.mr),
+            "map50": finite(box.map50),
+            "map50_95": finite(box.map),
+        }
+    return result

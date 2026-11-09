@@ -1,4 +1,4 @@
-"""Reads and validates a YOLO detect dataset. Never writes inside the dataset folder.
+"""Reads and validates a YOLO dataset (detect boxes or segment polygons). Never writes inside the dataset folder.
 
 Imports nothing from the training stack, so validation stays fast and testable anywhere.
 """
@@ -19,6 +19,7 @@ SPLITS = ("train", "val", "test")
 FEW_LABELS = 50
 IMBALANCE_RATIO = 10.0
 MIN_OBJECT_PX = 12
+TASKS = ("detect", "segment")
 
 
 @dataclass
@@ -105,7 +106,10 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def validate(data_yaml: Path, imgsz: int = 640) -> Report:
+def validate(data_yaml: Path, imgsz: int = 640, task: str | None = None) -> Report:
+    """``task`` is what the model will train: it decides which label rows are errors. ``None`` only
+    describes the dataset (the Dataset screen has no model yet) and reports the kinds it finds.
+    """
     report = Report()
     if not data_yaml.is_file():
         report.error("no_data_yaml", f"Không tìm thấy {data_yaml.name}.")
@@ -135,7 +139,7 @@ def validate(data_yaml: Path, imgsz: int = 640) -> Report:
     split_stats: dict[str, Any] = {}
     fingerprint = hashlib.sha256(data_yaml.read_bytes())
     hashes_by_split: dict[str, set[str]] = {}
-    corrupt = missing_labels = seg_rows = tiny = 0
+    corrupt = missing_labels = box_rows = polygon_rows = tiny = 0
     bad_line_samples: list[str] = []
     bad_lines = 0
     min_sides: list[float] = []
@@ -175,13 +179,13 @@ def validate(data_yaml: Path, imgsz: int = 640) -> Report:
                     values = [float(field_) for field_ in fields]
                 except ValueError:
                     values = []
-                if len(values) < 5 or (len(values) > 5 and len(values) % 2 == 0):
+                # A box is 5 numbers; a polygon is the class id and at least 3 x y pairs.
+                if len(values) < 5 or (len(values) > 5 and (len(values) < 7 or len(values) % 2 == 0)):
                     bad_lines += 1
                     if len(bad_line_samples) < 5:
                         bad_line_samples.append(f"{where}: sai định dạng")
                     continue
-                if len(values) > 5:
-                    seg_rows += 1
+                is_polygon = len(values) > 5
                 class_id = values[0]
                 if class_id != int(class_id) or not 0 <= class_id < len(names):
                     bad_lines += 1
@@ -195,11 +199,16 @@ def validate(data_yaml: Path, imgsz: int = 640) -> Report:
                     continue
                 per_class[int(class_id)] += 1
                 boxes += 1
-                if len(values) == 5:
+                if is_polygon:
+                    polygon_rows += 1
+                    xs, ys = values[1::2], values[2::2]
+                    side = min((max(xs) - min(xs)) * width, (max(ys) - min(ys)) * height) * scale
+                else:
+                    box_rows += 1
                     side = min(values[3] * width, values[4] * height) * scale
-                    min_sides.append(side)
-                    if side < MIN_OBJECT_PX:
-                        tiny += 1
+                min_sides.append(side)
+                if side < MIN_OBJECT_PX:
+                    tiny += 1
         split_stats[split] = {"images": len(images), "boxes": boxes}
 
     if not split_stats.get("train", {}).get("images"):
@@ -212,8 +221,18 @@ def validate(data_yaml: Path, imgsz: int = 640) -> Report:
         report.warn("corrupt_images", f"{corrupt} ảnh không đọc được và sẽ bị bỏ qua.")
     if missing_labels:
         report.warn("missing_labels", f"{missing_labels} ảnh không có file nhãn, được coi là không có vật thể.")
-    if seg_rows:
-        report.warn("segment_rows", f"{seg_rows} dòng nhãn dạng polygon trong dataset detect.")
+    if task == "segment" and box_rows:
+        report.error(
+            "box_rows_in_segment",
+            f"{box_rows} dòng nhãn dạng box trong dataset để train segment. Segment cần polygon cho mọi vật thể: "
+            "gán lại bằng công cụ Polygon, hoặc train bằng model detect.",
+        )
+    elif task == "segment" and not polygon_rows and not bad_lines:
+        report.error("no_polygons", "Dataset không có polygon nào để train segment.")
+    elif task == "detect" and polygon_rows:
+        report.warn("segment_rows", f"{polygon_rows} dòng nhãn dạng polygon trong dataset detect: sẽ được đổi thành box bao.")
+    elif task is None and box_rows and polygon_rows:
+        report.warn("mixed_label_kinds", f"Dataset trộn {box_rows} box và {polygon_rows} polygon: model detect dùng được, model segment thì không.")
 
     for class_id, name in enumerate(names):
         if per_class[class_id] < FEW_LABELS:
@@ -236,6 +255,7 @@ def validate(data_yaml: Path, imgsz: int = 640) -> Report:
         "splits": split_stats,
         "per_class": {names[i]: per_class[i] for i in range(len(names))},
         "imgsz": imgsz,
+        "label_rows": {"box": box_rows, "polygon": polygon_rows},
         "min_side_px_at_imgsz": (
             {
                 "p5": round(min_sides[len(min_sides) // 20], 1),

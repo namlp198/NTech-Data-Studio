@@ -128,6 +128,7 @@ ntech-trainer export --workspace D:\train\wire --run <id>
 ntech-trainer compare --workspace D:\train\wire
 ```
 
+- Segment: chọn model có hậu tố `seg` (`models` liệt kê, ví dụ `yolo26segs`) với dataset polygon của Data Studio (profile `yolo26-segment`). Dataset còn dòng box thì bị từ chối. Metric là của mask; ONNX có hai output, cách giải mã trong `model.meta.json` (quyết định 0014).
 - Dataset chỉ được tham chiếu và mount chỉ đọc. Workspace không được nằm trong thư mục dataset.
 - Máy không có GPU dùng được, hoặc model thử nghiệm, phải thêm `--accept-risk` mới train.
 - `--detach` chạy nền. Đóng terminal không dừng job. Xem lại bằng `status` và `follow`.

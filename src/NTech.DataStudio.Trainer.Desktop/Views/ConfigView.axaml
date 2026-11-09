@@ -16,6 +16,10 @@
             <Border Classes="card">
                 <StackPanel Spacing="{StaticResource Spacing.MD}">
                     <TextBlock Classes="section" Text="Model" />
+                    <StackPanel IsVisible="{Binding HasManyTasks}">
+                        <TextBlock Classes="label" Text="TÁC VỤ" />
+                        <ComboBox AutomationProperties.Name="TÁC VỤ" ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" MinWidth="{StaticResource Layout.NumberFieldWidth}" />
+                    </StackPanel>
                     <ListBox ItemsSource="{Binding Families}" SelectedItem="{Binding SelectedFamily}">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:FamilyItem">
@@ -39,6 +43,9 @@
                             <TextBlock Classes="metricSmall" Text="{Binding ModelName}" />
                         </StackPanel>
                     </StackPanel>
+                    <Border Classes="notice" IsVisible="{Binding IsSegment}">
+                        <TextBlock Classes="wrap" Text="{Binding TaskNote}" />
+                    </Border>
                     <Border Classes="notice warning">
                         <TextBlock Classes="wrap" Text="{Binding LicenseText}" />
                     </Border>

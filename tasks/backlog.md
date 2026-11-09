@@ -27,7 +27,9 @@ Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER
 - [ ] M3 còn lại: hàng đợi nhiều phiên bản, tạo lỗi thật cho hết VRAM và các cảnh báo
 - [ ] M4: đóng gói Windows và Ubuntu
 - [ ] M5: TensorRT tùy chọn theo profile máy
-- [ ] M6: YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; Segment, OBB, Classify; OCR; Remote
+- [ ] M6: YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; OBB, Classify; OCR; Remote
+- [x] Trainer segment: YOLO26, YOLO11, YOLOv8 (quyết định 0014), đã train, export và kiểm chứng ONNX trên GPU với dataset tổng hợp
+- [ ] Train segment trên dataset polygon thật, đo VRAM, rồi nâng `yolo26seg`, `yolo11seg`, `yolov8seg` từ `experimental` lên `supported`
 - [ ] Kết luận license Ultralytics trước khi đưa model vào sản xuất hoặc bán
 
 ## Module 1: còn lại

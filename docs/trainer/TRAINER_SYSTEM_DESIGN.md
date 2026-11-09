@@ -52,7 +52,9 @@ Giữ nguyên từ v0.1: bốn cấp kiểm tra phần cứng, mức `Unknown` k
 
 **Tùy chọn, sau luồng chính:** TensorRT trên máy đủ điều kiện (mục 9.5).
 
-**Để sau:** `.nvmodel`, engine khác (RF-DETR, YOLOX, YOLOv7, repo YOLOv5 gốc), Segment, OBB, Classify, OCR, nút mở từ Data Studio, Remote Training Node, gói offline, nạp file `.pt` tùy ý.
+**Để sau:** `.nvmodel`, engine khác (RF-DETR, YOLOX, YOLOv7, repo YOLOv5 gốc), OBB, Classify, OCR, nút mở từ Data Studio, Remote Training Node, gói offline, nạp file `.pt` tùy ý.
+
+**Đã đưa lên trước (2026-11-09):** Segment cho YOLO26, YOLO11, YOLOv8, xem quyết định 0014.
 
 **Không làm:** train phân tán, cloud, AutoML, quản lý người dùng.
 
@@ -522,7 +524,7 @@ App điều khiển bằng UI Automation; từng màn hình còn được dựng
 | **M3. Độ tin cậy và so sánh** | Train tiếp, phát hiện `Interrupted`, đủ cảnh báo, nối lại sau khi mở app, hàng đợi, `compare` | Kill worker rồi train tiếp được; đóng app rồi nối lại được; tạo lỗi hết VRAM thì cảnh báo đúng; hàng đợi nhiều phiên bản chạy hết kể cả khi một run lỗi |
 | **M4. Đóng gói** | Installer Windows, gói Ubuntu, phát hành image, khớp kiểm tra trong `build.ps1` | Cài, chạy, gỡ sạch trên hai nền tảng |
 | **M5. TensorRT tùy chọn** | Điều kiện ở mục 9.5, build và kiểm chứng trên máy đủ chuẩn | Máy đạt có engine đã kiểm chứng; máy không đạt nhận đúng lý do |
-| **M6. Mở rộng** | YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; Segment, OBB, Classify; OCR; Remote | Theo từng mục. Phiên bản YOLO mới chỉ cần qua kiểm thử danh mục |
+| **M6. Mở rộng** | YOLOv10, YOLOv9, YOLOv5 bản `u`; `.nvmodel`; nút mở từ Data Studio; engine RF-DETR; OBB, Classify (Segment đã làm, quyết định 0014); OCR; Remote | Theo từng mục. Phiên bản YOLO mới chỉ cần qua kiểm thử danh mục |
 
 Lưu ý với NVision: theo quyết định 0003, NVision chỉ nhận `.nvmodel`. ONNX của luồng chính dùng được riêng, nhưng **chưa đưa thẳng vào NVision được** cho tới khi có `.nvmodel` ở M6. `model.meta.json` đã ghi sẵn thông tin mà định dạng đó sẽ cần.
 

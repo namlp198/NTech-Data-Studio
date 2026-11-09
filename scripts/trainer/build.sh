@@ -93,7 +93,7 @@ for rid in "${runtimes[@]}"; do
     if [ -z "$exe" ]; then chmod +x "$out/NTechTrainer" "$out/ntech-trainer"; fi
 
     # The app starts without some of these and fails later, so check them here.
-    for name in "NTechTrainer$exe" "ntech-trainer$exe" catalog/ultralytics-detect.yaml \
+    for name in "NTechTrainer$exe" "ntech-trainer$exe" catalog/ultralytics-detect.yaml catalog/ultralytics-segment.yaml \
         image/docker/trainer/Dockerfile image/docker/trainer/lock-cpu.txt image/docker/trainer/lock-cuda.txt \
         image/trainer/python/ntech_worker/__main__.py image/build-image.sh README.md "${native[@]}"; do
         if [ ! -e "$out/$name" ]; then

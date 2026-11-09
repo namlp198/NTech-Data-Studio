@@ -194,7 +194,7 @@ namespace NTech.DataStudio.Trainer.Cli
             foreach (var family in app.Catalog.Visible)
             {
                 var status = family.Status == ModelStatus.Supported ? "hỗ trợ" : "thử nghiệm";
-                Console.WriteLine($"{family.Id,-8} {status,-11} cỡ {string.Join(",", family.Sizes),-12} license {family.License}");
+                Console.WriteLine($"{family.Id,-10} {family.Task,-8} {status,-11} cỡ {string.Join(",", family.Sizes),-12} license {family.License}");
             }
 
             Console.WriteLine();

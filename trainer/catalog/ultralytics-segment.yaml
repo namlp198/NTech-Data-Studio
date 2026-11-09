@@ -1,0 +1,37 @@
+# Model segment cua Trainer: cung engine, cung image, cung adapter voi detect (quyet dinh 0014).
+# Khac detect: task segment, dataset polygon, weights co hau to -seg, ONNX co hai output (box kem he so mask, proto mask).
+# Khong co vram_gb_at_640: chua do, nen danh gia la Unknown va buoc chay thu se do.
+# YOLO12 khong co weights segment chinh thuc.
+models:
+  - id: yolo26seg
+    display: YOLO26
+    engine: ultralytics
+    task: segment
+    dataset_format: yolo-segment
+    sizes: [n, s, m, l, x]
+    weights: "yolo26{size}-seg.pt"
+    status: experimental
+    license: AGPL-3.0
+    onnx_nms: true
+
+  - id: yolo11seg
+    display: YOLO11
+    engine: ultralytics
+    task: segment
+    dataset_format: yolo-segment
+    sizes: [n, s, m, l, x]
+    weights: "yolo11{size}-seg.pt"
+    status: experimental
+    license: AGPL-3.0
+    onnx_nms: true
+
+  - id: yolov8seg
+    display: YOLOv8
+    engine: ultralytics
+    task: segment
+    dataset_format: yolo-segment
+    sizes: [n, s, m, l, x]
+    weights: "yolov8{size}-seg.pt"
+    status: experimental
+    license: AGPL-3.0
+    onnx_nms: true

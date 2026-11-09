@@ -203,3 +203,62 @@ def test_letterbox_contract() -> None:
     assert tensor.shape == (1, 3, 320, 320) and tensor.dtype == np.float32
     assert tensor[0, 0, 160, 160] == 1.0  # R channel first
     assert abs(float(tensor[0, 0, 0, 0]) - 114 / 255) < 1e-6  # padding
+
+
+def _segment_output(rows: list[tuple[float, float, float, float, float, int]], coefficient: float, kept: int = 2) -> np.ndarray:
+    out = np.zeros((1, 5, 6 + kept), dtype=np.float32)
+    for index, row in enumerate(rows):
+        out[0, index, :6] = row
+        out[0, index, 6] = coefficient
+    return out
+
+
+def test_segment_decode_keeps_only_the_confident_rows_and_one_mask_each() -> None:
+    protos = np.ones((1, 2, 4, 4), dtype=np.float32)  # all positive: the mask is limited by its box alone
+    output = _segment_output([(8, 8, 24, 24, 0.9, 1), (0, 0, 8, 8, 0.01, 0)], coefficient=1.0)
+    rows, masks, kind = onnx_export.decode_segment(output, protos, conf=0.25, size=32)
+    assert kind == onnx_export.OUTPUT_SEGMENT
+    assert rows.shape == (1, 6) and masks.shape == (1, 32, 32)
+    assert masks[0].sum() == 16 * 16  # x and y from 8 up to, not including, 24
+    assert masks[0][8, 8] and not masks[0][24, 24] and not masks[0][7, 8]
+
+
+def test_segment_decode_clips_a_box_that_reaches_outside_the_input() -> None:
+    protos = np.ones((1, 2, 4, 4), dtype=np.float32)
+    output = _segment_output([(-5, -5, 40, 16, 0.9, 0)], 1.0)
+    rows, masks, _ = onnx_export.decode_segment(output, protos, 0.25, 32)
+    assert rows[0, :4].tolist() == [0, 0, 32, 16]
+    assert masks[0].sum() == 32 * 16
+    raw, raw_masks, _ = onnx_export.decode_segment(output, protos, 0.25, 32, clip=False)
+    assert raw[0, :4].tolist() == [-5, -5, 40, 16]  # kept as the model gave them, to tell apart boxes that clip alike
+    assert (raw_masks == masks).all()
+
+
+def test_segment_decode_keeps_the_pixels_where_the_logit_is_positive() -> None:
+    protos = np.full((1, 2, 4, 4), -1.0, dtype=np.float32)
+    protos[0, 0, :, :2] = 1.0  # the left half of the prototype is positive
+    _, masks, _ = onnx_export.decode_segment(_segment_output([(0, 0, 32, 32, 0.9, 0)], 1.0), protos, 0.25, 32)
+    assert masks[0][:, :14].all() and not masks[0][:, 18:].any()
+
+
+def test_mask_iou() -> None:
+    a = np.zeros((8, 8), dtype=bool)
+    a[:4] = True
+    b = np.zeros((8, 8), dtype=bool)
+    b[2:6] = True
+    assert onnx_export.mask_iou(a, a) == 1.0
+    assert onnx_export.mask_iou(a, b) == pytest.approx(1 / 3)
+    assert onnx_export.mask_iou(np.zeros((8, 8), bool), np.zeros((8, 8), bool)) == 1.0
+
+
+def test_compare_names_the_matched_pairs() -> None:
+    reference = np.array([[0, 0, 10, 10, 0.9, 1], [20, 20, 30, 30, 0.8, 0]], dtype=np.float32)
+    candidate = reference[::-1].copy()
+    assert sorted(onnx_export.compare(reference, candidate)["pairs"]) == [(0, 1), (1, 0)]
+
+
+def test_a_confident_mask_that_differs_fails_but_a_low_score_one_only_counts() -> None:
+    base = {"boxes": 2, "leftover_scores": [], "ious": [1.0], "score_diffs": [0.0], "mask_ious": [0.2, 0.99]}
+    status, problems = onnx_export.judge(base | {"confident_mask_ious": [0.2, 0.99]})
+    assert status == "failed" and any("Mask" in problem for problem in problems)
+    assert onnx_export.judge(base | {"confident_mask_ious": [0.97, 0.99]})[0] == "passed"

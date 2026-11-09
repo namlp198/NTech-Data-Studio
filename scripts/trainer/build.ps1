@@ -102,6 +102,7 @@ foreach ($rid in $runtimes) {
         "NTechTrainer$exe",
         "ntech-trainer$exe",
         "catalog\ultralytics-detect.yaml",
+        "catalog\ultralytics-segment.yaml",
         "image\docker\trainer\Dockerfile",
         "image\docker\trainer\lock-cpu.txt",
         "image\docker\trainer\lock-cuda.txt",

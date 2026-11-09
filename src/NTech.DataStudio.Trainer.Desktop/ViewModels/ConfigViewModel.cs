@@ -8,10 +8,18 @@ using NTech.DataStudio.Trainer.Runs;
 
 namespace NTech.DataStudio.Trainer.Desktop.ViewModels;
 
+/// <summary>What the model draws: boxes or masks. ToString is the label, which UI Automation reads.</summary>
+public sealed record TaskItem(string Id)
+{
+    public string Label => Id == ModelFamily.Segment ? "Segment (mask theo polygon)" : "Detect (box)";
+
+    public override string ToString() => Label;
+}
+
 /// <summary>A YOLO version in the list. ToString is the name, which screen readers and UI Automation read.</summary>
 public sealed record FamilyItem(ModelFamily Family)
 {
-    public string Name => Family.Id.ToUpperInvariant().Replace("YOLOV", "YOLOv", StringComparison.Ordinal);
+    public string Name => Family.DisplayName;
 
     public string StatusText => Family.Status == ModelStatus.Experimental ? "Thử nghiệm" : "Hỗ trợ";
 
@@ -32,8 +40,8 @@ public sealed partial class ConfigViewModel : PageViewModel
 
     public ConfigViewModel(TrainerSession session, TrainerServices services) : base(session, services)
     {
-        foreach (var family in services.Catalog.Visible) Families.Add(new FamilyItem(family));
-        SelectedFamily = Families.FirstOrDefault();
+        foreach (var task in services.Catalog.Tasks) Tasks.Add(new TaskItem(task));
+        SelectedTask = Tasks.FirstOrDefault();
         session.PropertyChanged += (_, change) =>
         {
             if (change.PropertyName is nameof(TrainerSession.Machine) or nameof(TrainerSession.Workspace)) Reassess();
@@ -42,6 +50,8 @@ public sealed partial class ConfigViewModel : PageViewModel
 
     public override string Title => "Cấu hình";
 
+    public ObservableCollection<TaskItem> Tasks { get; } = [];
+
     public ObservableCollection<FamilyItem> Families { get; } = [];
 
     public ObservableCollection<string> Sizes { get; } = [];
@@ -49,6 +59,10 @@ public sealed partial class ConfigViewModel : PageViewModel
     public ObservableCollection<CriterionItem> Workload { get; } = [];
 
     public ObservableCollection<string> GateReasons { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSegment), nameof(TaskNote))]
+    private TaskItem? _selectedTask;
 
     [ObservableProperty]
     private FamilyItem? _selectedFamily;
@@ -111,6 +125,14 @@ public sealed partial class ConfigViewModel : PageViewModel
     [ObservableProperty]
     private Grade? _workloadGrade;
 
+    public bool IsSegment => SelectedTask?.Id == ModelFamily.Segment;
+
+    public bool HasManyTasks => Tasks.Count > 1;
+
+    public string TaskNote => IsSegment
+        ? "Segment cần dataset polygon cho mọi vật thể (box thì bị từ chối lúc bắt đầu train). mAP và metric tính trên mask; box vẫn được báo riêng. ONNX có hai output: box kèm hệ số mask, và proto mask."
+        : "";
+
     public bool IsBlocked => Gate == GateKind.Blocked;
 
     public bool NeedsConfirmation => Gate == GateKind.NeedsConfirmation;
@@ -135,6 +157,14 @@ public sealed partial class ConfigViewModel : PageViewModel
     {
         if (Session.Machine is null) _ = TryAsync(async () => await MachineAsync());
         Reassess();
+    }
+
+    partial void OnSelectedTaskChanged(TaskItem? value)
+    {
+        Families.Clear();
+        if (value is not null)
+            foreach (var family in Services.Catalog.Visible.Where(item => item.Task == value.Id)) Families.Add(new FamilyItem(family));
+        SelectedFamily = Families.FirstOrDefault();
     }
 
     partial void OnSelectedFamilyChanged(FamilyItem? value)

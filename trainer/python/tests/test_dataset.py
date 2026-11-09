@@ -109,7 +109,7 @@ def test_broken_image_and_missing_label_warn_without_blocking(good: Path) -> Non
 
 def test_polygon_rows_in_a_detect_dataset_warn(good: Path) -> None:
     (good / "labels" / "train" / "a.txt").write_text("0 0.1 0.1 0.2 0.1 0.2 0.2\n", encoding="utf-8")
-    assert "segment_rows" in codes(dataset.validate(good / "data.yaml").warnings)
+    assert "segment_rows" in codes(dataset.validate(good / "data.yaml", task="detect").warnings)
 
 
 def test_small_objects_depend_on_imgsz(good: Path) -> None:
@@ -160,3 +160,54 @@ def test_resolved_yaml_points_at_the_dataset_with_names(good: Path, tmp_path_fac
     assert resolved["path"] == str(good)
     assert resolved["names"] == ["dau_cos", "day_thit", "bang_dinh"]
     assert "ntech_synthetic" not in resolved
+
+
+SQUARE = "0 0.4 0.4 0.6 0.4 0.6 0.6 0.4 0.6\n"
+
+
+def polygon_set(root: Path) -> Path:
+    (root / "data.yaml").write_text(DATA_STUDIO_YAML, encoding="utf-8")
+    add_image(root, "train", "a", SQUARE, (1, 1, 1))
+    add_image(root, "val", "b", "2 0.1 0.1 0.3 0.1 0.2 0.3\n", (2, 2, 2))
+    return root
+
+
+def test_a_polygon_dataset_trains_as_segment_and_counts_both_kinds(tmp_path: Path) -> None:
+    report = dataset.validate(polygon_set(tmp_path) / "data.yaml", task="segment")
+    assert report.errors == []
+    assert report.stats["label_rows"] == {"box": 0, "polygon": 2}
+
+
+def test_box_rows_are_an_error_for_segment_but_fine_for_detect(good: Path) -> None:
+    assert "box_rows_in_segment" in codes(dataset.validate(good / "data.yaml", task="segment").errors)
+    assert dataset.validate(good / "data.yaml", task="detect").errors == []
+
+
+def test_a_mixed_dataset_is_refused_for_segment_and_described_without_a_task(tmp_path: Path) -> None:
+    root = polygon_set(tmp_path)
+    add_image(root, "train", "box", "1 0.5 0.5 0.2 0.2\n", (9, 9, 9))
+    assert "box_rows_in_segment" in codes(dataset.validate(root / "data.yaml", task="segment").errors)
+    described = dataset.validate(root / "data.yaml")
+    assert described.errors == []
+    assert "mixed_label_kinds" in codes(described.warnings)
+
+
+def test_segment_without_any_polygon_says_so(tmp_path: Path) -> None:
+    (tmp_path / "data.yaml").write_text(DATA_STUDIO_YAML, encoding="utf-8")
+    add_image(tmp_path, "train", "a", "", (1, 1, 1))
+    add_image(tmp_path, "val", "b", "", (2, 2, 2))
+    assert "no_polygons" in codes(dataset.validate(tmp_path / "data.yaml", task="segment").errors)
+
+
+def test_a_polygon_needs_three_vertices_and_whole_pairs(good: Path) -> None:
+    for broken in ("0 0.1 0.1 0.2 0.1 0.2 0.2 0.3\n", "0 0.1 0.1 0.2 0.1 0.2\n0 0.1 0.1 0.2 0.1 0.2 0.2 0.3 0.3 0.4\n"):
+        (good / "labels" / "train" / "a.txt").write_text(broken, encoding="utf-8")
+        report = dataset.validate(good / "data.yaml", task="segment")
+        # Five numbers read as a box, which is the other kind of mistake: both are caught.
+        assert codes(report.errors) & {"bad_labels", "box_rows_in_segment"}
+
+
+def test_a_small_polygon_is_measured_by_its_bounding_box(tmp_path: Path) -> None:
+    root = polygon_set(tmp_path)
+    (root / "labels" / "train" / "a.txt").write_text("0 0.5 0.5 0.52 0.5 0.51 0.52\n", encoding="utf-8")
+    assert "tiny_objects" in codes(dataset.validate(root / "data.yaml", imgsz=320, task="segment").warnings)

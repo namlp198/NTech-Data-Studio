@@ -53,6 +53,31 @@ public class CatalogTests
 
     [Fact]
     public void AnUnmeasuredVersion_HasNoVramNumbers() => Assert.Null(Load().Find("yolo12s")!.VramAt640);
+
+    [Theory]
+    [InlineData("yolo26segm", "yolo26seg", "yolo26m-seg.pt", "YOLO26")]
+    [InlineData("yolo11segn", "yolo11seg", "yolo11n-seg.pt", "YOLO11")]
+    [InlineData("yolov8segx", "yolov8seg", "yolov8x-seg.pt", "YOLOv8")]
+    public void Find_ResolvesSegmentVersions_AndLeavesTheDetectFamilyOfTheSameVersionAlone(string name, string family, string weights, string display)
+    {
+        var catalog = Load();
+        var model = catalog.Find(name);
+        Assert.NotNull(model);
+        Assert.Equal(family, model.Family.Id);
+        Assert.Equal("segment", model.Family.Task);
+        Assert.Equal(weights, model.Weights);
+        Assert.Equal(display, model.Family.DisplayName);
+        Assert.Equal("detect", catalog.Find(name.Replace("seg", "", StringComparison.Ordinal))!.Family.Task);
+    }
+
+    [Fact]
+    public void Tasks_ListDetectFirst_AndSegmentFamiliesAreUnmeasured()
+    {
+        var catalog = Load();
+        Assert.Equal(["detect", "segment"], catalog.Tasks);
+        Assert.Equal("YOLO26", catalog.Find("yolo26s")!.Family.DisplayName);
+        Assert.Null(catalog.Find("yolo26segs")!.VramAt640);
+    }
 }
 
 public class NvidiaSmiTests
@@ -336,6 +361,30 @@ public sealed class WorkspaceTests : IDisposable
         Assert.Equal(2, runs.Count);
         Assert.Equal("yolo11", runs[0].Record().ModelFamily);
         Assert.Equal("yolo26", runs[1].Record().ModelFamily);
+    }
+
+    [Fact]
+    public void Config_CarriesTheTask()
+    {
+        Assert.Contains("task: detect", Workspace.ConfigYaml("id", Model("yolo26s"), Options(), "/data/data.yaml", "sha:1"));
+        var segment = Workspace.ConfigYaml("id", Model("yolo26segs"), Options(), "/data/data.yaml", "sha:1");
+        Assert.Contains("task: segment", segment);
+        Assert.Contains("weights: yolo26s-seg.pt", segment);
+        Assert.Contains("nms: true", segment);
+    }
+
+    [Fact]
+    public void ARunRecord_KeepsItsTask_AndOneWrittenBeforeSegmentReadsAsDetect()
+    {
+        var workspace = Workspace.Create(Path.Combine(_root, "ws-task"), _data);
+        var run = workspace.CreateRun(Model("yolo11segs"), Options(), "cpu", "image", "sha:1", DateTime.UtcNow);
+        Assert.Equal("segment", run.Record().Task);
+
+        var old = Directory.CreateDirectory(Path.Combine(workspace.RunsFolder, "20260101-000000-yolo26s"));
+        File.WriteAllText(
+            Path.Combine(old.FullName, "run.json"),
+            "{\"schema\":1,\"id\":\"20260101-000000-yolo26s\",\"model\":\"yolo26s\",\"model_family\":\"yolo26\",\"weights\":\"yolo26s.pt\",\"license\":\"AGPL-3.0\",\"compute\":\"cpu\",\"image\":\"image\",\"image_digest\":\"sha:1\",\"created_at\":\"2026-01-01T00:00:00Z\"}");
+        Assert.Equal("detect", workspace.Run("20260101-000000-yolo26s").Record().Task);
     }
 
     [Fact]

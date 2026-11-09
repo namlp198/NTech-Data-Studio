@@ -13,7 +13,7 @@ from .runtime import ResourceSampler, RunPaths, load_config, probe, tee_output, 
 
 
 def _validate(args: argparse.Namespace) -> int:
-    report = dataset.validate(Path(args.data), args.imgsz).as_dict()
+    report = dataset.validate(Path(args.data), args.imgsz, args.task).as_dict()
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["ok"] else 2
 
@@ -31,7 +31,7 @@ def _train(args: argparse.Namespace) -> int:
     sampler = ResourceSampler(events, paths.root)
     try:
         data_yaml = Path(config["data"])
-        report = dataset.validate(data_yaml, config["imgsz"])
+        report = dataset.validate(data_yaml, config["imgsz"], config.get("task", "detect"))
         if args.resume and paths.dataset_report.exists():
             before = json.loads(paths.dataset_report.read_text(encoding="utf-8"))
             if before.get("fingerprint") != report.fingerprint:
@@ -101,6 +101,7 @@ def main() -> int:
     validate = commands.add_parser("validate")
     validate.add_argument("--data", required=True)
     validate.add_argument("--imgsz", type=int, default=640)
+    validate.add_argument("--task", choices=dataset.TASKS, default=None)
 
     train = commands.add_parser("train")
     train.add_argument("--run-dir", required=True)
