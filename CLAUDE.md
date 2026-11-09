@@ -89,6 +89,7 @@ Bạn là Claude Code, làm việc như senior coding assistant trong repo `NTec
 - Lượt làm mới định kỳ gọi `TryAsync(..., refresh: true)`: nó chỉ xóa lỗi do chính nó gây ra. Đừng bỏ cờ này, nếu không lỗi của nút bấm biến mất sau 2 giây.
 - Workspace không chuyển được giữa Windows và Linux: `workspace.json` giữ đường dẫn tuyệt đối của dataset. Mọi chỗ mount dataset phải gọi `Workspace.RequireDataset()` trước.
 - Trong WSLg cửa sổ app không có cây UI Automation: chỉ kiểm được bằng ảnh chụp và bấm theo tọa độ.
+- Segment không-end2end (YOLO11, YOLOv8): `predict` của Ultralytics trả tập box khác NMS nhúng trong ONNX, dù file ONNX đúng (PyTorch thô cộng NMS khớp 300/300 hàng). Kiểm chứng ONNX segment đối chiếu mô hình thô và ghép box chưa cắt về khung, đừng đổi sang `predict` (quyết định 0014). Chạy `docker run` trong Git Bash nhớ `MSYS_NO_PATHCONV=1`, nếu không đường dẫn container bị đổi thành đường dẫn Windows.
 
 ## Kiểm tra
 
