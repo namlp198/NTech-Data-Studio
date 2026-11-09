@@ -38,3 +38,12 @@ Làm sau khi băng dính đen và dây thít cho kết quả kém (chỉ vẽ ta
 - **Phân tích theo vùng:** bộ mã hóa chỉ nhận cạnh dài 1024 px, nên vật 40 px trong ảnh 2400 px còn khoảng 17 px. Khi phóng to đến lúc màn hình chỉ còn dưới 60% diện tích ảnh, app phân tích riêng phần đang xem (nới thêm 25% mỗi bên), và vật đó chiếm nhiều điểm ảnh hơn. Chờ khoảng 0,3 giây sau lần zoom hoặc pan cuối rồi mới chạy (dòng "Đang phân tích vùng đang xem..."); kéo lệch nhẹ không chạy lại; kéo ra ngoài vùng hoặc zoom gấp 3 lần trở lên thì chạy lại. Hai kết quả được giữ lại (cả ảnh và vùng gần nhất) nên đổi qua lại không tốn thêm. Con trỏ ngoài vùng thì không có xem trước (vùng vẽ khung chấm).
 - **Đo trên ảnh tổng hợp** (khối tối 60x68 px trên dây tối, ảnh 2400x1800): chồng khớp (IoU) với đáp án khi bấm là 0,92 cả ảnh và 0,99 theo vùng; khi kéo khung là 0,89 và 0,98. Ảnh tổng hợp có cạnh sạch nên chênh lệch trên ảnh thật chưa biết.
 - Giao diện `ISmartSegmenter` đổi: `PrepareAsync(path, region, ...)` và `SegmentAsync(path, region, SegmentRequest, ...)`; mọi điểm trong yêu cầu phải nằm trong vùng.
+
+## Bổ sung: công tắc "Kéo khung + zoom" (2026-11-08)
+
+Hai kiểu làm việc của Magic polygon, chọn bằng ô "Kéo khung + zoom" ở giữa trên cùng khi đang dùng công cụ (nhớ giữa các lần chạy, `settings.json` khóa `MagicBoxMode`, mặc định tắt):
+
+- **Tắt:** như bản đầu: rê chuột xem trước, bấm để lấy, Shift+bấm và bấm phải để tinh chỉnh; luôn phân tích cả ảnh; kéo chuột không tạo khung.
+- **Bật:** không có xem trước, bấm đơn không làm gì (có thông báo nhắc kéo khung), Shift+bấm và bấm phải bị bỏ qua. Người dùng kéo một khung quanh vật thể thì mới phân tích; phóng to thì app phân tích riêng phần đang xem.
+
+Đổi công tắc làm phân tích lại ảnh theo kiểu mới, và bật lên thì dùng ngay vùng đang xem. Bật không kèm điểm tinh chỉnh: khung đã đủ chắc, và xem trước khung chưa có.

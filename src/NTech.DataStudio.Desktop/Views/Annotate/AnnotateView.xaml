@@ -77,14 +77,22 @@
                        AutomationProperties.AutomationId="AnnotateImageError"
                        Visibility="{Binding ImageError, Converter={StaticResource NullToCollapsed}}"
                        Text="{Binding ImageError}" />
-            <!-- Magic polygon: analysing the picture, or why it cannot run -->
-            <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="{StaticResource Inset.XL}"
-                    Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.SM}"
-                    Visibility="{Binding HasMagicStatus, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap" MaxWidth="560"
-                           AutomationProperties.AutomationId="MagicStatus"
-                           Text="{Binding MagicStatus}" />
-            </Border>
+            <!-- Magic polygon: pointer or dragged-box mode, then what it is doing or why it cannot run -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="{StaticResource Inset.XL}"
+                        Visibility="{Binding IsMagicTool, Converter={StaticResource BoolToVisibility}}">
+                <Border HorizontalAlignment="Center" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.SM}">
+                    <CheckBox Content="Kéo khung + zoom" IsChecked="{Binding MagicBoxMode}"
+                              ToolTip="{Binding MagicBoxModeTip}"
+                              AutomationProperties.AutomationId="MagicBoxMode" />
+                </Border>
+                <Border HorizontalAlignment="Center" Margin="{StaticResource Gap.Top.SM}"
+                        Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.SM}"
+                        Visibility="{Binding HasMagicStatus, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap" MaxWidth="560"
+                               AutomationProperties.AutomationId="MagicStatus"
+                               Text="{Binding MagicStatus}" />
+                </Border>
+            </StackPanel>
 
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                        Style="{StaticResource Text.Secondary}" Text="Đang mở ảnh..."

@@ -127,3 +127,8 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 - `settings.json` có thêm `LastProject` (đường dẫn thư mục project). `SettingsService.RememberProject` ghi mỗi khi project đang mở đổi; Đóng project thì xóa nên lần sau không tự mở. Mở thất bại (thư mục mất hoặc không phải project) thì hiện lỗi ở màn Project và giữ nguyên lựa chọn cũ. Mở lúc khởi động qua `ProjectViewModel.RestoreAsync`, nối ở `AppComposition`.
 - `MainWindow` mở với `WindowState="Maximized"`.
 - Kiểm tra: build 0 cảnh báo, toàn bộ test qua (Application 351, Domain 136). Chạy app thật qua UI Automation: cửa sổ Maximized, project tự mở với đủ số liệu; `LastProject` trỏ thư mục không tồn tại thì hiện "không phải project: thiếu project.db". Chưa thử đóng app rồi mở lại bằng tay sau khi Đóng project (có test cho phần lưu).
+
+## Công tắc Kéo khung + zoom của Magic polygon (2026-11-08)
+
+- Ô "Kéo khung + zoom" hiện khi chọn công cụ Magic polygon; `MagicPolygonController.BoxMode`, `AppSettings.MagicBoxMode`, `AnnotateViewModel.MagicBoxMode`. Bật: chỉ kéo khung mới lấy vật, có phân tích theo vùng zoom; tắt: rê chuột + bấm trên cả ảnh. Chi tiết ở cuối quyết định 0016.
+- Test: Application 355 qua (thêm test cho hai chế độ, đổi chế độ, lưu). Chạy app thật qua UI Automation: bật thì rê và bấm không ra nhãn, kéo khung quanh khối đỏ ra 1 nhãn; tắt thì bấm ra thêm nhãn. Chưa thử trên ảnh thật.

@@ -47,6 +47,20 @@ public class ShortcutSettingsTests : IDisposable
     }
 
     [Fact]
+    public void MagicBoxMode_IsOffByDefaultAndSurvivesARestart()
+    {
+        var service = NewService();
+        Assert.False(service.MagicBoxMode);
+
+        service.SetMagicBoxMode(true);
+        service.RememberProject(@"D:\data\wire");
+
+        var again = NewService();
+        Assert.True(again.MagicBoxMode);
+        Assert.Equal(@"D:\data\wire", again.LastProject);
+    }
+
+    [Fact]
     public void Defaults_NeverGiveOneKeyToTwoActions()
     {
         var seen = new Dictionary<Shortcut, ShortcutAction>();

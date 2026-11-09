@@ -189,7 +189,7 @@ public sealed class AnnotationEditor
     /// <summary>Right click with the Magic polygon tool: a point on what the outline should leave out. True when the tool took it.</summary>
     public bool SecondaryDown(PixelPoint point)
     {
-        if (Document is null || Tool != AnnotateTool.MagicPolygon || Magic is null) return false;
+        if (Document is null || Tool != AnnotateTool.MagicPolygon || Magic is null || Magic.BoxMode) return false;
 
         Magic.AddPrompt(point, positive: false);
         return true;
@@ -228,7 +228,7 @@ public sealed class AnnotationEditor
             return;
         }
 
-        MagicDragBox = start.DistanceTo(point) > tolerance * 2 ? PixelRect.FromCorners(start, point) : null;
+        MagicDragBox = Magic?.BoxMode == true && start.DistanceTo(point) > tolerance * 2 ? PixelRect.FromCorners(start, point) : null;
         RaiseChanged();
     }
 
@@ -241,7 +241,11 @@ public sealed class AnnotationEditor
         MagicDragBox = null;
         if (Magic is null) return;
 
-        if (box is { } dragged) _ = Magic.AcceptBoxAsync(dragged);
+        if (Magic.BoxMode)
+        {
+            if (box is { } dragged) _ = Magic.AcceptBoxAsync(dragged);
+            else Message = "Đang bật chế độ kéo khung: hãy kéo một khung quanh vật thể.";
+        }
         else if (_magicRefine) Magic.AddPrompt(start, positive: true);
         else _ = Magic.AcceptAsync(start);
     }

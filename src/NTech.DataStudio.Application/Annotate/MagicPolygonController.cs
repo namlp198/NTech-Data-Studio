@@ -34,6 +34,8 @@ public sealed class MagicPolygonController
     private PixelRect? _region;
     private bool _ready;
     private bool _working;
+    private bool _boxMode;
+    private (PixelRect Visible, double Width, double Height)? _lastView;
 
     public MagicPolygonController(ISmartSegmenter segmenter)
     {
@@ -54,6 +56,32 @@ public sealed class MagicPolygonController
 
     /// <summary>The outline under the pointer, in master pixels.</summary>
     public IReadOnlyList<PixelPoint>? Preview { get; private set; }
+
+    /// <summary>
+    /// Box mode: nothing follows the pointer; the user drags a box around the object and only then is it analysed,
+    /// and a zoomed picture is analysed by the part on screen. Off: hover and click on the whole picture.
+    /// </summary>
+    public bool BoxMode
+    {
+        get { lock (_gate) return _boxMode; }
+    }
+
+    public void SetBoxMode(bool on)
+    {
+        lock (_gate)
+        {
+            if (_boxMode == on) return;
+            _boxMode = on;
+        }
+
+        // The picture is analysed again the way the new mode wants it (whole, or the part on screen once the view is reported).
+        Reset();
+        if (_active) StartPrepare();
+
+        (PixelRect Visible, double Width, double Height)? view;
+        lock (_gate) view = _lastView;
+        if (on && view is { } known) SetView(known.Visible, known.Width, known.Height);
+    }
 
     /// <summary>The part of the picture being analysed, or null for the whole picture.</summary>
     public PixelRect? Region
@@ -115,7 +143,8 @@ public sealed class MagicPolygonController
     /// <summary>The part of the picture on screen changed (zoom or pan). Settles for a moment, then may start a new analysis.</summary>
     public void SetView(PixelRect visible, double imageWidth, double imageHeight)
     {
-        if (!_active) return;
+        lock (_gate) _lastView = (visible, imageWidth, imageHeight);
+        if (!_active || !BoxMode) return;
 
         int version;
         lock (_gate) version = ++_viewVersion;
@@ -138,7 +167,7 @@ public sealed class MagicPolygonController
     /// <summary>The pointer moved over the picture.</summary>
     public void Hover(PixelPoint point)
     {
-        if (!_active) return;
+        if (!_active || BoxMode) return;
 
         lock (_gate)
         {
@@ -166,7 +195,7 @@ public sealed class MagicPolygonController
     /// <summary>Shift+click or right click: refines the outline before it is accepted.</summary>
     public void AddPrompt(PixelPoint point, bool positive)
     {
-        if (!_active) return;
+        if (!_active || BoxMode) return;
 
         lock (_gate)
         {

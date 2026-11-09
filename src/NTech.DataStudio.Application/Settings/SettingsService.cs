@@ -18,6 +18,7 @@ public sealed class SettingsService
             var stored = store.Load();
             Shortcuts = ShortcutMap.FromStored(stored.Shortcuts);
             LastProject = stored.LastProject;
+            MagicBoxMode = stored.MagicBoxMode;
         }
         catch (SettingsException exception)
         {
@@ -27,6 +28,17 @@ public sealed class SettingsService
     }
 
     public ShortcutMap Shortcuts { get; private set; }
+
+    /// <summary>Magic polygon works from a dragged box (true) or from the pointer (false).</summary>
+    public bool MagicBoxMode { get; private set; }
+
+    public void SetMagicBoxMode(bool on)
+    {
+        if (MagicBoxMode == on) return;
+
+        MagicBoxMode = on;
+        Save();
+    }
 
     /// <summary>Folder of the project to open at start, or null.</summary>
     public string? LastProject { get; private set; }
@@ -79,7 +91,7 @@ public sealed class SettingsService
     {
         try
         {
-            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject));
+            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject, MagicBoxMode));
             Problem = null;
         }
         catch (SettingsException exception)

@@ -96,6 +96,12 @@ public class MagicPolygonTests : IDisposable
         WaitFor(() => _magic.Status is null, "ready");
     }
 
+    private void BoxReady()
+    {
+        _magic.SetBoxMode(true);
+        Ready();
+    }
+
     [Fact]
     public void ToolNeedsNothingUntilItIsChosen_ThenAnalysesThePictureOnce()
     {
@@ -155,7 +161,7 @@ public class MagicPolygonTests : IDisposable
     [Fact]
     public void ADraggedBox_IsWhatGetsSegmentedAndNotTheClick()
     {
-        Ready();
+        BoxReady();
 
         _editor.PointerDown(new PixelPoint(40, 20), 4);
         _editor.PointerMove(new PixelPoint(80, 40), 4);
@@ -173,19 +179,21 @@ public class MagicPolygonTests : IDisposable
     }
 
     [Fact]
-    public void ABoxCanBeRefinedWithPointsAddedBeforeIt()
+    public void InBoxMode_HoverPointsAndClicksDoNothingButADragDoes()
     {
-        Ready();
+        BoxReady();
+
+        _editor.PointerMove(new PixelPoint(100, 50), 4);
         Click(100, 50, refine: true);
-        _editor.SecondaryDown(new PixelPoint(150, 80));
+        Assert.False(_editor.SecondaryDown(new PixelPoint(150, 80)));
+        Click(100, 50);
+        Thread.Sleep(150);
 
-        _editor.PointerDown(new PixelPoint(40, 20), 4);
-        _editor.PointerMove(new PixelPoint(120, 60), 4);
-        _editor.PointerUp(new PixelPoint(120, 60), 4);
-
-        WaitFor(() => _editor.Document!.Annotations.Count == 1, "the label");
-        var request = _segmenter.Calls.Last(call => call.Request.Box is not null).Request;
-        Assert.Equal(new[] { true, false }, request.Points.Select(point => point.Positive));
+        Assert.Equal(0, _segmenter.CallCount);
+        Assert.Empty(_magic.Prompts);
+        Assert.Null(_magic.Preview);
+        Assert.Empty(_editor.Document!.Annotations);
+        Assert.NotNull(_editor.Message);
     }
 
     [Fact]
@@ -298,15 +306,24 @@ public class MagicPolygonTests : IDisposable
         Click(100, 50, refine: true);
         _editor.PointerMove(new PixelPoint(120, 60), 4);
         WaitFor(() => _magic.Preview is not null, "a preview");
-        _editor.PointerDown(new PixelPoint(10, 10), 4);
-        _editor.PointerMove(new PixelPoint(60, 40), 4);
-        Assert.NotNull(_editor.MagicDragBox);
 
         _editor.Escape();
 
         Assert.Equal(AnnotateTool.Select, _editor.Tool);
         Assert.Null(_magic.Preview);
         Assert.Empty(_magic.Prompts);
+    }
+
+    [Fact]
+    public void LeavingTheTool_DropsADragInProgress()
+    {
+        BoxReady();
+        _editor.PointerDown(new PixelPoint(10, 10), 4);
+        _editor.PointerMove(new PixelPoint(60, 40), 4);
+        Assert.NotNull(_editor.MagicDragBox);
+
+        _editor.Escape();
+
         Assert.Null(_editor.MagicDragBox);
     }
 
@@ -328,7 +345,7 @@ public class MagicPolygonTests : IDisposable
     [Fact]
     public void ZoomedIn_OnlyThePartOnScreenIsAnalysed_AndZoomingBackReturnsToTheWholePicture()
     {
-        Ready();
+        BoxReady();
 
         _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
         WaitFor(() => _segmenter.PreparedCount == 2, "the zoomed region to be analysed");
@@ -344,28 +361,55 @@ public class MagicPolygonTests : IDisposable
     }
 
     [Fact]
-    public void ZoomedIn_HoverAndClickUseTheRegion_AndAPointerOutsideItIsIgnored()
+    public void ZoomedIn_ABoxUsesTheRegion()
     {
-        Ready();
+        BoxReady();
         _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
         WaitFor(() => _segmenter.PreparedCount == 2 && _magic.Status is null, "the zoomed region");
         var region = _magic.Region!.Value;
 
-        _editor.PointerMove(new PixelPoint(80, 40), 4);
-        WaitFor(() => _magic.Preview is not null, "a preview inside the region");
-        Assert.Equal(region, _segmenter.Calls.Last().Region);
+        _editor.PointerDown(new PixelPoint(70, 35), 4);
+        _editor.PointerMove(new PixelPoint(100, 50), 4);
+        _editor.PointerUp(new PixelPoint(100, 50), 4);
 
-        var calls = _segmenter.CallCount;
-        _editor.PointerMove(new PixelPoint(5, 5), 4);
-        Thread.Sleep(150);
-        Assert.Equal(calls, _segmenter.CallCount);
-        Assert.Null(_magic.Preview);
+        WaitFor(() => _editor.Document!.Annotations.Count == 1, "the label");
+        Assert.Equal(region, _segmenter.Calls.Last().Region);
+    }
+
+    [Fact]
+    public void SwitchingBoxModeOff_GoesBackToTheWholePictureAndThePointer()
+    {
+        BoxReady();
+        _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
+        WaitFor(() => _magic.Region is not null && _magic.Status is null, "the zoomed region");
+
+        _magic.SetBoxMode(false);
+        WaitFor(() => _magic.Region is null && _magic.Status is null, "the whole picture");
+        _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
+        Thread.Sleep(500);
+        Assert.Null(_magic.Region);
+
+        _editor.PointerMove(new PixelPoint(100, 50), 4);
+        WaitFor(() => _magic.Preview is not null, "a preview again");
+    }
+
+    [Fact]
+    public void SwitchingBoxModeOn_UsesTheViewAlreadyOnScreen()
+    {
+        Ready();
+        _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
+        Thread.Sleep(500);
+        Assert.Null(_magic.Region);
+
+        _magic.SetBoxMode(true);
+
+        WaitFor(() => _magic.Region is not null, "the zoomed region");
     }
 
     [Fact]
     public void PanningALittle_DoesNotStartANewAnalysis()
     {
-        Ready();
+        BoxReady();
         _magic.SetView(new PixelRect(60, 30, 50, 25), 200, 100);
         WaitFor(() => _segmenter.PreparedCount == 2, "the zoomed region");
 
@@ -378,7 +422,7 @@ public class MagicPolygonTests : IDisposable
     [Fact]
     public void PanningFarOut_AnalysesTheNewPart()
     {
-        Ready();
+        BoxReady();
         _magic.SetView(new PixelRect(10, 10, 30, 15), 200, 100);
         WaitFor(() => _segmenter.PreparedCount == 2, "the first region");
 

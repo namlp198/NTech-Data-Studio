@@ -142,6 +142,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             OnPropertyChanged(nameof(MagicStatus));
             OnPropertyChanged(nameof(HasMagicStatus));
         };
+        Magic.SetBoxMode(settings.MagicBoxMode);
         Hints = new ShortcutHints(settings);
         _settings.Changed += (_, _) => RaiseTargetTaskChanged();
         _projects = projects;
@@ -197,6 +198,25 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public string? MagicStatus => IsMagicTool ? Magic.Status : null;
 
     public bool HasMagicStatus => MagicStatus is not null;
+
+    /// <summary>Magic polygon waits for a dragged box instead of following the pointer; kept between runs.</summary>
+    public bool MagicBoxMode
+    {
+        get => Magic.BoxMode;
+        set
+        {
+            if (Magic.BoxMode == value) return;
+
+            Magic.SetBoxMode(value);
+            _settings.SetMagicBoxMode(value);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MagicBoxModeTip));
+        }
+    }
+
+    public string MagicBoxModeTip => MagicBoxMode
+        ? "Bật: kéo một khung quanh vật thể rồi mới tách; phóng to thì phân tích riêng phần đang xem."
+        : "Tắt: rê chuột để xem trước, bấm để lấy vật thể (phân tích cả ảnh).";
 
     public bool IsMagicTool { get => Tool == AnnotateTool.MagicPolygon; set => ChooseTool(value, AnnotateTool.MagicPolygon); }
     public bool IsMagicToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.MagicPolygon) && Magic.Unavailable is null;
