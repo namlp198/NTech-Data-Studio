@@ -381,6 +381,8 @@ public sealed partial class DatasetViewModel : ObservableObject, IActivatable
             Notes.Add($"{plan.UnitCount} nhóm ảnh được chia (ảnh cùng nhóm luôn nằm chung một tập).");
         if (plan.ExcludedUnlabeled > 0)
             Notes.Add($"{plan.ExcludedUnlabeled} ảnh còn ở trạng thái New nên chưa đưa vào. Bật \"Gồm ảnh chưa gán nhãn\" nếu muốn thêm.");
+        if (plan.ExcludedUnselected > 0)
+            Notes.Add($"{plan.ExcludedUnselected} ảnh chưa được chọn vào dataset (chế độ \"Chỉ đưa ảnh được chọn\" ở màn Annotate đang bật).");
         if (plan.DroppedNull > 0)
             Notes.Add($"{plan.DroppedNull} ảnh không nhãn bị bỏ theo tỉ lệ đã chọn.");
         if (plan.EmptyImages > 0)
@@ -663,7 +665,10 @@ public sealed partial class DatasetViewModel : ObservableObject, IActivatable
     private async Task DeleteVersionAsync(VersionRow? row)
     {
         if (row is null) return;
-        if (!_prompt.Confirm($"Xóa version \"{row.Name}\"?\nẢnh, nhãn và các version khác không bị ảnh hưởng."))
+        if (!_prompt.Confirm(
+                "Xóa version",
+                $"Xóa version \"{row.Name}\"?\nẢnh, nhãn và các version khác không bị ảnh hưởng.",
+                "Xóa version", danger: true))
             return;
 
         ErrorMessage = null;

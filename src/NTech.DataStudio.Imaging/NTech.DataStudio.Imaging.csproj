@@ -7,6 +7,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="NTech.DataStudio.Imaging.Tests" />
     <ProjectReference Include="..\NTech.DataStudio.Application\NTech.DataStudio.Application.csproj" />
   </ItemGroup>
 

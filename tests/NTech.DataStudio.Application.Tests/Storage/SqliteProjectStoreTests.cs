@@ -180,7 +180,7 @@ public class SqliteProjectStoreTests : IDisposable
         await _store.OpenAsync(ProjectPath);
 
         using var connection = Connect();
-        Assert.Equal(1L, Scalar(connection, "PRAGMA user_version;"));
+        Assert.Equal(2L, Scalar(connection, "PRAGMA user_version;"));
     }
 
     [Fact]

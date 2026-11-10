@@ -509,6 +509,89 @@ public class AnnotationEditorTests : IDisposable
     }
 
     [Fact]
+    public void CtrlClick_AddsAndRemovesLabelsFromTheSelection()
+    {
+        DrawBox(10, 10, 40, 40);
+        DrawBox(60, 10, 90, 40);
+        DrawBox(110, 10, 140, 40);
+
+        Click(25, 25);
+        _editor.PointerDown(new PixelPoint(75, 25), Tolerance, additive: true);
+        _editor.PointerDown(new PixelPoint(125, 25), Tolerance, additive: true);
+        Assert.Equal(3, _editor.SelectionCount);
+
+        _editor.PointerDown(new PixelPoint(75, 25), Tolerance, additive: true);
+        Assert.Equal(2, _editor.SelectionCount);
+        Assert.Equal(3, Document.Annotations.Count);
+    }
+
+    [Fact]
+    public void DeleteSelected_RemovesAllSelectedLabelsInOneEditAndUndoBringsThemBack()
+    {
+        DrawBox(10, 10, 40, 40);
+        DrawBox(60, 10, 90, 40);
+        DrawBox(110, 10, 140, 40);
+        _editor.SelectMany(Document.Annotations.Take(2).Select(annotation => annotation.Id));
+
+        Assert.True(_editor.DeleteSelected());
+        Assert.Single(Document.Annotations);
+        Assert.Equal(0, _editor.SelectionCount);
+
+        Assert.True(_editor.Undo());
+        Assert.Equal(3, Document.Annotations.Count);
+    }
+
+    [Fact]
+    public void DeleteSelected_KeepsLockedLabelsAndSaysSo()
+    {
+        DrawBox(10, 10, 40, 40);
+        DrawBox(60, 10, 90, 40);
+        _editor.SelectAll();
+        _editor.ToggleLocked(Document.Annotations[0].Id);
+
+        Assert.True(_editor.DeleteSelected());
+
+        Assert.Single(Document.Annotations);
+        Assert.Contains("khóa", _editor.Message);
+    }
+
+    [Fact]
+    public void ChangeSelectedClass_AppliesToEverySelectedLabel()
+    {
+        DrawBox(10, 10, 40, 40);
+        DrawBox(60, 10, 90, 40);
+        _editor.SelectAll();
+
+        Assert.True(_editor.ChangeSelectedClass(_otherClassId));
+
+        Assert.All(Document.Annotations, annotation => Assert.Equal(_otherClassId, annotation.ClassId));
+        Assert.True(_editor.Undo());
+        Assert.All(Document.Annotations, annotation => Assert.Equal(_classId, annotation.ClassId));
+    }
+
+    private Annotation Model(double x) => new(
+        Guid.NewGuid(), Document.ImageId, _classId, ShapeKind.Polygon,
+        new[] { new PixelPoint(x, 10), new PixelPoint(x + 20, 10), new PixelPoint(x + 10, 30) },
+        AnnotationSource.Model, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+
+    [Fact]
+    public void AddAutoLabels_ReplaceRemovesTheOldOnesInTheSameEdit_AddKeepsThem()
+    {
+        DrawBox(10, 10, 40, 40);
+        DrawBox(60, 10, 90, 40);
+
+        Assert.True(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
+        Assert.Equal(3, Document.Annotations.Count);
+
+        Assert.True(_editor.AddAutoLabels(new[] { Model(120), Model(150) }, replaceExisting: true));
+        Assert.Equal(2, Document.Annotations.Count);
+        Assert.All(Document.Annotations, annotation => Assert.Equal(AnnotationSource.Model, annotation.Source));
+
+        Assert.True(_editor.Undo());
+        Assert.Equal(3, Document.Annotations.Count);
+    }
+
+    [Fact]
     public void Delete_WithNothingSelectedDoesNothing()
     {
         Assert.False(_editor.DeleteSelected());

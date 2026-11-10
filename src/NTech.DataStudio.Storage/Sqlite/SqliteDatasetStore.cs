@@ -85,9 +85,11 @@ internal sealed class SqliteDatasetStore : IDatasetStore
                 }
             }
 
+            var selectionOnly = ProjectDb.Scalar(_connection, "SELECT value FROM project_meta WHERE key = 'dataset_selection_only';") as string == "1";
+
             using var query = _connection.CreateCommand();
             query.CommandText = """
-                SELECT i.id, i.source_image_id, s.group_key, i.master_path, i.width, i.height, i.status
+                SELECT i.id, i.source_image_id, s.group_key, i.master_path, i.width, i.height, i.status, i.in_dataset
                 FROM active_images i JOIN source_images s ON s.id = i.source_image_id
                 ORDER BY i.id;
                 """;
@@ -109,7 +111,8 @@ internal sealed class SqliteDatasetStore : IDatasetStore
                     rows.GetInt32(5),
                     StatusNames[rows.GetString(6)],
                     byClass,
-                    tagSet));
+                    tagSet,
+                    !selectionOnly || rows.GetInt32(7) != 0));
             }
 
             return images;

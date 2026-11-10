@@ -4,6 +4,35 @@ Ngày: 2026-11-07
 
 Làm trên nhánh `dev/data-studio`, worktree `.claude/worktrees/data-studio` (từ 2026-11-08). Thư mục gốc của repo giữ `main`.
 
+## Cập nhật 2026-11-09: chọn ảnh vào dataset (Annotate)
+
+- Migration 2: cột `images.in_dataset` (mặc định 0), view `active_images` dựng lại. Khóa `dataset_selection_only` trong `project_meta`.
+- Annotate: ô "Chỉ đưa ảnh được chọn vào dataset" ở dải ảnh; khi bật, mỗi thumbnail có ô chọn. Tắt thì dataset lấy mọi ảnh đã gán nhãn như trước. Ảnh chưa chọn bị `VersionBuilder` bỏ (`DatasetImage.Included`), màn Dataset ghi số ảnh bị loại. Việc chọn không đi qua `AnnotateService.Execute` (không phải sửa nhãn, không có undo).
+- Test: 356/356 ở Application (thêm 1; `Open_TwiceDoesNotReapplyMigrations` đổi sang version 2). App khởi động được; **chưa bấm thử** ô chọn trong Annotate và màn Dataset trên app thật. Chưa có phím tắt cho việc chọn ảnh.
+
+## Cập nhật 2026-11-09 (2): gán nhãn tự động bằng model segment (quyết định 0017)
+
+- `IAutoLabeler`/`AutoLabelService` (Application), `OnnxAutoLabeler` + `YoloSegDecoder` (Imaging) đọc ONNX segment theo hợp đồng `model.meta.json` của Trainer. Cài đặt có mục "Model gán nhãn tự động" (chọn .onnx, ngưỡng 5 đến 95%, mặc định 40%). Annotate có nút "Gán tự động" cho ảnh đang mở: thêm polygon `source=model` thành một lần Undo, ảnh ở "Cần review".
+- Test: 360 Application, 101 Imaging (giải mã bằng tensor tổng hợp: hoàn tác letterbox, cắt theo box, ngưỡng, clip). Build 0 cảnh báo.
+- **Đã chạy với model thật** (YOLO26-seg 3 class `dau_cos`, `bang_dinh`, `day_thit`, 640 px, Ultralytics export thô không có `model.meta.json`) trên một ảnh wire harness 1024x576: 30+ polygon, vẽ lên ảnh thấy bám đúng đầu cos và băng dính, tọa độ đúng sau khi hoàn tác letterbox. Lỗi tìm được nhờ chạy thật: `Mat.GetArray<byte>` từ chối Mat 3 kênh (dùng `Vec3b`). Test `OnnxAutoLabelerModelTests` chạy khi đặt `NTECH_AUTOLABEL_MODEL` và `NTECH_AUTOLABEL_IMAGE` (xem chú thích đầu file); tự dựng meta khi thiếu. Một vài polygon của dây dài bị nối thành vùng lớn. Chưa bấm thử nút và màn Cài đặt trên app thật; model Ultralytics thô vẫn cần `model.meta.json` cạnh nó để app nhận.
+- Chưa làm: gán hàng loạt, phím duyệt-sang-ảnh-kế, màu riêng cho nhãn tự động, bộ lọc nhãn tay, chặn nhãn chưa duyệt khi export.
+
+## Cập nhật 2026-11-10: gán tự động hàng loạt và chấm màu riêng cho ảnh có nhãn model
+
+- Nút "Gán tự động tất cả" (và "Dừng gán" khi đang chạy) ở dải ảnh: gán cho mọi ảnh trạng thái New, tuần tự, có tiến độ "n / tổng". Ảnh đã có nhãn mà chưa tích chọn vào dataset thì hỏi **một lần** cho cả nhóm với 3 nút giống gán một ảnh (Hủy lệnh, Ghi đè = giữ nhãn cũ thêm nhãn model, Xóa hết gán mới); ảnh đã tích chọn thì giữ nguyên; ảnh Null bị bỏ qua. Mỗi ảnh một lần sửa nhãn (Undo được). Ảnh lỗi hay không thấy vật thể thì đếm và báo cuối lượt, không dừng cả lượt. Rời project thì lượt tự hủy.
+- Chấm tím (`Brush.ImageStatus.AutoLabeled`) ở góc ảnh khi có nhãn `source=model` và chưa Duyệt; Duyệt xong về chấm xanh. Cờ lấy từ `AnnotateImage.HasModelLabels` (bảng annotations).
+- Chọn "hỏi một lần cho cả nhóm" là cách tôi hiểu "gặp file đã gán"; hỏi từng ảnh thì phải bấm hàng chục lần.
+- Test 366 Application (thêm 1 cho cờ nhãn model). Build 0 cảnh báo. **Chưa chạy giao diện**: chưa bấm thử nút hàng loạt, hộp hỏi, nút Dừng và màu chấm trên app thật.
+
+## Cập nhật 2026-11-09 (3): hộp thoại riêng, tên class có `_`, gán tự động 3 lựa chọn, chọn nhiều nhãn
+
+- `MessageBox` hệ thống đã bị thay hết (4 chỗ hỏi và 1 chỗ báo lỗi chưa bắt ở `App.xaml.cs`) bằng `DialogPrompt` + `Views/Dialogs/AppDialogWindow` dựng theo `AppDialog` của RoboStation (đọc, không sửa robo-station): thanh màu và ô huy hiệu theo mức độ, tối đa 3 nút, mục "Chi tiết" cho lỗi. `IUserPrompt` giờ có `Confirm(title, message, yesLabel, danger)`, `Choose(...)`, `Inform(...)`. Cỡ nằm ở token `Layout.Dialog*` (Sizing.xaml). Huy hiệu vuông, không bo tròn.
+- Menu chuột phải: `AppContextMenu.NewItem` đổi `_` thành `__` (WPF coi `_` trong Header là phím tắt nên `dau_cos` hiện `daucos`).
+- Gán tự động khi ảnh đã có nhãn: hộp 3 nút "Hủy lệnh", "Ghi đè" (giữ nhãn cũ, thêm nhãn model lên trên), "Xóa hết, gán mới" (xóa nhãn không khóa rồi gán, cùng một lần Undo). "Ghi đè" là cách hiểu của tôi; nếu ý bạn là thay nhãn cũ chỗ trùng thì cần đổi.
+- Chọn nhiều nhãn: Ctrl+bấm trên ảnh, Ctrl/Shift+bấm trong danh sách, nút "Chọn tất cả", nút "Xóa N nhãn đã chọn" và phím Delete xóa cả loạt trong một lần sửa (Undo gỡ cả loạt; nhãn khóa được giữ). Đổi class cũng áp cho mọi nhãn đã chọn. Khi chọn nhiều thì không sửa đỉnh.
+- Test: 365 Application (thêm 5 cho chọn nhiều, xóa nhiều, đổi class nhiều, gán tự động ghi đè và thay). Build 0 cảnh báo.
+- **Chưa chạy giao diện**: không thấy hộp thoại, danh sách nhãn chọn nhiều và menu bằng mắt. Lúc kiểm có app bản cài đang mở trên cùng project của bạn nên tôi không mở bản thứ hai.
+
 ## Đã làm
 
 - Module 4 Export: kiểm tra trước khi xuất (`DatasetValidator`), xuất YOLO26 detect, segment, OBB, classify và COCO detect, segment (`ExportService` + `NTech.DataStudio.Exporters`), `README.dataset.md` và `version.json` trong mỗi bản xuất, tùy chọn zip, màn hình Export. Xem `docs/design/screens/EXPORT.md`.

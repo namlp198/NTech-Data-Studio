@@ -1,0 +1,48 @@
+<Window x:Class="NTech.DataStudio.Desktop.Views.Dialogs.AppDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
+        SizeToContent="WidthAndHeight"
+        MinWidth="{StaticResource Layout.DialogMinWidth}" MaxWidth="{StaticResource Layout.DialogMaxWidth}"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Brush.Background.Elevated}"
+        BorderBrush="{StaticResource Brush.Overlay.PanelBorder}" BorderThickness="1"
+        FontFamily="{StaticResource Font.Primary}"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <!-- The app's message dialog: an accent bar and badge in the severity colour, title, message,
+         optional details, and one to three buttons. It replaces the system MessageBox. -->
+    <DockPanel>
+        <Border x:Name="AccentBar" DockPanel.Dock="Top" Height="{StaticResource Layout.DialogAccentHeight}" />
+
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource Brush.Background.Surface}" Padding="{StaticResource Inset.LG}">
+            <StackPanel x:Name="ButtonPanel" Orientation="Horizontal" HorizontalAlignment="Right" />
+        </Border>
+
+        <Grid Margin="{StaticResource Inset.XL}" MouseLeftButtonDown="OnDragArea">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="Badge" Width="{StaticResource Layout.DialogBadgeSize}" Height="{StaticResource Layout.DialogBadgeSize}"
+                    VerticalAlignment="Top" Margin="0,0,16,0">
+                <TextBlock x:Name="BadgeGlyph" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="{StaticResource FontSize.Display}" FontWeight="Bold"
+                           Foreground="{StaticResource Brush.Background.App}" />
+            </Border>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="TitleText" Style="{StaticResource Text.SectionHeader}" TextWrapping="Wrap" />
+                <TextBlock x:Name="MessageText" Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                           Margin="{StaticResource Gap.Top.SM}" />
+                <Expander x:Name="DetailsExpander" Header="Chi tiết" Margin="{StaticResource Gap.Top.MD}"
+                          Foreground="{StaticResource Brush.Text.Secondary}" Visibility="Collapsed">
+                    <TextBox x:Name="DetailsText" Style="{StaticResource Input.Text}" IsReadOnly="True" TextWrapping="Wrap"
+                             MaxHeight="{StaticResource Layout.DialogDetailsMaxHeight}" VerticalScrollBarVisibility="Auto"
+                             Margin="{StaticResource Gap.Top.SM}" />
+                </Expander>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

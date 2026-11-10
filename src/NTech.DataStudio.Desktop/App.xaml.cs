@@ -17,11 +17,11 @@ public partial class App : System.Windows.Application
 
     private static void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        MessageBox.Show(
-            $"Đã xảy ra lỗi không mong muốn:\n\n{e.Exception.Message}",
-            "NTech Data Studio",
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+        new Services.DialogPrompt().Inform(
+            "Đã xảy ra lỗi không mong muốn",
+            e.Exception.Message,
+            Services.PromptSeverity.Error,
+            e.Exception.ToString());
         e.Handled = true;
     }
 }

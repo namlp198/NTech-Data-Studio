@@ -33,8 +33,11 @@ public static class AppComposition
         var sam = new SamSegmenter(SamSegmenter.DefaultFolder());
         var samModels = new SamModelService(sam, new SamModelDownloader(), SamSegmenter.DefaultFolder());
         var settings = new SettingsService(new JsonSettingsStore(JsonSettingsStore.DefaultPath()));
+        var autoLabeler = new OnnxAutoLabeler();
+        autoLabeler.SetModel(settings.AutoLabelModel);
+        settings.Changed += (_, _) => autoLabeler.SetModel(settings.AutoLabelModel);
         var folderPicker = new WpfFolderPicker();
-        var prompt = new MessageBoxPrompt();
+        var prompt = new DialogPrompt();
         var codec = new OpenCvImageCodec();
         var engine = new OpenCvAugmentationEngine();
         var profiles = new YamlModelProfileCatalog(Path.Combine(AppContext.BaseDirectory, "profiles"));
@@ -57,7 +60,7 @@ public static class AppComposition
         {
             ("Project", "Icon.Project", projectView),
             ("Prepare", "Icon.Prepare", prepareView),
-            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings, sam, samModels)),
+            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings, sam, samModels, new AutoLabelService(autoLabeler))),
             ("Dataset", "Icon.Dataset", new DatasetViewModel(
                 projects, new DatasetService(projects, engine), prompt)),
             ("Export", "Icon.Export", new ExportViewModel(
@@ -67,7 +70,7 @@ public static class AppComposition
                 profiles,
                 folderPicker,
                 new ExplorerFolderOpener())),
-            ("Cài đặt", "Icon.Settings", new SettingsViewModel(settings, samModels, new ExplorerFolderOpener()))
+            ("Cài đặt", "Icon.Settings", new SettingsViewModel(settings, samModels, new ExplorerFolderOpener(), autoLabeler, new WpfFilePicker()))
         };
 
         var shell = new ShellViewModel(

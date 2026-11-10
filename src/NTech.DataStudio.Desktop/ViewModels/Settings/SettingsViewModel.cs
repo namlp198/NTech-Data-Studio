@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NTech.DataStudio.Application.Abstractions;
 using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Settings;
 using NTech.DataStudio.Desktop.Services;
@@ -65,17 +66,21 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
     private readonly SettingsService _settings;
     private readonly SamModelService _models;
     private readonly IFolderOpener _opener;
+    private readonly IAutoLabeler _autoLabeler;
+    private readonly IFilePicker _files;
     private readonly List<ShortcutRowViewModel> _rows = new();
     private ShortcutRowViewModel? _capturing;
 
     [ObservableProperty]
     private string? _statusMessage;
 
-    public SettingsViewModel(SettingsService settings, SamModelService models, IFolderOpener opener)
+    public SettingsViewModel(SettingsService settings, SamModelService models, IFolderOpener opener, IAutoLabeler autoLabeler, IFilePicker files)
     {
         _settings = settings;
         _models = models;
         _opener = opener;
+        _autoLabeler = autoLabeler;
+        _files = files;
         _models.Changed += (_, _) => RefreshModel();
 
         var groups = new List<ShortcutGroupViewModel>();
@@ -92,6 +97,50 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
     }
 
     public IReadOnlyList<ShortcutGroupViewModel> Groups { get; }
+
+    // ---- Automatic labeling model (decision 0017) ----
+
+    public string AutoLabelModelPath => _settings.AutoLabelModel ?? string.Empty;
+    public bool HasAutoLabelModel => _settings.AutoLabelModel is not null;
+
+    public string AutoLabelStatusText
+    {
+        get
+        {
+            if (_settings.AutoLabelModel is null)
+                return "Chưa chọn model. Chọn file .onnx segment do Trainer xuất (cạnh nó phải có model.meta.json); Annotate sẽ có nút Gán tự động.";
+            return _autoLabeler.Unavailable
+                   ?? $"Model dùng được. Class: {string.Join(", ", _autoLabeler.ClassNames)}.";
+        }
+    }
+
+    public bool AutoLabelProblem => _settings.AutoLabelModel is not null && _autoLabeler.Unavailable is not null;
+
+    /// <summary>The score threshold in percent, 5 to 95.</summary>
+    public double AutoLabelMinScorePercent
+    {
+        get => Math.Round(_settings.AutoLabelMinScore * 100);
+        set
+        {
+            _settings.SetAutoLabelMinScore(value / 100);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AutoLabelMinScoreText));
+        }
+    }
+
+    public string AutoLabelMinScoreText => $"Ngưỡng tin cậy {Math.Round(_settings.AutoLabelMinScore * 100)}%: model chỉ giữ vật thể có điểm từ mức này trở lên.";
+
+    [RelayCommand]
+    private void ChooseAutoLabelModel()
+    {
+        var current = _settings.AutoLabelModel;
+        var initial = current is null ? null : Path.GetDirectoryName(current);
+        if (_files.Pick("Chọn model segment (.onnx)", "ONNX (*.onnx)|*.onnx", initial) is { } path)
+            _settings.SetAutoLabelModel(path);
+    }
+
+    [RelayCommand]
+    private void ClearAutoLabelModel() => _settings.SetAutoLabelModel(null);
 
     // ---- Magic polygon model (decision 0016) ----
 
@@ -169,6 +218,12 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
         OnPropertyChanged(nameof(ProblemMessage));
         OnPropertyChanged(nameof(HasCustom));
+        foreach (var name in new[]
+                 {
+                     nameof(AutoLabelModelPath), nameof(HasAutoLabelModel), nameof(AutoLabelStatusText), nameof(AutoLabelProblem),
+                     nameof(AutoLabelMinScorePercent), nameof(AutoLabelMinScoreText)
+                 })
+            OnPropertyChanged(name);
         ResetAllCommand.NotifyCanExecuteChanged();
     }
 

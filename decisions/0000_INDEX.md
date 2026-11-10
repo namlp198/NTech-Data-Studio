@@ -18,3 +18,4 @@
 | [0014](0014_project-target-task.md) | Project khai báo task mục tiêu (detect, segment, OBB, classify); Annotate bật công cụ theo task, Export cảnh báo khi lệch | 2026-11-08 |
 | [0015](0015_user-settings-and-rebindable-shortcuts.md) | Cài đặt theo người dùng (settings.json), phím tắt của Annotate đổi được, một phím một việc | 2026-11-08 |
 | [0016](0016_magic-polygon-with-sam-onnx.md) | Magic polygon: tự tách vật thể bằng SAM (MobileSAM ONNX) chạy offline, model đặt ngoài installer | 2026-11-08 |
+| [0017](0017_auto-label-with-trainer-segment-model.md) | Gán nhãn tự động bằng model segment do Trainer xuất (ONNX), nhãn `model` chờ duyệt từng ảnh | 2026-11-09 |

@@ -33,6 +33,13 @@ public sealed class AnnotateService
 
     public IReadOnlyList<AnnotateImage> LoadImages() => _store.LoadImages();
 
+    public bool LoadSelectionOnly() => _store.LoadSelectionOnly();
+
+    public void SetSelectionOnly(bool value) => _store.SetSelectionOnly(value);
+
+    /// <summary>Not a label edit, so it stays out of undo.</summary>
+    public void SetInDataset(long imageId, bool value) => _store.SetInDataset(imageId, value);
+
     public ImageContent LoadContent(long imageId) => _store.LoadContent(imageId);
 
     public ImageDocument Open(AnnotateImage image) => new(image, _store.LoadContent(image.Id));

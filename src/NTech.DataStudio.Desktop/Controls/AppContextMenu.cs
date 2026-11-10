@@ -61,7 +61,8 @@ public static class AppContextMenu
 
     private static MenuItem NewItem(string? header, bool isEnabled, bool danger, string? toolTip)
     {
-        var item = new MenuItem { Header = header, IsEnabled = isEnabled, ToolTip = toolTip };
+        // A MenuItem header is an access-key text: a single "_" is swallowed (dau_cos shows as daucos). "__" shows one.
+        var item = new MenuItem { Header = header?.Replace("_", "__"), IsEnabled = isEnabled, ToolTip = toolTip };
         if (header is null && toolTip is not null)
             System.Windows.Automation.AutomationProperties.SetName(item, toolTip);
         if (danger && System.Windows.Application.Current?.TryFindResource("MenuItem.Danger") is Style style)

@@ -341,7 +341,10 @@ public override Task ReloadAsync() => RunAsync("Đang đọc project", (store, _
         }
 
         if (change == ConfigChange.MastersWillBeRebuilt
-            && !_prompt.Confirm("Cấu hình khác lần trước. Toàn bộ ảnh master sẽ được tạo lại; ảnh gốc không bị ảnh hưởng. Tiếp tục?"))
+            && !_prompt.Confirm(
+                "Tạo lại ảnh master",
+                "Cấu hình khác lần trước. Toàn bộ ảnh master sẽ được tạo lại; ảnh gốc không bị ảnh hưởng. Tiếp tục?",
+                "Tạo lại"))
             return;
 
         await RunAsync("Đang chuẩn hóa", (store, progress, token) =>

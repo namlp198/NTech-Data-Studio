@@ -90,8 +90,6 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     [ObservableProperty]
     private ClassItemViewModel? _activeClass;
 
-    [ObservableProperty]
-    private LabelRowViewModel? _selectedLabel;
 
     [ObservableProperty]
     private string _classNameInput = string.Empty;
@@ -112,7 +110,15 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     private Option<long?> _classFilter;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AutoLabelAllCommand))]
     private bool _hasImages;
+
+    /// <summary>On: a dataset takes only the images ticked in the strip. Off: every labeled image.</summary>
+    [ObservableProperty]
+    private bool _selectionOnly;
+
+    [ObservableProperty]
+    private string _selectionText = string.Empty;
 
     [ObservableProperty]
     private IReadOnlyDictionary<long, ClassStyle>? _classStyles;
@@ -132,8 +138,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     [ObservableProperty]
     private string _reviewButtonText = "Duyệt ảnh";
 
-    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader, SettingsService settings, ISmartSegmenter segmenter, SamModelService models)
+    public AnnotateViewModel(ProjectService projects, IUserPrompt prompt, ImageLoader loader, SettingsService settings, ISmartSegmenter segmenter, SamModelService models, AutoLabelService autoLabel)
     {
+        _autoLabel = autoLabel;
         models.Changed += (_, _) => RaiseTargetTaskChanged();
         _settings = settings;
         Magic = new MagicPolygonController(segmenter);
@@ -318,8 +325,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             _store = store;
             _service = new AnnotateService(store);
             _classService = new ClassService(store);
-            _allImages = images.Select(image => new ImageRowViewModel(image, store.ProjectRoot)).ToList();
+            _allImages = images.Select(MakeRow).ToList();
             HasImages = _allImages.Count > 0;
+            LoadSelectionOnly();
 
             var editor = new AnnotationEditor(_service, _clipboard) { TargetTask = TargetTask, Magic = Magic };
             editor.Changed += OnEditorChanged;
@@ -358,6 +366,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         _generation++;
         _loadVersion++;
         _active = false;
+        _batchCts?.Cancel();
 
         if (Editor is { } editor)
         {
@@ -411,6 +420,8 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         var generation = _generation;
         editor.Cancel();
         _current = row;
+        AutoLabelMessage = null;
+        AutoLabelCommand.NotifyCanExecuteChanged();
         _lastImageId = row.Id;
         ShowImageList();
         ImageError = null;
@@ -582,7 +593,8 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
                     editor.Hidden.Contains(annotation.Id),
                     editor.Locked.Contains(annotation.Id),
                     row => Editor?.ToggleHidden(row.Id),
-                    row => Editor?.ToggleLocked(row.Id)));
+                    row => Editor?.ToggleLocked(row.Id),
+                    OnLabelRowSelected));
             }
         }
 
@@ -592,22 +604,34 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     private void SyncSelectionFromEditor()
     {
-        var id = Editor?.SelectedId;
-        if (SelectedLabel?.Id == id) return;
+        if (Editor is not { } editor) return;
 
         _syncing = true;
-        SelectedLabel = id is null ? null : Labels.FirstOrDefault(row => row.Id == id);
+        foreach (var row in Labels) row.SetSelectedWithoutNotifying(editor.IsSelected(row.Id));
         _syncing = false;
+        OnPropertyChanged(nameof(HasLabelSelection));
+        OnPropertyChanged(nameof(DeleteLabelsText));
     }
 
-    partial void OnSelectedLabelChanged(LabelRowViewModel? value)
+    /// <summary>The list changed what is selected (a click, Ctrl or Shift): the editor follows.</summary>
+    private void OnLabelRowSelected(LabelRowViewModel row)
     {
         if (_syncing || Editor is null) return;
 
-        Editor.Select(value?.Id);
-        if (value is not null)
-            ZoomToRequested?.Invoke(PolygonMath.BoundingBox(value.Annotation.Points));
+        var chosen = Labels.Where(item => item.IsSelected).ToList();
+        Editor.SelectMany(chosen.Select(item => item.Id));
+        if (chosen.Count == 1)
+            ZoomToRequested?.Invoke(PolygonMath.BoundingBox(chosen[0].Annotation.Points));
     }
+
+    public bool HasLabelSelection => Editor is { } editor && editor.SelectionCount > 0;
+
+    public string DeleteLabelsText => Editor is { SelectionCount: > 1 } editor
+        ? $"Xóa {editor.SelectionCount} nhãn đã chọn"
+        : "Xóa nhãn đã chọn";
+
+    [RelayCommand]
+    private void SelectAllLabels() => Editor?.SelectAll();
 
     // ---- classes ----
 
@@ -735,7 +759,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
         var usage = _classService!.Usage(from.Id);
         if (usage.AnnotationCount > 0 && !_prompt.Confirm(
-                $"Gộp \"{from.Name}\" vào \"{into.Name}\"? {usage.AnnotationCount} nhãn trên {usage.ImageCount} ảnh sẽ chuyển thành \"{into.Name}\". Việc này không hoàn tác được."))
+                "Gộp class",
+                $"Gộp \"{from.Name}\" vào \"{into.Name}\"? {usage.AnnotationCount} nhãn trên {usage.ImageCount} ảnh sẽ chuyển thành \"{into.Name}\". Việc này không hoàn tác được.",
+                "Gộp class", danger: true))
             return;
 
         var fromId = from.Id;
@@ -754,7 +780,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
         var usage = _classService!.Usage(active.Id);
         if (usage.AnnotationCount > 0 && !_prompt.Confirm(
-                $"Xóa class \"{active.Name}\"? {usage.AnnotationCount} nhãn trên {usage.ImageCount} ảnh cũng bị xóa. Việc này không hoàn tác được."))
+                "Xóa class",
+                $"Xóa class \"{active.Name}\"? {usage.AnnotationCount} nhãn trên {usage.ImageCount} ảnh cũng bị xóa. Việc này không hoàn tác được.",
+                "Xóa class", danger: true))
             return;
 
         var id = active.Id;
@@ -780,11 +808,294 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         if (!reloadImages || _service is null || _store is null) return;
 
         var images = _service.LoadImages();
-        _allImages = images.Select(image => new ImageRowViewModel(image, _store.ProjectRoot)).ToList();
+        _allImages = images.Select(MakeRow).ToList();
         var same = _allImages.FirstOrDefault(row => row.Id == _lastImageId) ?? _allImages.FirstOrDefault();
         UpdateProjectProgress();
         if (same is not null)
             await OpenImageAsync(same);
+    }
+
+    // ---- automatic labeling (decision 0017) ----
+
+    private readonly AutoLabelService _autoLabel;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AutoLabelCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AutoLabelAllCommand))]
+    private bool _isAutoLabeling;
+
+    [ObservableProperty]
+    private bool _isBatchRunning;
+
+    private CancellationTokenSource? _batchCts;
+
+    [ObservableProperty]
+    private string? _autoLabelMessage;
+
+    private bool CanAutoLabel() => !IsAutoLabeling && _current is not null;
+
+    private bool CanAutoLabelAll() => !IsAutoLabeling && HasImages;
+
+    [RelayCommand]
+    private void CancelAutoLabel() => _batchCts?.Cancel();
+
+    private static readonly PromptButton[] ExistingLabelChoices =
+    {
+        new("cancel", "Hủy lệnh", IsCancel: true),
+        new("add", "Ghi đè", PromptButtonRole.Primary, IsDefault: true),
+        new("replace", "Xóa hết, gán mới", PromptButtonRole.Danger)
+    };
+
+    /// <summary>
+    /// Labels every image that has no labels yet. Images that already have labels but are not ticked for the dataset
+    /// raise the same three-way question as a single image (asked once for all of them); ticked images are left alone.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAutoLabelAll))]
+    private async Task AutoLabelAllAsync()
+    {
+        if (_store is null || _service is null) return;
+
+        var classes = _store.LoadClasses();
+        if (_autoLabel.Check(classes) is { } problem)
+        {
+            AutoLabelMessage = problem;
+            return;
+        }
+
+        var fresh = _allImages.Where(row => row.Status == ImageStatus.New).ToList();
+        var labeled = _allImages.Where(row => row.Status is ImageStatus.Labeled or ImageStatus.Reviewed && !row.InDataset).ToList();
+        var replaceExisting = false;
+        var targets = new List<ImageRowViewModel>(fresh);
+        if (labeled.Count > 0)
+        {
+            var choice = _prompt.Choose(
+                "Gán tự động hàng loạt",
+                $"{fresh.Count} ảnh chưa gán nhãn sẽ được gán. Ngoài ra có {labeled.Count} ảnh đã có nhãn nhưng chưa được tích chọn vào dataset (ảnh đã tích chọn được giữ nguyên).\n\n"
+                + "Ghi đè: giữ nhãn hiện tại của các ảnh đó và thêm nhãn của model lên trên.\n"
+                + "Xóa hết, gán mới: xóa nhãn hiện tại của các ảnh đó rồi gán lại bằng model.\n"
+                + "Hủy lệnh: không gán gì cả.",
+                ExistingLabelChoices,
+                PromptSeverity.Question);
+            if (choice is not ("add" or "replace")) return;
+            replaceExisting = choice == "replace";
+            targets.AddRange(labeled);
+        }
+
+        if (targets.Count == 0)
+        {
+            AutoLabelMessage = "Không có ảnh nào cần gán tự động.";
+            return;
+        }
+
+        var minScore = _settings.AutoLabelMinScore;
+        IsAutoLabeling = true;
+        IsBatchRunning = true;
+        _batchCts = new CancellationTokenSource();
+        var token = _batchCts.Token;
+        var generation = _loadVersion;
+        int processed = 0, labelCount = 0, imagesLabeled = 0, nothing = 0, failed = 0;
+        string? firstError = null;
+        var skipped = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        var cancelled = false;
+        try
+        {
+            foreach (var row in targets)
+            {
+                token.ThrowIfCancellationRequested();
+                AutoLabelMessage = $"Gán tự động {processed + 1} / {targets.Count}: {row.FileName}";
+                try
+                {
+                    var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore, token);
+                    if (generation != _loadVersion || _service is null) return;
+
+                    foreach (var name in result.SkippedClasses) skipped.Add(name);
+                    if (result.Annotations.Count == 0)
+                    {
+                        nothing++;
+                    }
+                    else
+                    {
+                        ApplyBatchLabels(row, result.Annotations, replaceExisting && row.Status != ImageStatus.New);
+                        labelCount += result.Annotations.Count;
+                        imagesLabeled++;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                {
+                    failed++;
+                    firstError ??= $"{row.FileName}: {exception.Message}";
+                }
+
+                processed++;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+        }
+        finally
+        {
+            IsBatchRunning = false;
+            IsAutoLabeling = false;
+            _batchCts?.Dispose();
+            _batchCts = null;
+        }
+
+        if (generation != _loadVersion) return;
+
+        RefreshCounts();
+        UpdateProjectProgress();
+        ShowImageList();
+        var parts = new List<string>
+        {
+            $"{(cancelled ? "Đã dừng sau" : "Xong:")} {imagesLabeled} ảnh được gán ({labelCount} nhãn, từ {minScore:P0}). Hãy duyệt từng ảnh."
+        };
+        if (nothing > 0) parts.Add($"{nothing} ảnh model không thấy vật thể nào.");
+        if (failed > 0) parts.Add($"{failed} ảnh lỗi (đầu tiên: {firstError}).");
+        if (skipped.Count > 0) parts.Add($"Bỏ qua class không có trong project: {string.Join(", ", skipped)}.");
+        AutoLabelMessage = string.Join(" ", parts);
+    }
+
+    /// <summary>The image on screen goes through its editor; any other through its own document, as one edit either way.</summary>
+    private void ApplyBatchLabels(ImageRowViewModel row, IReadOnlyList<NTech.DataStudio.Domain.Annotations.Annotation> labels, bool replace)
+    {
+        if (ReferenceEquals(row, _current) && Editor is { Document: { } shown } editor && shown.ImageId == row.Id)
+        {
+            editor.AddAutoLabels(labels, replace);
+            return;
+        }
+
+        var document = _service!.Open(row.Image);
+        var before = replace ? document.Annotations.ToList() : new List<NTech.DataStudio.Domain.Annotations.Annotation>();
+        _service.Execute(document, new EditRequest(before, labels, Array.Empty<long>(), Array.Empty<long>()));
+        row.Update(document);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAutoLabel))]
+    private async Task AutoLabelAsync()
+    {
+        if (_current is not { } row || _store is null || Editor is not { Document: { } document } editor) return;
+
+        var classes = _store.LoadClasses();
+        if (_autoLabel.Check(classes) is { } problem)
+        {
+            AutoLabelMessage = problem;
+            return;
+        }
+
+        var replaceExisting = false;
+        if (document.LabelCount > 0)
+        {
+            var choice = _prompt.Choose(
+                "Gán nhãn tự động",
+                $"Ảnh này đã có {document.LabelCount} nhãn.\n\n"
+                + "Xóa hết, gán mới: xóa các nhãn hiện tại (trừ nhãn đang khóa) rồi gán lại bằng model.\n"
+                + "Ghi đè: giữ nhãn hiện tại và thêm nhãn của model lên trên.",
+                new[]
+                {
+                    new PromptButton("cancel", "Hủy lệnh", IsCancel: true),
+                    new PromptButton("add", "Ghi đè", PromptButtonRole.Primary, IsDefault: true),
+                    new PromptButton("replace", "Xóa hết, gán mới", PromptButtonRole.Danger)
+                },
+                PromptSeverity.Question);
+            if (choice is not ("add" or "replace")) return;
+            replaceExisting = choice == "replace";
+        }
+
+        IsAutoLabeling = true;
+        AutoLabelMessage = "Đang gán nhãn tự động...";
+        try
+        {
+            var minScore = _settings.AutoLabelMinScore;
+            var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore);
+            if (!ReferenceEquals(row, _current) || !ReferenceEquals(editor, Editor) || editor.Document?.ImageId != row.Id)
+            {
+                AutoLabelMessage = null;
+                return;
+            }
+
+            var skipped = result.SkippedClasses.Count > 0
+                ? $" Bỏ qua class không có trong project: {string.Join(", ", result.SkippedClasses)}."
+                : string.Empty;
+            if (result.Annotations.Count == 0)
+            {
+                AutoLabelMessage = $"Model không thấy vật thể nào từ {minScore:P0} trở lên.{skipped}";
+                return;
+            }
+
+            AutoLabelMessage = editor.AddAutoLabels(result.Annotations, replaceExisting)
+                ? $"Đã {(replaceExisting ? "gán mới" : "thêm")} {result.Annotations.Count} nhãn tự động (từ {minScore:P0}). Hãy sửa rồi bấm Duyệt ảnh.{skipped}"
+                : "Không lưu được nhãn tự động.";
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            AutoLabelMessage = $"Gán tự động lỗi: {exception.Message}";
+        }
+        finally
+        {
+            IsAutoLabeling = false;
+        }
+    }
+
+    // ---- dataset selection ----
+
+    private ImageRowViewModel MakeRow(AnnotateImage image) => new(image, _store!.ProjectRoot, OnRowInDatasetChanged);
+
+    private void LoadSelectionOnly()
+    {
+        _loadingSelection = true;
+        try { SelectionOnly = _service?.LoadSelectionOnly() ?? false; }
+        finally { _loadingSelection = false; }
+        UpdateSelectionText();
+    }
+
+    private bool _loadingSelection;
+
+    partial void OnSelectionOnlyChanged(bool value)
+    {
+        UpdateSelectionText();
+        if (_loadingSelection || _service is null) return;
+        try
+        {
+            _service.SetSelectionOnly(value);
+            ErrorMessage = null;
+        }
+        catch (Exception exception) when (exception is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        {
+            ErrorMessage = $"Không lưu được lựa chọn: {exception.Message}";
+            _loadingSelection = true;
+            SelectionOnly = !value;
+            _loadingSelection = false;
+            UpdateSelectionText();
+        }
+    }
+
+    private void OnRowInDatasetChanged(ImageRowViewModel row)
+    {
+        if (_service is null) return;
+        try
+        {
+            _service.SetInDataset(row.Id, row.InDataset);
+            ErrorMessage = null;
+        }
+        catch (Exception exception) when (exception is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        {
+            ErrorMessage = $"Không lưu được lựa chọn ảnh: {exception.Message}";
+            row.SetInDatasetWithoutNotifying(!row.InDataset);
+        }
+
+        UpdateSelectionText();
+    }
+
+    private void UpdateSelectionText()
+    {
+        SelectionText = SelectionOnly
+            ? $"{_allImages.Count(row => row.InDataset)} / {_allImages.Count} ảnh được chọn"
+            : string.Empty;
     }
 
     // ---- commands ----

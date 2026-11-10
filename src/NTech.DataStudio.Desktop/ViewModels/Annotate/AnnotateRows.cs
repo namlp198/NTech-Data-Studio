@@ -9,19 +9,39 @@ namespace NTech.DataStudio.Desktop.ViewModels.Annotate;
 public sealed partial class ImageRowViewModel : ObservableObject
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowAutoDot))]
     private ImageStatus _status;
+
+    /// <summary>Some of the labels were put there by the model (decision 0017).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowAutoDot))]
+    private bool _hasModelLabels;
 
     [ObservableProperty]
     private int _labelCount;
 
-    public ImageRowViewModel(AnnotateImage image, string projectRoot)
+    [ObservableProperty]
+    private bool _inDataset;
+
+    private readonly Action<ImageRowViewModel>? _inDatasetChanged;
+    private bool _silent;
+
+    public ImageRowViewModel(AnnotateImage image, string projectRoot, Action<ImageRowViewModel>? inDatasetChanged = null)
     {
+        _inDatasetChanged = inDatasetChanged;
         Image = image;
+        _silent = true;
+        InDataset = image.InDataset;
+        _silent = false;
         _status = image.Status;
+        _hasModelLabels = image.HasModelLabels;
         _labelCount = image.LabelCount;
         ThumbnailPath = Path.Combine(projectRoot, image.ThumbPath);
         MasterFullPath = Path.Combine(projectRoot, image.MasterPath);
     }
+
+    /// <summary>The dot turns purple while model labels wait for a review; a reviewed image is green again.</summary>
+    public bool ShowAutoDot => HasModelLabels && Status != ImageStatus.Reviewed;
 
     public AnnotateImage Image { get; private set; }
     public long Id => Image.Id;
@@ -29,11 +49,27 @@ public sealed partial class ImageRowViewModel : ObservableObject
     public string ThumbnailPath { get; }
     public string MasterFullPath { get; }
 
+    partial void OnInDatasetChanged(bool value)
+    {
+        Image = Image with { InDataset = value };
+        if (!_silent) _inDatasetChanged?.Invoke(this);
+    }
+
+    /// <summary>Sets the flag after a failed save without saving again.</summary>
+    public void SetInDatasetWithoutNotifying(bool value)
+    {
+        _silent = true;
+        InDataset = value;
+        _silent = false;
+    }
+
     /// <summary>Takes the status and label counts from the document just edited.</summary>
     public void Update(ImageDocument document)
     {
         var classes = document.Annotations.Select(annotation => annotation.ClassId).Concat(document.Tags).ToHashSet();
-        Image = Image with { Status = document.Status, LabelCount = document.LabelCount, ClassIds = classes };
+        var fromModel = document.Annotations.Any(annotation => annotation.Source == AnnotationSource.Model);
+        Image = Image with { Status = document.Status, LabelCount = document.LabelCount, ClassIds = classes, HasModelLabels = fromModel };
+        HasModelLabels = fromModel;
         Status = document.Status;
         LabelCount = document.LabelCount;
     }
@@ -87,7 +123,12 @@ public sealed partial class LabelRowViewModel : ObservableObject
 {
     private readonly Action<LabelRowViewModel> _hiddenChanged;
     private readonly Action<LabelRowViewModel> _lockedChanged;
+    private readonly Action<LabelRowViewModel> _selectedChanged;
     private bool _silent;
+
+    /// <summary>Bound to the list item, so Ctrl and Shift selection in the list selects several labels.</summary>
+    [ObservableProperty]
+    private bool _isSelected;
 
     [ObservableProperty]
     private bool _isHidden;
@@ -102,8 +143,10 @@ public sealed partial class LabelRowViewModel : ObservableObject
         bool hidden,
         bool locked,
         Action<LabelRowViewModel> hiddenChanged,
-        Action<LabelRowViewModel> lockedChanged)
+        Action<LabelRowViewModel> lockedChanged,
+        Action<LabelRowViewModel> selectedChanged)
     {
+        _selectedChanged = selectedChanged;
         Annotation = annotation;
         ClassName = className;
         ColorHex = colorHex;
@@ -127,6 +170,19 @@ public sealed partial class LabelRowViewModel : ObservableObject
         ShapeKind.RotatedBox => "OBB",
         _ => "Point"
     };
+
+    partial void OnIsSelectedChanged(bool value)
+    {
+        if (!_silent) _selectedChanged(this);
+    }
+
+    public void SetSelectedWithoutNotifying(bool value)
+    {
+        if (IsSelected == value) return;
+        _silent = true;
+        IsSelected = value;
+        _silent = false;
+    }
 
     partial void OnIsHiddenChanged(bool value)
     {

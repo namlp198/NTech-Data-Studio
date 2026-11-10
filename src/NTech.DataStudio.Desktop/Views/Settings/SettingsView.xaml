@@ -53,6 +53,37 @@
                 </StackPanel>
             </Border>
 
+            <!-- Automatic labeling model -->
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
+                    Padding="{StaticResource Inset.XL}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Model gán nhãn tự động (segment)" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               Text="Model segment do Trainer xuất. Ở Annotate, nút Gán tự động cho ảnh đang mở thêm polygon do model tìm; bạn sửa rồi duyệt. Nhãn tự động chưa duyệt không nên đưa vào train." />
+                    <TextBlock Style="{StaticResource Text.MetricSmall}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="AutoLabelModelPath"
+                               Visibility="{Binding HasAutoLabelModel, Converter={StaticResource BoolToVisibility}}"
+                               ToolTip="{Binding AutoLabelModelPath}" Text="{Binding AutoLabelModelPath}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                               AutomationProperties.AutomationId="AutoLabelStatus"
+                               Text="{Binding AutoLabelStatusText}" />
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
+                        <Button Style="{StaticResource Button.Primary}" Content="Chọn model..."
+                                AutomationProperties.Name="Chọn model gán nhãn tự động"
+                                Command="{Binding ChooseAutoLabelModelCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Bỏ model" Margin="{StaticResource Gap.Left.SM}"
+                                AutomationProperties.Name="Bỏ model gán nhãn tự động"
+                                Visibility="{Binding HasAutoLabelModel, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding ClearAutoLabelModelCommand}" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}"
+                               Text="{Binding AutoLabelMinScoreText}" />
+                    <Slider Minimum="5" Maximum="95" SmallChange="1" LargeChange="5" TickFrequency="5" IsSnapToTickEnabled="True"
+                            Margin="{StaticResource Gap.Top.XS}" AutomationProperties.Name="Ngưỡng tin cậy gán tự động"
+                            Value="{Binding AutoLabelMinScorePercent}" />
+                </StackPanel>
+            </Border>
+
             <!-- Hot-Key section -->
             <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
                     Padding="{StaticResource Inset.XL}">

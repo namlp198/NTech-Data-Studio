@@ -4,6 +4,7 @@ using NTech.DataStudio.Domain.Images;
 namespace NTech.DataStudio.Application.Datasets;
 
 /// <summary>One active master as the dataset screen sees it, with the labels it carries.</summary>
+/// <param name="Included">False when the project only takes picked images and this one is not picked.</param>
 /// <param name="LabelsByClass">Annotation count per class.</param>
 public sealed record DatasetImage(
     long Id,
@@ -14,7 +15,8 @@ public sealed record DatasetImage(
     int Height,
     ImageStatus Status,
     IReadOnlyDictionary<long, int> LabelsByClass,
-    IReadOnlySet<long> TagClassIds);
+    IReadOnlySet<long> TagClassIds,
+    bool Included = true);
 
 /// <summary>An image to place in a split. Images sharing a <see cref="UnitKey"/> always land in the same split.</summary>
 public sealed record SplitItem(long ImageId, string UnitKey, IReadOnlySet<long> ClassIds);
@@ -40,7 +42,8 @@ public sealed record VersionPlan(
     int EmptyImages,
     int UnitCount,
     int ExpectedTrainOutput,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings,
+    int ExcludedUnselected = 0)
 {
     public int TotalImages => ImagesPerSplit.Sum();
 

@@ -54,5 +54,8 @@
     <SolidColorBrush x:Key="Brush.ImageStatus.Reviewed" Color="{StaticResource Color.Status.Success}" />
     <SolidColorBrush x:Key="Brush.ImageStatus.Null" Color="{StaticResource Color.Status.Neutral}" />
     <SolidColorBrush x:Key="Brush.ImageStatus.Rejected" Color="{StaticResource Color.Status.Error}" />
+    <!-- An image whose labels came from the model and are not reviewed yet (decision 0017) -->
+    <Color x:Key="Color.ImageStatus.AutoLabeled">#B07CFF</Color>
+    <SolidColorBrush x:Key="Brush.ImageStatus.AutoLabeled" Color="{StaticResource Color.ImageStatus.AutoLabeled}" />
 
 </ResourceDictionary>

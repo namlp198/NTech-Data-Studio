@@ -265,7 +265,14 @@
                         <TextBlock Style="{StaticResource Text.SectionHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Nhãn của ảnh" />
                         <ListBox Margin="{StaticResource Gap.Top.SM}" MaxHeight="{StaticResource Layout.LabelListMaxHeight}"
                                  AutomationProperties.Name="Danh sách nhãn"
-                                 ItemsSource="{Binding Labels}" SelectedItem="{Binding SelectedLabel}">
+                                 SelectionMode="Extended" VirtualizingPanel.IsVirtualizing="False"
+                                 ToolTip="Ctrl hoặc Shift + bấm để chọn nhiều nhãn. Ctrl + bấm trên ảnh cũng thêm nhãn vào lựa chọn."
+                                 ItemsSource="{Binding Labels}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -292,6 +299,17 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.SM}">
+                            <Button Style="{StaticResource Button.Secondary}" Content="Chọn tất cả"
+                                    AutomationProperties.AutomationId="AnnotateSelectAllLabels"
+                                    Command="{Binding SelectAllLabelsCommand}" />
+                            <Button Style="{StaticResource Button.Danger}" Margin="{StaticResource Gap.Left.SM}"
+                                    AutomationProperties.AutomationId="AnnotateDeleteLabels"
+                                    Content="{Binding DeleteLabelsText}"
+                                    IsEnabled="{Binding HasLabelSelection}"
+                                    Command="{Binding DeleteSelectedCommand}" />
+                        </StackPanel>
 
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Độ trong suốt của nhãn" />
                         <Slider Minimum="0.2" Maximum="1" Value="{Binding LabelOpacity}" AutomationProperties.Name="Độ trong suốt" />
@@ -326,6 +344,25 @@
                 <DockPanel Margin="{StaticResource Inset.SM}">
                     <DockPanel DockPanel.Dock="Top">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                                       Margin="{StaticResource Gap.Right.SM}" Text="{Binding SelectionText}" />
+                            <CheckBox VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
+                                      Content="Chỉ đưa ảnh được chọn vào dataset"
+                                      ToolTip="Bật: dataset chỉ lấy ảnh có dấu chọn trên dải ảnh. Tắt: lấy mọi ảnh đã gán nhãn."
+                                      AutomationProperties.AutomationId="AnnotateSelectionOnly"
+                                      IsChecked="{Binding SelectionOnly}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
+                                    Content="Dừng gán" AutomationProperties.AutomationId="AnnotateAutoLabelStop"
+                                    Visibility="{Binding IsBatchRunning, Converter={StaticResource BoolToVisibility}}"
+                                    Command="{Binding CancelAutoLabelCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
+                                    Content="Gán tự động tất cả" AutomationProperties.AutomationId="AnnotateAutoLabelAll"
+                                    ToolTip="Gán tự động cho các ảnh chưa gán nhãn. Ảnh đã tích chọn vào dataset được giữ nguyên."
+                                    Command="{Binding AutoLabelAllCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
+                                    Content="Gán tự động" AutomationProperties.AutomationId="AnnotateAutoLabel"
+                                    ToolTip="Thêm polygon do model đã chọn ở Cài đặt tìm được trên ảnh này"
+                                    Command="{Binding AutoLabelCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Content="Chép nhãn ảnh trước"
                                     ToolTip="Chép nhãn và tag từ ảnh đứng trước" Command="{Binding CopyFromPreviousCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
@@ -346,6 +383,11 @@
                                       Width="{StaticResource Layout.FilterWidth}" AutomationProperties.Name="Lọc theo class"
                                       ItemsSource="{Binding ClassFilters}"
                                       DisplayMemberPath="Label" SelectedItem="{Binding ClassFilter}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="{StaticResource Gap.Left.MD}"
+                                       TextTrimming="CharacterEllipsis" MaxWidth="420"
+                                       AutomationProperties.AutomationId="AnnotateAutoLabelMessage"
+                                       Visibility="{Binding AutoLabelMessage, Converter={StaticResource NullToCollapsed}}"
+                                       ToolTip="{Binding AutoLabelMessage}" Text="{Binding AutoLabelMessage}" />
                         </StackPanel>
                     </DockPanel>
 
@@ -371,8 +413,17 @@
                                                  Fill="{StaticResource Brush.Background.Surface}" StrokeThickness="1"
                                                  Stroke="{StaticResource Brush.Status.Neutral}" StrokeDashArray="1.5,1.5"
                                                  Visibility="{Binding Status, Converter={StaticResource EqualsToVisibility}, ConverterParameter=Null}" />
+                                        <Ellipse Width="{StaticResource Layout.StatusDotSize}" Height="{StaticResource Layout.StatusDotSize}"
+                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
+                                                 Fill="{StaticResource Brush.ImageStatus.AutoLabeled}"
+                                                 ToolTip="Nhãn do model gán, chưa duyệt"
+                                                 Visibility="{Binding ShowAutoDot, Converter={StaticResource BoolToVisibility}}" />
                                         <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
                                                    Style="{StaticResource Text.MetricSmall}" Text="{Binding LabelCount}" />
+                                        <CheckBox HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="{StaticResource Inset.XS}"
+                                                  AutomationProperties.Name="Chọn ảnh vào dataset" ToolTip="Đưa ảnh này vào dataset"
+                                                  IsChecked="{Binding InDataset}"
+                                                  Visibility="{Binding DataContext.SelectionOnly, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BoolToVisibility}}" />
                                     </Grid>
                                     <TextBlock Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis"
                                                Text="{Binding FileName}" ToolTip="{Binding FileName}" />

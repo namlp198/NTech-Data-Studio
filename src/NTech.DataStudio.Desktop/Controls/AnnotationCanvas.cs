@@ -355,7 +355,7 @@ public sealed class AnnotationCanvas : FrameworkElement
         {
             if (editor.Hidden.Contains(annotation.Id)) continue;
 
-            var selected = annotation.Id == editor.SelectedId;
+            var selected = editor.IsSelected(annotation.Id);
             var points = annotation.Id == editor.PreviewId && editor.PreviewPoints is { } preview ? preview : annotation.Points;
             var (fill, pen) = LookOf(ColorOf(annotation.ClassId), selected);
 
@@ -363,7 +363,7 @@ public sealed class AnnotationCanvas : FrameworkElement
             DrawName(context, annotation, points);
         }
 
-        if (editor.Selected is { } current && !editor.Hidden.Contains(current.Id) && current.Kind != ShapeKind.Point)
+        if (editor.SelectionCount == 1 && editor.Selected is { } current && !editor.Hidden.Contains(current.Id) && current.Kind != ShapeKind.Point)
         {
             var points = current.Id == editor.PreviewId && editor.PreviewPoints is { } preview ? preview : current.Points;
             var handle = new Pen(_handleBorder, 1.5);
@@ -516,7 +516,7 @@ public sealed class AnnotationCanvas : FrameworkElement
         // The press still reaches the editor, so a plain click on bare picture deselects as before.
         var dragsPicture = !wantsPan && e.ChangedButton == MouseButton.Left && StartsOnBarePicture(position);
         if (dragsPicture && Editor is { Tool: not AnnotateTool.Pan })
-            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount);
+            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount, additive: Keyboard.Modifiers.HasFlag(ModifierKeys.Control));
         if (wantsPan || dragsPicture)
         {
             if (e.ChangedButton == MouseButton.Left && Keyboard.IsKeyDown(Key.Space)) SpaceUsedForPan = true;
@@ -533,7 +533,9 @@ public sealed class AnnotationCanvas : FrameworkElement
         if (e.ChangedButton == MouseButton.Left && Editor is not null)
         {
             CaptureMouse();
-            Editor.PointerDown(ToImage(position), Tolerance, e.ClickCount, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+            Editor.PointerDown(
+                ToImage(position), Tolerance, e.ClickCount, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift),
+                Keyboard.Modifiers.HasFlag(ModifierKeys.Control));
             e.Handled = true;
         }
     }

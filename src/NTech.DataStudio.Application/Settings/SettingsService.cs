@@ -19,6 +19,8 @@ public sealed class SettingsService
             Shortcuts = ShortcutMap.FromStored(stored.Shortcuts);
             LastProject = stored.LastProject;
             MagicBoxMode = stored.MagicBoxMode;
+            AutoLabelModel = stored.AutoLabelModel;
+            AutoLabelMinScore = stored.AutoLabelMinScore;
         }
         catch (SettingsException exception)
         {
@@ -38,6 +40,32 @@ public sealed class SettingsService
 
         MagicBoxMode = on;
         Save();
+    }
+
+    /// <summary>The segment .onnx used for automatic labeling (decision 0017), or null.</summary>
+    public string? AutoLabelModel { get; private set; }
+
+    /// <summary>Lowest score an automatic label may have, 0.05 to 0.95.</summary>
+    public double AutoLabelMinScore { get; private set; } = 0.4;
+
+    public void SetAutoLabelModel(string? path)
+    {
+        path = string.IsNullOrWhiteSpace(path) ? null : path;
+        if (string.Equals(path, AutoLabelModel, StringComparison.Ordinal)) return;
+
+        AutoLabelModel = path;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetAutoLabelMinScore(double score)
+    {
+        score = Math.Round(Math.Clamp(score, 0.05, 0.95), 2);
+        if (Math.Abs(score - AutoLabelMinScore) < 1e-9) return;
+
+        AutoLabelMinScore = score;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Folder of the project to open at start, or null.</summary>
@@ -91,7 +119,7 @@ public sealed class SettingsService
     {
         try
         {
-            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject, MagicBoxMode));
+            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject, MagicBoxMode, AutoLabelModel, AutoLabelMinScore));
             Problem = null;
         }
         catch (SettingsException exception)

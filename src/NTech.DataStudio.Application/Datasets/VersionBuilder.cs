@@ -41,9 +41,16 @@ public static class VersionBuilder
 
         var eligible = new List<DatasetImage>();
         var excluded = 0;
+        var unselected = 0;
         foreach (var image in images)
         {
             if (image.Status == ImageStatus.Rejected) continue;
+            if (!image.Included)
+            {
+                unselected++;
+                continue;
+            }
+
             if (image.Status == ImageStatus.New && !config.Split.IncludeUnlabeled)
                 excluded++;
             else
@@ -86,7 +93,8 @@ public static class VersionBuilder
             empty,
             items.Select(item => item.UnitKey).Distinct().Count(),
             trainOutput,
-            warnings);
+            warnings,
+            unselected);
     }
 
     /// <summary>Label count per class after remapping; annotations and tags both count, as in the class panel.</summary>

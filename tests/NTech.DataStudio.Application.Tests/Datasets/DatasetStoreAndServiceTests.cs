@@ -64,6 +64,55 @@ public class DatasetStoreAndServiceTests : IDisposable
     }
 
     [Fact]
+    public void AnnotateImages_FlagOnlyTheImagesWithLabelsFromTheModel()
+    {
+        using (var store = _fixture.OpenStore())
+        {
+            var now = DateTimeOffset.UtcNow;
+            var red = store.LoadClasses().First();
+            var fromModel = new Annotation(Guid.NewGuid(), 5, red.Id, ShapeKind.Polygon,
+                new[] { new PixelPoint(10, 10), new PixelPoint(60, 10), new PixelPoint(30, 50) }, AnnotationSource.Model, now, now);
+            store.Apply(Change(5, ImageStatus.Labeled, upserts: new[] { fromModel }));
+        }
+
+        using var annotate = _projects.OpenAnnotationStore();
+        var images = annotate.LoadImages().ToDictionary(image => image.Id);
+
+        Assert.True(images[5].HasModelLabels);
+        Assert.False(images[1].HasModelLabels);
+        Assert.False(images[6].HasModelLabels);
+    }
+
+    [Fact]
+    public void SelectionOnly_OffTakesEveryLabeledImage_OnTakesOnlyPickedOnes()
+    {
+        using (var annotate = _projects.OpenAnnotationStore())
+        {
+            Assert.False(annotate.LoadSelectionOnly());
+            Assert.All(annotate.LoadImages(), image => Assert.False(image.InDataset));
+
+            annotate.SetInDataset(1, true);
+            annotate.SetInDataset(3, true);
+            annotate.SetInDataset(3, false);
+            annotate.SetSelectionOnly(true);
+        }
+
+        using var store = _projects.OpenDatasetStore();
+        var images = store.LoadImages();
+        Assert.Equal(new long[] { 1 }, images.Where(image => image.Included).Select(image => image.Id).ToArray());
+
+        var plan = VersionBuilder.Build(images, store.LoadClasses(), new DatasetConfig());
+        Assert.Equal(new long[] { 1 }, plan.Assignments.Select(assignment => assignment.ImageId).ToArray());
+        Assert.Equal(5, plan.ExcludedUnselected);
+
+        using (var annotate = _projects.OpenAnnotationStore())
+            annotate.SetSelectionOnly(false);
+        using var again = _projects.OpenDatasetStore();
+        Assert.All(again.LoadImages(), image => Assert.True(image.Included));
+        Assert.Equal(4, VersionBuilder.Build(again.LoadImages(), again.LoadClasses(), new DatasetConfig()).Assignments.Count);
+    }
+
+    [Fact]
     public void CreateVersion_StoresTheConfigAndEveryAssignment()
     {
         var config = new DatasetConfig

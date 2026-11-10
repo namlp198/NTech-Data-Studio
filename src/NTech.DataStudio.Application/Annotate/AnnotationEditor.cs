@@ -70,7 +70,49 @@ public sealed class AnnotationEditor
     }
 
     public long? ActiveClassId { get; set; }
-    public Guid? SelectedId { get; private set; }
+    private Guid? _selectedId;
+    private readonly List<Guid> _extraSelected = new();
+
+    /// <summary>The main selected label: the one with handles, and the target of vertex edits. Setting it drops any extra selection.</summary>
+    public Guid? SelectedId
+    {
+        get => _selectedId;
+        private set
+        {
+            _selectedId = value;
+            _extraSelected.Clear();
+        }
+    }
+
+    /// <summary>Every selected label: the main one first, then the ones added with Ctrl+click or the label list.</summary>
+    public IReadOnlyList<Guid> SelectedIds =>
+        (_selectedId is { } main ? new[] { main } : Array.Empty<Guid>()).Concat(_extraSelected).ToList();
+
+    public bool IsSelected(Guid id) => _selectedId == id || _extraSelected.Contains(id);
+
+    /// <summary>Selected labels still on the image.</summary>
+    public int SelectionCount => Document is null ? 0 : SelectedIds.Count(id => Document.Find(id) is not null);
+
+    /// <summary>Ctrl+click: adds the label to the selection, or takes it out when it is in.</summary>
+    public void ToggleInSelection(Guid id)
+    {
+        if (Document?.Find(id) is null) return;
+
+        var all = SelectedIds.ToList();
+        if (!all.Remove(id)) all.Add(id);
+        SelectMany(all);
+    }
+
+    /// <summary>Replaces the selection; the first id becomes the main one.</summary>
+    public void SelectMany(IEnumerable<Guid> ids)
+    {
+        var wanted = ids.Where(id => Document?.Find(id) is not null).Distinct().ToList();
+        SelectedId = wanted.Count > 0 ? wanted[0] : null;
+        _extraSelected.AddRange(wanted.Skip(1));
+        RaiseChanged();
+    }
+
+    public void SelectAll() => SelectMany(Document?.Annotations.Select(annotation => annotation.Id) ?? Enumerable.Empty<Guid>());
     public AnnotationDrawingSession? Drawing { get; private set; }
 
     /// <summary>The shape being dragged, before the drag is saved.</summary>
@@ -84,6 +126,11 @@ public sealed class AnnotationEditor
     public IReadOnlySet<Guid> Locked => _locked;
 
     public Annotation? Selected => SelectedId is { } id ? Document?.Find(id) : null;
+
+    private List<Annotation> SelectedAnnotations() =>
+        Document is null
+            ? new List<Annotation>()
+            : SelectedIds.Select(id => Document.Find(id)).OfType<Annotation>().ToList();
     public bool IsDrawingTool => Tool is AnnotateTool.Box or AnnotateTool.Polygon or AnnotateTool.RotatedBox;
     public bool IsMagicTool => Tool == AnnotateTool.MagicPolygon;
 
@@ -171,10 +218,17 @@ public sealed class AnnotationEditor
     // ---- pointer ----
 
     /// <param name="refine">Shift held: with the Magic polygon tool, add a point to refine the outline instead of accepting it.</param>
-    public void PointerDown(PixelPoint point, double tolerance, int clickCount = 1, bool refine = false)
+    /// <param name="additive">Ctrl held: with the Select tool, add the label under the pointer to the selection (or take it out).</param>
+    public void PointerDown(PixelPoint point, double tolerance, int clickCount = 1, bool refine = false, bool additive = false)
     {
         if (Document is null) return;
         Message = null;
+
+        if (Tool == AnnotateTool.Select && additive)
+        {
+            if (HitTest(point, tolerance) is { } hit) ToggleInSelection(hit.Id);
+            return;
+        }
 
         if (Tool == AnnotateTool.Select)
             SelectDown(point, tolerance, clickCount);
@@ -251,6 +305,22 @@ public sealed class AnnotationEditor
     }
 
     /// <summary>Makes an outline from the Magic polygon tool a polygon label of the active class.</summary>
+    /// <summary>
+    /// Puts what a model found on the image as one edit, so one undo takes all of it back. With
+    /// <paramref name="replaceExisting"/> the labels already there go in the same edit (locked ones stay). The image stays
+    /// Labeled until it is reviewed.
+    /// </summary>
+    public bool AddAutoLabels(IReadOnlyList<Annotation> labels, bool replaceExisting = false)
+    {
+        if (Document is null || labels.Count == 0) return false;
+
+        var before = replaceExisting
+            ? Document.Annotations.Where(annotation => !_locked.Contains(annotation.Id)).ToList()
+            : new List<Annotation>();
+        if (before.Count > 0) SelectedId = null;
+        return Run(new EditRequest(before, labels, Array.Empty<long>(), Array.Empty<long>())) is not null;
+    }
+
     public bool CommitPolygon(IReadOnlyList<PixelPoint> outline)
     {
         if (Document is null) return false;
@@ -396,26 +466,41 @@ public sealed class AnnotationEditor
 
     // ---- actions on the selection and the image ----
 
+    /// <summary>Deletes every selected label in one edit (one Undo brings them back). Locked ones stay.</summary>
     public bool DeleteSelected()
     {
-        if (Selected is not { } annotation) return false;
-        if (_locked.Contains(annotation.Id))
+        var targets = SelectedAnnotations();
+        if (targets.Count == 0) return false;
+
+        var removable = targets.Where(annotation => !_locked.Contains(annotation.Id)).ToList();
+        if (removable.Count == 0)
         {
-            Message = "Nhãn đang bị khóa.";
+            Message = targets.Count == 1 ? "Nhãn đang bị khóa." : "Các nhãn đã chọn đều đang bị khóa.";
             RaiseChanged();
             return false;
         }
 
+        var kept = targets.Count - removable.Count;
         SelectedId = null;
-        return Run(EditRequest.Remove(new[] { annotation })) is not null;
+        var done = Run(EditRequest.Remove(removable)) is not null;
+        if (done && kept > 0)
+        {
+            Message = $"Đã xóa {removable.Count} nhãn; {kept} nhãn đang khóa được giữ lại.";
+            RaiseChanged();
+        }
+
+        return done;
     }
 
+    /// <summary>Gives every selected label this class, in one edit.</summary>
     public bool ChangeSelectedClass(long classId)
     {
-        if (Selected is not { } annotation || annotation.ClassId == classId || _locked.Contains(annotation.Id))
-            return false;
+        var before = SelectedAnnotations().Where(annotation => annotation.ClassId != classId && !_locked.Contains(annotation.Id)).ToList();
+        if (before.Count == 0) return false;
 
-        return Run(EditRequest.Replace(annotation, annotation.WithClass(classId, _service.Now))) is not null;
+        var now = _service.Now;
+        var after = before.Select(annotation => annotation.WithClass(classId, now)).ToList();
+        return Run(new EditRequest(before, after, Array.Empty<long>(), Array.Empty<long>())) is not null;
     }
 
     /// <summary>The tag tool: a class is on the image or not.</summary>
@@ -474,7 +559,7 @@ public sealed class AnnotationEditor
 
     private void SelectDown(PixelPoint point, double tolerance, int clickCount)
     {
-        if (Selected is { } selected && !_locked.Contains(selected.Id))
+        if (Selected is { } selected && !_locked.Contains(selected.Id) && _extraSelected.Count == 0)
         {
             // Double click on a vertex takes it away; on an edge it adds one.
             if (clickCount >= 2 && selected.Kind == ShapeKind.Polygon

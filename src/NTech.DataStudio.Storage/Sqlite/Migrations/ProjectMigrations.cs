@@ -107,6 +107,17 @@ internal static class ProjectMigrations
             split      TEXT NOT NULL CHECK (split IN ('train', 'val', 'test')),
             PRIMARY KEY (version_id, image_id)
         );
+        """,
+        // 2: images picked for the dataset. Off by default; it only counts while project_meta
+        // 'dataset_selection_only' is '1'. The view is rebuilt because SELECT * freezes its columns.
+        """
+        ALTER TABLE images ADD COLUMN in_dataset INTEGER NOT NULL DEFAULT 0;
+
+        DROP VIEW active_images;
+        CREATE VIEW active_images AS
+            SELECT images.* FROM images
+            JOIN source_images ON source_images.id = images.source_image_id
+            WHERE source_images.reject_reason IS NULL AND images.status <> 'rejected';
         """
     };
 }

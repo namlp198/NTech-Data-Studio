@@ -15,6 +15,13 @@ public interface IAnnotationStore : IDisposable
     /// <summary>Active masters in id order.</summary>
     IReadOnlyList<AnnotateImage> LoadImages();
 
+    /// <summary>When on, only images with <see cref="AnnotateImage.InDataset"/> go into a dataset version; when off, every labeled image does.</summary>
+    bool LoadSelectionOnly();
+
+    void SetSelectionOnly(bool value);
+
+    void SetInDataset(long imageId, bool value);
+
     ImageContent LoadContent(long imageId);
 
     /// <exception cref="InvalidOperationException">The image no longer exists.</exception>

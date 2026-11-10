@@ -300,7 +300,7 @@ public sealed class SamSegmenter : ISmartSegmenter, IDisposable
     private static PixelPoint ToMaster(Point point, Frame frame) =>
         new((point.X + 0.5) / frame.Scale + frame.X, (point.Y + 0.5) / frame.Scale + frame.Y);
 
-    private static Mat To8BitColor(Mat source)
+    internal static Mat To8BitColor(Mat source)
     {
         var converted = new Mat();
         var channels = source.Channels();

@@ -27,7 +27,9 @@ public sealed record AnnotateImage(
     int Height,
     ImageStatus Status,
     int LabelCount,
-    IReadOnlySet<long> ClassIds)
+    IReadOnlySet<long> ClassIds,
+    bool InDataset = false,
+    bool HasModelLabels = false)
 {
     public string FileName => Path.GetFileName(MasterPath);
 }

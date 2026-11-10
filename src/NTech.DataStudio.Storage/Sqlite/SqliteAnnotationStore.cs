@@ -69,7 +69,9 @@ internal sealed class SqliteAnnotationStore : IAnnotationStore
             query.CommandText = """
                 SELECT i.id, i.master_path, i.thumb_path, i.width, i.height, i.status,
                        (SELECT COUNT(*) FROM annotations a WHERE a.image_id = i.id)
-                     + (SELECT COUNT(*) FROM image_tags t WHERE t.image_id = i.id)
+                     + (SELECT COUNT(*) FROM image_tags t WHERE t.image_id = i.id),
+                       i.in_dataset,
+                       EXISTS (SELECT 1 FROM annotations a WHERE a.image_id = i.id AND a.source = 'model')
                 FROM active_images i ORDER BY i.id;
                 """;
             using var rows = query.ExecuteReader();
@@ -86,10 +88,45 @@ internal sealed class SqliteAnnotationStore : IAnnotationStore
                     rows.GetInt32(4),
                     ParseStatus(rows.GetString(5)),
                     rows.GetInt32(6),
-                    classes));
+                    classes,
+                    rows.GetInt32(7) != 0,
+                    rows.GetInt32(8) != 0));
             }
 
             return images;
+        }
+    }
+
+    public bool LoadSelectionOnly()
+    {
+        lock (_gate)
+            return ProjectDb.Scalar(_connection, "SELECT value FROM project_meta WHERE key = 'dataset_selection_only';") as string == "1";
+    }
+
+    public void SetSelectionOnly(bool value)
+    {
+        lock (_gate)
+        {
+            using var command = _connection.CreateCommand();
+            command.CommandText = """
+                INSERT INTO project_meta (key, value) VALUES ('dataset_selection_only', $value)
+                ON CONFLICT (key) DO UPDATE SET value = excluded.value;
+                """;
+            command.Parameters.AddWithValue("$value", value ? "1" : "0");
+            command.ExecuteNonQuery();
+        }
+    }
+
+    public void SetInDataset(long imageId, bool value)
+    {
+        lock (_gate)
+        {
+            using var command = _connection.CreateCommand();
+            command.CommandText = "UPDATE images SET in_dataset = $value WHERE id = $id;";
+            command.Parameters.AddWithValue("$value", value ? 1 : 0);
+            command.Parameters.AddWithValue("$id", imageId);
+            if (command.ExecuteNonQuery() == 0)
+                throw new InvalidOperationException("Ảnh không còn trong project.");
         }
     }
 

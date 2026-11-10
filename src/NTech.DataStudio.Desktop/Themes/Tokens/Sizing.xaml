@@ -37,6 +37,13 @@
     <sys:Double x:Key="Layout.PaletteSwatchSize">20</sys:Double>
     <sys:Double x:Key="Layout.ClassListMaxHeight">150</sys:Double>
     <sys:Double x:Key="Layout.LabelListMaxHeight">190</sys:Double>
+    <!-- Message dialog -->
+    <sys:Double x:Key="Layout.DialogMinWidth">440</sys:Double>
+    <sys:Double x:Key="Layout.DialogMaxWidth">680</sys:Double>
+    <sys:Double x:Key="Layout.DialogAccentHeight">4</sys:Double>
+    <sys:Double x:Key="Layout.DialogBadgeSize">36</sys:Double>
+    <sys:Double x:Key="Layout.DialogButtonMinWidth">110</sys:Double>
+    <sys:Double x:Key="Layout.DialogDetailsMaxHeight">200</sys:Double>
     <!-- Dataset -->
     <sys:Double x:Key="Layout.PercentFieldWidth">80</sys:Double>
     <sys:Double x:Key="Layout.PreviewCellHeight">190</sys:Double>

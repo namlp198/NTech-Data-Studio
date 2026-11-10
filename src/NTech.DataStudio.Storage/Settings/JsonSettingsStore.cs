@@ -32,7 +32,9 @@ public sealed class JsonSettingsStore : ISettingsStore
                 file?.Shortcuts?.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Value ?? new List<string>()))
                 ?? new Dictionary<string, IReadOnlyList<string>>(),
                 string.IsNullOrWhiteSpace(file?.LastProject) ? null : file.LastProject,
-                file?.MagicBoxMode ?? false);
+                file?.MagicBoxMode ?? false,
+                string.IsNullOrWhiteSpace(file?.AutoLabelModel) ? null : file.AutoLabelModel,
+                file?.AutoLabelMinScore is { } score && score is >= 0.05 and <= 0.95 ? score : 0.4);
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -51,7 +53,9 @@ public sealed class JsonSettingsStore : ISettingsStore
                 Version = FormatVersion,
                 Shortcuts = settings.Shortcuts.ToDictionary(pair => pair.Key, pair => (List<string>?)pair.Value.ToList()),
                 LastProject = settings.LastProject,
-                MagicBoxMode = settings.MagicBoxMode
+                MagicBoxMode = settings.MagicBoxMode,
+                AutoLabelModel = settings.AutoLabelModel,
+                AutoLabelMinScore = settings.AutoLabelMinScore
             };
             File.WriteAllText(temp, JsonSerializer.Serialize(file, Options));
             File.Move(temp, _path, overwrite: true);
@@ -68,5 +72,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         public Dictionary<string, List<string>?>? Shortcuts { get; set; }
         public string? LastProject { get; set; }
         public bool MagicBoxMode { get; set; }
+        public string? AutoLabelModel { get; set; }
+        public double? AutoLabelMinScore { get; set; }
     }
 }
