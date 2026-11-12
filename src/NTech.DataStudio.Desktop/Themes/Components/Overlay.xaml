@@ -54,6 +54,18 @@
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
+    <!--
+        Backing for any text that sits over the image or another background that changes (hints, warnings, errors,
+        loading words): opaque, so the words stay readable on any picture. Text on a fixed surface does not need it.
+    -->
+    <Style x:Key="Overlay.TextBacking" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Elevated}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Overlay.PanelBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="Padding" Value="12,6" />
+    </Style>
+
     <!-- Status badge pill -->
     <Style x:Key="Badge.Pill" TargetType="Border">
         <Setter Property="CornerRadius" Value="{StaticResource Radius.Pill}" />

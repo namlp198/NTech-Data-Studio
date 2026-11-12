@@ -72,11 +72,13 @@
                                            AutomationProperties.Name="Vùng gán nhãn" />
             </Border>
 
-            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
-                       Style="{StaticResource Text.Body}" Foreground="{StaticResource Brush.Status.Error}"
-                       AutomationProperties.AutomationId="AnnotateImageError"
-                       Visibility="{Binding ImageError, Converter={StaticResource NullToCollapsed}}"
-                       Text="{Binding ImageError}" />
+            <Border Style="{StaticResource Overlay.TextBacking}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding ImageError, Converter={StaticResource NullToCollapsed}}">
+                <ContentControl Style="{StaticResource Status.Label}" Tag="error" MaxWidth="640"
+                                FontSize="{StaticResource FontSize.Body}"
+                                AutomationProperties.AutomationId="AnnotateImageError"
+                                Content="{Binding ImageError}" />
+            </Border>
             <!-- Magic polygon: pointer or dragged-box mode, then what it is doing or why it cannot run -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="{StaticResource Inset.XL}"
                         Visibility="{Binding IsMagicTool, Converter={StaticResource BoolToVisibility}}">
@@ -94,9 +96,10 @@
                 </Border>
             </StackPanel>
 
-            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Style="{StaticResource Text.Secondary}" Text="Đang mở ảnh..."
-                       Visibility="{Binding IsImageLoading, Converter={StaticResource BoolToVisibility}}" />
+            <Border Style="{StaticResource Overlay.TextBacking}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding IsImageLoading, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource Text.Secondary}" Text="Đang mở ảnh..." />
+            </Border>
 
             <!-- Tool rail -->
             <Border Style="{StaticResource Overlay.ToolRail}" HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -158,13 +161,15 @@
             </Border>
 
             <!-- Hint or error from the editor -->
-            <ContentControl Style="{StaticResource Status.Label}" Tag="warn"
-                            HorizontalAlignment="Center" VerticalAlignment="Top"
-                            Margin="{StaticResource Layout.AnnotateHintMargin}"
-                            FontSize="{StaticResource FontSize.Body}"
-                            AutomationProperties.AutomationId="AnnotateMessage"
-                            Visibility="{Binding EditorMessage, Converter={StaticResource NullToCollapsed}}"
-                            Content="{Binding EditorMessage}" />
+            <Border Style="{StaticResource Overlay.TextBacking}"
+                    HorizontalAlignment="Center" VerticalAlignment="Top"
+                    Margin="{StaticResource Layout.AnnotateHintMargin}"
+                    Visibility="{Binding EditorMessage, Converter={StaticResource NullToCollapsed}}">
+                <ContentControl Style="{StaticResource Status.Label}" Tag="warn"
+                                FontSize="{StaticResource FontSize.Body}"
+                                AutomationProperties.AutomationId="AnnotateMessage"
+                                Content="{Binding EditorMessage}" />
+            </Border>
 
             <!-- Right panel: classes and the labels of this image -->
             <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Layout.AnnotatePanelMargin}">
@@ -428,8 +433,10 @@
                                                  Fill="{StaticResource Brush.ImageStatus.AutoLabeled}"
                                                  ToolTip="Nhãn do model gán, chưa duyệt"
                                                  Visibility="{Binding ShowAutoDot, Converter={StaticResource BoolToVisibility}}" />
-                                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
-                                                   Style="{StaticResource Text.MetricSmall}" Text="{Binding LabelCount}" />
+                                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Inset.XS}"
+                                                Background="{StaticResource Brush.Overlay.Widget}" CornerRadius="{StaticResource Radius.SM}" Padding="4,0">
+                                            <TextBlock Style="{StaticResource Text.MetricSmall}" Text="{Binding LabelCount}" />
+                                        </Border>
                                         <CheckBox HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="{StaticResource Inset.XS}"
                                                   AutomationProperties.Name="Chọn ảnh vào dataset" ToolTip="Đưa ảnh này vào dataset"
                                                   IsChecked="{Binding InDataset}"
