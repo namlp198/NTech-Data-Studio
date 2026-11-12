@@ -1,158 +1,314 @@
 <UserControl x:Class="NTech.DataStudio.Desktop.Views.Settings.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="{StaticResource Inset.Page}" HorizontalAlignment="Left"
-                    Width="{StaticResource Layout.PageContentMaxWidth}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Settings">
 
-            <!-- PageHeader -->
+    <UserControl.Resources>
+        <!--
+            The rows every task card shares (decision 0019): its model, the state of it, and the score threshold.
+            DataContext is an AutoLabelTaskPanel.
+        -->
+        <DataTemplate x:Key="AutoLabelTaskRows" DataType="{x:Type vm:AutoLabelTaskPanel}">
+            <StackPanel>
+                <Border Style="{StaticResource Settings.Row}" Visibility="{Binding ShowsModelRow, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="{Binding ModelLabel}" />
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Style="{StaticResource Text.MetricSmall}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="AutoLabelModelPath"
+                                       Visibility="{Binding HasModel, Converter={StaticResource BoolToVisibility}}"
+                                       ToolTip="{Binding ModelPath}" Text="{Binding ModelPath}" />
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.SM}">
+                                <Button Style="{StaticResource Button.Primary}" Content="Chọn model..."
+                                        AutomationProperties.Name="{Binding Title, StringFormat='Chọn model gán nhãn tự động {0}'}"
+                                        Command="{Binding ChooseCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Content="Bỏ model" Margin="{StaticResource Gap.Left.SM}"
+                                        AutomationProperties.Name="{Binding Title, StringFormat='Bỏ model gán nhãn tự động {0}'}"
+                                        Visibility="{Binding HasModel, Converter={StaticResource BoolToVisibility}}"
+                                        Command="{Binding ClearCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource Settings.Row}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="Trạng thái" />
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                                   AutomationProperties.AutomationId="AutoLabelStatus"
+                                   Text="{Binding StatusText}" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource Settings.Row}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource Text.Label}" Text="Ngưỡng tin cậy" />
+                        </StackPanel>
+                        <Slider Grid.Column="1" Minimum="5" Maximum="95" SmallChange="1" LargeChange="5" TickFrequency="5" IsSnapToTickEnabled="True"
+                                Width="{StaticResource Layout.SettingsSliderWidth}" VerticalAlignment="Center"
+                                AutomationProperties.Name="{Binding Title, StringFormat='Ngưỡng tin cậy gán tự động {0}'}"
+                                Value="{Binding MinScorePercent}" />
+                        <TextBlock Grid.Column="2" Style="{StaticResource Text.MetricSmall}" VerticalAlignment="Center"
+                                   Margin="{StaticResource Gap.Left.MD}" Text="{Binding MinScoreText}" />
+                    </Grid>
+                </Border>
+                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                           Text="Model chỉ giữ vật thể có điểm từ mức này trở lên." />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="{StaticResource Inset.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- PageHeader -->
+        <StackPanel Grid.Row="0">
             <TextBlock Style="{StaticResource Text.PageTitle}" Text="Cài đặt" />
             <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}"
                        Text="Cài đặt của riêng bạn trên máy này; không nằm trong project và không đi theo project khi chép sang máy khác." />
-
-            <!-- Error state: the settings file could not be read or written -->
-            <TextBlock Margin="{StaticResource Gap.Top.LG}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
-                       Foreground="{StaticResource Brush.Status.Warning}"
-                       AutomationProperties.AutomationId="SettingsProblem"
-                       Visibility="{Binding ProblemMessage, Converter={StaticResource NullToCollapsed}}"
-                       Text="{Binding ProblemMessage}" />
-
-            <!-- Magic polygon model -->
-            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
-                    Padding="{StaticResource Inset.XL}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Model Magic polygon (SAM)" />
-                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               AutomationProperties.AutomationId="ModelStatus"
-                               Text="{Binding ModelStatusText}" />
-                    <TextBlock Style="{StaticResource Text.MetricSmall}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               ToolTip="{Binding ModelFolder}" Text="{Binding ModelFolder}" />
-                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
-                               Foreground="{StaticResource Brush.Status.Error}"
-                               AutomationProperties.AutomationId="ModelError"
-                               Visibility="{Binding ModelError, Converter={StaticResource NullToCollapsed}}"
-                               Text="{Binding ModelError}" />
-                    <ProgressBar Margin="{StaticResource Gap.Top.MD}" Maximum="100" Value="{Binding ModelProgressPercent, Mode=OneWay}"
-                                 Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}" />
-                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
-                        <Button Style="{StaticResource Button.Primary}" Content="Tải model (44,7 MB)"
-                                AutomationProperties.Name="Tải model SAM"
-                                Visibility="{Binding ModelMissing, Converter={StaticResource BoolToVisibility}}"
-                                Command="{Binding DownloadModelCommand}" />
-                        <Button Style="{StaticResource Button.Secondary}" Content="Hủy"
-                                AutomationProperties.Name="Hủy tải model"
-                                Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}"
-                                Command="{Binding CancelModelDownloadCommand}" />
-                        <Button Style="{StaticResource Button.Secondary}" Content="Mở thư mục model"
-                                Margin="{StaticResource Gap.Left.SM}"
-                                AutomationProperties.Name="Mở thư mục model"
-                                Command="{Binding OpenModelFolderCommand}" />
-                    </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
-                               Text="Tải từ huggingface.co/Acly/MobileSAM (MobileSAM, giấy phép MIT/Apache-2.0), kiểm SHA-256 sau khi tải. Máy không có mạng: chép hai file mobile_sam_image_encoder.onnx và sam_mask_decoder_single.onnx vào thư mục trên." />
-                </StackPanel>
-            </Border>
-
-            <!-- Automatic labeling model -->
-            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
-                    Padding="{StaticResource Inset.XL}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Model gán nhãn tự động (segment)" />
-                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Model segment do Trainer xuất. Ở Annotate, nút Gán tự động cho ảnh đang mở thêm polygon do model tìm; bạn sửa rồi duyệt. Nhãn tự động chưa duyệt không nên đưa vào train." />
-                    <TextBlock Style="{StaticResource Text.MetricSmall}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
-                               AutomationProperties.AutomationId="AutoLabelModelPath"
-                               Visibility="{Binding HasAutoLabelModel, Converter={StaticResource BoolToVisibility}}"
-                               ToolTip="{Binding AutoLabelModelPath}" Text="{Binding AutoLabelModelPath}" />
-                    <TextBlock Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
-                               AutomationProperties.AutomationId="AutoLabelStatus"
-                               Text="{Binding AutoLabelStatusText}" />
-                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
-                        <Button Style="{StaticResource Button.Primary}" Content="Chọn model..."
-                                AutomationProperties.Name="Chọn model gán nhãn tự động"
-                                Command="{Binding ChooseAutoLabelModelCommand}" />
-                        <Button Style="{StaticResource Button.Secondary}" Content="Bỏ model" Margin="{StaticResource Gap.Left.SM}"
-                                AutomationProperties.Name="Bỏ model gán nhãn tự động"
-                                Visibility="{Binding HasAutoLabelModel, Converter={StaticResource BoolToVisibility}}"
-                                Command="{Binding ClearAutoLabelModelCommand}" />
-                    </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}"
-                               Text="{Binding AutoLabelMinScoreText}" />
-                    <Slider Minimum="5" Maximum="95" SmallChange="1" LargeChange="5" TickFrequency="5" IsSnapToTickEnabled="True"
-                            Margin="{StaticResource Gap.Top.XS}" AutomationProperties.Name="Ngưỡng tin cậy gán tự động"
-                            Value="{Binding AutoLabelMinScorePercent}" />
-                </StackPanel>
-            </Border>
-
-            <!-- Hot-Key section -->
-            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
-                    Padding="{StaticResource Inset.XL}">
-                <StackPanel>
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Secondary}" Content="Đặt lại tất cả"
-                                AutomationProperties.Name="Đặt lại tất cả phím tắt"
-                                Command="{Binding ResetAllCommand}" />
-                        <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Phím tắt (Hot-Key)" />
-                    </DockPanel>
-                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) cố định. Space gán được, nhưng chạy khi nhả phím và chỉ khi bạn không kéo pan (giữ Space + kéo chuột) trong lúc giữ." />
-                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." />
-
-                    <!-- Feedback for the last change -->
-                    <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Secondary}"
-                               AutomationProperties.AutomationId="SettingsStatus" MinHeight="20"
-                               Text="{Binding StatusMessage}" />
-
-                    <ItemsControl ItemsSource="{Binding Groups}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="{StaticResource Gap.Top.LG}">
-                                    <TextBlock Style="{StaticResource Text.Label}" Text="{Binding Title}" />
-                                    <ItemsControl ItemsSource="{Binding Rows}" Margin="{StaticResource Gap.Top.XS}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="0,0,0,1"
-                                                        Padding="{StaticResource Inset.SM}">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="200" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                            <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Label}" />
-                                                            <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
-                                                                       Foreground="{StaticResource Brush.Status.Error}"
-                                                                       AutomationProperties.AutomationId="SettingsError"
-                                                                       Visibility="{Binding ErrorText, Converter={StaticResource NullToCollapsed}}"
-                                                                       Text="{Binding ErrorText}" />
-                                                        </StackPanel>
-                                                        <Border Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                                                Background="{StaticResource Brush.Background.Selected}"
-                                                                CornerRadius="{StaticResource Radius.SM}" Padding="{StaticResource Inset.SM}">
-                                                            <TextBlock Style="{StaticResource Text.MetricSmall}" Text="{Binding KeysText}" />
-                                                        </Border>
-                                                        <Button Grid.Column="2" Style="{StaticResource Button.Secondary}"
-                                                                Content="{Binding ChangeButtonText}"
-                                                                AutomationProperties.Name="{Binding ChangeAutomationName}"
-                                                                Command="{Binding ChangeCommand}" />
-                                                        <Button Grid.Column="3" Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
-                                                                Content="Mặc định"
-                                                                AutomationProperties.Name="{Binding ResetAutomationName}"
-                                                                Command="{Binding ResetCommand}" />
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
         </StackPanel>
-    </ScrollViewer>
+
+        <!-- Error state: the settings file could not be read or written -->
+        <TextBlock Grid.Row="1" Margin="{StaticResource Gap.Top.LG}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                   Foreground="{StaticResource Brush.Status.Warning}"
+                   AutomationProperties.AutomationId="SettingsProblem"
+                   Visibility="{Binding ProblemMessage, Converter={StaticResource NullToCollapsed}}"
+                   Text="{Binding ProblemMessage}" />
+
+        <Grid Grid.Row="2" Margin="{StaticResource Gap.Top.LG}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{StaticResource Layout.SettingsNavWidth}" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Section list -->
+            <Border Grid.Column="0" Style="{StaticResource Surface.Card}" VerticalAlignment="Top">
+                <StackPanel AutomationProperties.AutomationId="SettingsSections">
+                    <RadioButton Style="{StaticResource SettingsNav.Item}" GroupName="settingsSection" Content="Gán nhãn tự động"
+                                 AutomationProperties.AutomationId="SettingsSectionAutoLabel"
+                                 IsChecked="{Binding IsAutoLabelSection, Mode=TwoWay}" />
+                    <RadioButton Style="{StaticResource SettingsNav.Item}" GroupName="settingsSection" Content="Magic polygon (SAM)"
+                                 AutomationProperties.AutomationId="SettingsSectionMagic"
+                                 IsChecked="{Binding IsMagicSection, Mode=TwoWay}" />
+                    <RadioButton Style="{StaticResource SettingsNav.Item}" GroupName="settingsSection" Content="Phím tắt"
+                                 AutomationProperties.AutomationId="SettingsSectionShortcuts"
+                                 IsChecked="{Binding IsShortcutsSection, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+
+            <!-- The section shown -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="{StaticResource Gap.Left.LG}">
+                <Grid HorizontalAlignment="Left" MaxWidth="{StaticResource Layout.SettingsContentMaxWidth}">
+
+                    <!-- Automatic labeling: the advanced option, one card per task (decisions 0018 and 0019) -->
+                    <StackPanel DataContext="{Binding AutoLabel}"
+                                Visibility="{Binding DataContext.IsAutoLabelSection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibility}}">
+                        <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.XL}">
+                            <DockPanel>
+                                <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center" Content="Bật"
+                                          AutomationProperties.AutomationId="AutoLabelEnabled"
+                                          AutomationProperties.Name="Bật gán nhãn tự động"
+                                          IsChecked="{Binding Enabled}" />
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Gán nhãn tự động bằng model" />
+                                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                               Text="Tùy chọn nâng cao. Dùng model do Trainer xuất để gán nhãn các ảnh còn lại; bạn sửa chỗ sai rồi duyệt. Nhãn tự động chưa duyệt không nên đưa vào train. Tắt thì Annotate không có các nút Gán tự động." />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <StackPanel Visibility="{Binding Enabled, Converter={StaticResource BoolToVisibility}}">
+
+                            <!-- Detect -->
+                            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.XL}"
+                                    AutomationProperties.AutomationId="AutoLabelDetectCard">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <ContentControl DockPanel.Dock="Right" Style="{StaticResource Status.Label}"
+                                                        AutomationProperties.AutomationId="AutoLabelDetectBadge"
+                                                        DataContext="{Binding Detect}" Tag="{Binding BadgeKind}" Content="{Binding BadgeText}" />
+                                        <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="{Binding Detect.Title}" />
+                                    </DockPanel>
+                                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                               Text="{Binding Detect.Description}" />
+                                    <ContentControl Margin="{StaticResource Gap.Top.LG}" Focusable="False"
+                                                    Content="{Binding Detect}" ContentTemplate="{StaticResource AutoLabelTaskRows}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Segment -->
+                            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.XL}"
+                                    AutomationProperties.AutomationId="AutoLabelSegmentCard">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <ContentControl DockPanel.Dock="Right" Style="{StaticResource Status.Label}"
+                                                        AutomationProperties.AutomationId="AutoLabelSegmentBadge"
+                                                        DataContext="{Binding Segment}" Tag="{Binding BadgeKind}" Content="{Binding BadgeText}" />
+                                        <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="{Binding Segment.Title}" />
+                                    </DockPanel>
+                                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                               Text="{Binding Segment.Description}" />
+
+                                    <Border Style="{StaticResource Settings.Row}" Margin="{StaticResource Gap.Top.LG}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Text="Cách gán" />
+                                            <StackPanel Grid.Column="1">
+                                                <ComboBox Style="{StaticResource Input.Combo}" HorizontalAlignment="Left"
+                                                          AutomationProperties.AutomationId="AutoLabelMode" AutomationProperties.Name="Cách gán nhãn tự động"
+                                                          ItemsSource="{x:Static vm:AutoLabelSettingsViewModel.Modes}"
+                                                          DisplayMemberPath="Label" SelectedItem="{Binding ModeOption}" />
+                                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                                           AutomationProperties.AutomationId="AutoLabelModeHelp" Text="{Binding ModeHelp}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <ContentControl Focusable="False" Content="{Binding Segment}" ContentTemplate="{StaticResource AutoLabelTaskRows}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Magic polygon model (decision 0016) -->
+                    <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.XL}"
+                            Visibility="{Binding IsMagicSection, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <ContentControl DockPanel.Dock="Right" Style="{StaticResource Status.Label}"
+                                                AutomationProperties.AutomationId="ModelBadge"
+                                                Tag="{Binding ModelBadgeKind}" Content="{Binding ModelBadgeText}" />
+                                <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Model Magic polygon (SAM)" />
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="ModelStatus"
+                                       Text="{Binding ModelStatusText}" />
+                            <Border Style="{StaticResource Settings.Row}" Margin="{StaticResource Gap.Top.LG}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="Thư mục model" />
+                                    <TextBlock Grid.Column="1" Style="{StaticResource Text.MetricSmall}" TextWrapping="Wrap"
+                                               ToolTip="{Binding ModelFolder}" Text="{Binding ModelFolder}" />
+                                </Grid>
+                            </Border>
+                            <TextBlock Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
+                                       Foreground="{StaticResource Brush.Status.Error}"
+                                       AutomationProperties.AutomationId="ModelError"
+                                       Visibility="{Binding ModelError, Converter={StaticResource NullToCollapsed}}"
+                                       Text="{Binding ModelError}" />
+                            <ProgressBar Margin="{StaticResource Gap.Top.MD}" Maximum="100" Value="{Binding ModelProgressPercent, Mode=OneWay}"
+                                         Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}" />
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
+                                <Button Style="{StaticResource Button.Primary}" Content="Tải model (44,7 MB)"
+                                        AutomationProperties.Name="Tải model SAM"
+                                        Visibility="{Binding ModelMissing, Converter={StaticResource BoolToVisibility}}"
+                                        Command="{Binding DownloadModelCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Content="Hủy"
+                                        AutomationProperties.Name="Hủy tải model"
+                                        Visibility="{Binding IsDownloadingModel, Converter={StaticResource BoolToVisibility}}"
+                                        Command="{Binding CancelModelDownloadCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Content="Mở thư mục model"
+                                        Margin="{StaticResource Gap.Left.SM}"
+                                        AutomationProperties.Name="Mở thư mục model"
+                                        Command="{Binding OpenModelFolderCommand}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                       Text="Tải từ huggingface.co/Acly/MobileSAM (MobileSAM, giấy phép MIT/Apache-2.0), kiểm SHA-256 sau khi tải. Máy không có mạng: chép hai file mobile_sam_image_encoder.onnx và sam_mask_decoder_single.onnx vào thư mục trên. Cách gán detect + SAM ở mục Gán nhãn tự động cũng dùng model này." />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Hot-Key (decision 0015) -->
+                    <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.XL}"
+                            Visibility="{Binding IsShortcutsSection, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource Button.Secondary}" Content="Đặt lại tất cả"
+                                        AutomationProperties.Name="Đặt lại tất cả phím tắt"
+                                        Command="{Binding ResetAllCommand}" />
+                                <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Phím tắt (Hot-Key)" />
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) cố định. Space gán được, nhưng chạy khi nhả phím và chỉ khi bạn không kéo pan (giữ Space + kéo chuột) trong lúc giữ." />
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." />
+
+                            <!-- Feedback for the last change -->
+                            <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Secondary}"
+                                       AutomationProperties.AutomationId="SettingsStatus" MinHeight="20"
+                                       Text="{Binding StatusMessage}" />
+
+                            <ItemsControl ItemsSource="{Binding Groups}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="{StaticResource Gap.Top.LG}">
+                                            <TextBlock Style="{StaticResource Text.Label}" Text="{Binding Title}" />
+                                            <ItemsControl ItemsSource="{Binding Rows}" Margin="{StaticResource Gap.Top.XS}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="0,0,0,1"
+                                                                Padding="{StaticResource Inset.SM}">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="200" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Label}" />
+                                                                    <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                                                                               Foreground="{StaticResource Brush.Status.Error}"
+                                                                               AutomationProperties.AutomationId="SettingsError"
+                                                                               Visibility="{Binding ErrorText, Converter={StaticResource NullToCollapsed}}"
+                                                                               Text="{Binding ErrorText}" />
+                                                                </StackPanel>
+                                                                <Border Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                                        Background="{StaticResource Brush.Background.Selected}"
+                                                                        CornerRadius="{StaticResource Radius.SM}" Padding="{StaticResource Inset.SM}">
+                                                                    <TextBlock Style="{StaticResource Text.MetricSmall}" Text="{Binding KeysText}" />
+                                                                </Border>
+                                                                <Button Grid.Column="2" Style="{StaticResource Button.Secondary}"
+                                                                        Content="{Binding ChangeButtonText}"
+                                                                        AutomationProperties.Name="{Binding ChangeAutomationName}"
+                                                                        Command="{Binding ChangeCommand}" />
+                                                                <Button Grid.Column="3" Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                                                        Content="Mặc định"
+                                                                        AutomationProperties.Name="{Binding ResetAutomationName}"
+                                                                        Command="{Binding ResetCommand}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

@@ -36,13 +36,18 @@
                                Text="{Binding Current.RootPath}" />
 
                     <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}" Text="Task mục tiêu" />
-                    <ComboBox Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Left"
-                              Width="{StaticResource Layout.FormFieldWidth}"
-                              AutomationProperties.Name="Task mục tiêu của project"
-                              ItemsSource="{Binding TaskOptions}" DisplayMemberPath="Label"
-                              SelectedItem="{Binding CurrentTask}" />
+                    <ItemsControl Margin="{StaticResource Gap.Top.XS}" ItemsSource="{Binding CurrentTasks}"
+                                  AutomationProperties.AutomationId="CurrentProjectTasks">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Margin="{StaticResource Gap.Top.XS}" Content="{Binding Label}"
+                                          AutomationProperties.Name="{Binding Label}"
+                                          IsChecked="{Binding IsChecked}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Quyết định công cụ vẽ ở Annotate. Đổi task không xóa hay sửa nhãn đã có." />
+                               Text="Tích nhiều task nếu project cần cả box và polygon. Task quyết định công cụ vẽ ở Annotate; đổi task không xóa hay sửa nhãn đã có." />
 
                     <Grid Margin="{StaticResource Gap.Top.LG}">
                         <Grid.ColumnDefinitions>
@@ -75,7 +80,61 @@
                         <Button Style="{StaticResource Button.Secondary}" Content="Mở project khác"
                                 Margin="{StaticResource Gap.Left.SM}"
                                 Command="{Binding OpenCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Mở từ file .zip..."
+                                Margin="{StaticResource Gap.Left.SM}"
+                                AutomationProperties.AutomationId="ProjectOpenZip"
+                                Command="{Binding Package.OpenFromZipCommand}" />
                     </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Package the open project into a versioned .zip (decision 0020) -->
+            <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
+                    Padding="{StaticResource Inset.XL}"
+                    Visibility="{Binding HasProject, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel DataContext="{Binding Package}">
+                    <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Đóng gói project" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                               Text="Gói toàn bộ project thành một file .zip có số phiên bản (tên_v001.zip), để chép sang máy khác hoặc chia sẻ. Mở lại bằng Mở từ file .zip. Đóng gói được cả khi project đang mở." />
+
+                    <CheckBox Margin="{StaticResource Gap.Top.MD}" Content="{Binding SourceText}"
+                              AutomationProperties.AutomationId="PackageIncludeSource" AutomationProperties.Name="Kèm ảnh nguồn"
+                              IsEnabled="{Binding CanEdit}" IsChecked="{Binding IncludeSource}" />
+                    <CheckBox Margin="{StaticResource Gap.Top.XS}" Content="{Binding ExportsText}"
+                              AutomationProperties.AutomationId="PackageIncludeExports" AutomationProperties.Name="Kèm dataset đã xuất"
+                              IsEnabled="{Binding CanEdit}" IsChecked="{Binding IncludeExports}" />
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="PackageSize" Text="{Binding SizeText}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
+                        <Button Style="{StaticResource Button.Primary}" Content="Đóng gói..."
+                                AutomationProperties.AutomationId="PackageStart" AutomationProperties.Name="Đóng gói project"
+                                Command="{Binding PackCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Hủy" Margin="{StaticResource Gap.Left.SM}"
+                                AutomationProperties.AutomationId="PackageCancel"
+                                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding CancelCommand}" />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Mở thư mục chứa file" Margin="{StaticResource Gap.Left.SM}"
+                                AutomationProperties.AutomationId="PackageOpenFolder"
+                                Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding OpenResultFolderCommand}" />
+                    </StackPanel>
+
+                    <ProgressBar Margin="{StaticResource Gap.Top.MD}" Maximum="100" Value="{Binding ProgressPercent, Mode=OneWay}"
+                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="PackageProgress"
+                               Visibility="{Binding ProgressText, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding ProgressText}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="PackageResult"
+                               Visibility="{Binding ResultMessage, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding ResultMessage}" />
+                    <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                               Foreground="{StaticResource Brush.Status.Error}"
+                               AutomationProperties.AutomationId="PackageError"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}"
+                               Text="{Binding ErrorMessage}" />
                 </StackPanel>
             </Border>
 
@@ -103,13 +162,18 @@
                         </StackPanel>
 
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Task mục tiêu" />
-                        <ComboBox Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Left"
-                                  Width="{StaticResource Layout.FormFieldWidth}"
-                                  AutomationProperties.Name="Task mục tiêu"
-                                  ItemsSource="{Binding TaskOptions}" DisplayMemberPath="Label"
-                                  SelectedItem="{Binding NewTask}" />
+                        <ItemsControl Margin="{StaticResource Gap.Top.XS}" ItemsSource="{Binding NewTasks}"
+                                      AutomationProperties.AutomationId="NewProjectTasks">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Margin="{StaticResource Gap.Top.XS}" Content="{Binding Label}"
+                                              AutomationProperties.Name="{Binding Label}"
+                                              IsChecked="{Binding IsChecked}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                                   Text="Segment (polygon) xuất được cả Segment lẫn Detect; chọn Detect nếu chỉ cần box và muốn vẽ nhanh. Đổi được sau." />
+                                   Text="Tích một hoặc nhiều task. Segment (polygon) xuất được cả Segment lẫn Detect; chọn Detect nếu chỉ cần box và muốn vẽ nhanh. Đổi được sau." />
 
                         <Button Style="{StaticResource Button.Primary}" Content="Tạo project"
                                 HorizontalAlignment="Left" Margin="{StaticResource Gap.Top.LG}"
@@ -126,6 +190,28 @@
                         <Button Style="{StaticResource Button.Secondary}" Content="Mở project"
                                 HorizontalAlignment="Left" Margin="{StaticResource Gap.Top.LG}"
                                 Command="{Binding OpenCommand}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}"
+                        Padding="{StaticResource Inset.XL}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Mở từ gói .zip" />
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   Text="Chọn file .zip do Đóng gói project tạo ra (trên máy này hoặc máy khác); app giải nén vào thư mục bạn chọn rồi mở project." />
+                        <Button Style="{StaticResource Button.Secondary}" Content="Mở từ file .zip..."
+                                HorizontalAlignment="Left" Margin="{StaticResource Gap.Top.LG}"
+                                AutomationProperties.AutomationId="ProjectOpenZipEmpty"
+                                Command="{Binding Package.OpenFromZipCommand}" />
+                        <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="PackageResultEmpty"
+                                   Visibility="{Binding Package.ResultMessage, Converter={StaticResource NullToCollapsed}}"
+                                   Text="{Binding Package.ResultMessage}" />
+                        <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"
+                                   Foreground="{StaticResource Brush.Status.Error}"
+                                   AutomationProperties.AutomationId="PackageErrorEmpty"
+                                   Visibility="{Binding Package.ErrorMessage, Converter={StaticResource NullToCollapsed}}"
+                                   Text="{Binding Package.ErrorMessage}" />
                     </StackPanel>
                 </Border>
             </StackPanel>

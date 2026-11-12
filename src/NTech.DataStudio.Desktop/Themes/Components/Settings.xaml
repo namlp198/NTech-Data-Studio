@@ -1,0 +1,103 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Tokens/_Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Settings screen: section list on the left, one card per concern on the right. -->
+
+    <!--
+        Section list item. Text only: a bar on the left edge marks the section shown.
+        The section is chosen through IsChecked (two-way), never through a Command, because a
+        RadioButton can be checked without a click (keyboard, automation).
+    -->
+    <Style x:Key="SettingsNav.Item" TargetType="RadioButton">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="root" Background="Transparent"
+                            BorderBrush="Transparent" BorderThickness="2,0,0,0"
+                            Padding="{StaticResource Inset.LG}">
+                        <TextBlock x:Name="label" Text="{TemplateBinding Content}"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="{StaticResource FontSize.BodySmall}"
+                                   Foreground="{StaticResource Brush.Text.Secondary}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                            <Setter TargetName="label" Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource Brush.Background.Selected}" />
+                            <Setter TargetName="root" Property="BorderBrush" Value="{StaticResource Brush.Brand.Primary}" />
+                            <Setter TargetName="label" Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+        Status label: a filled circle with a glyph (tick, exclamation mark, cross) and the words, no frame.
+        Coloured by Tag ("ok", "warn", "error"; anything else is a neutral circle without a glyph).
+        The words carry the state too, so it is never told by colour alone.
+    -->
+    <Style x:Key="Status.Label" TargetType="ContentControl">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Status.Neutral}" />
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <Ellipse x:Name="disc" Fill="{TemplateBinding Foreground}" />
+                            <Path x:Name="glyph" Stroke="{StaticResource Brush.Background.App}" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                        </Grid>
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Tag" Value="ok">
+                            <Setter TargetName="glyph" Property="Data" Value="{StaticResource Icon.Status.Ok}" />
+                        </Trigger>
+                        <Trigger Property="Tag" Value="warn">
+                            <Setter TargetName="glyph" Property="Data" Value="{StaticResource Icon.Status.Warn}" />
+                        </Trigger>
+                        <Trigger Property="Tag" Value="error">
+                            <Setter TargetName="glyph" Property="Data" Value="{StaticResource Icon.Status.Error}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="ok">
+                <Setter Property="Foreground" Value="{StaticResource Brush.Status.Success}" />
+            </Trigger>
+            <Trigger Property="Tag" Value="warn">
+                <Setter Property="Foreground" Value="{StaticResource Brush.Status.Warning}" />
+            </Trigger>
+            <Trigger Property="Tag" Value="error">
+                <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- One row of a settings card: a rule under it, so rows read as a list. -->
+    <Style x:Key="Settings.Row" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="0,12" />
+    </Style>
+
+</ResourceDictionary>

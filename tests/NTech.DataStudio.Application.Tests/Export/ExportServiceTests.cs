@@ -447,6 +447,20 @@ public sealed class ExportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task VersionJson_NamesEveryTargetTaskOfTheProject_AndKeepsTheFirstUnderTheOldKey()
+    {
+        await _projects.SetTargetTasksAsync(new[] { NTech.DataStudio.Domain.Profiles.TaskKind.Segment, NTech.DataStudio.Domain.Profiles.TaskKind.Detect });
+        var versionId = CreateVersion(Config(new AugmentConfig { Multiplier = 1 }));
+
+        var result = _export.Export(Request(versionId));
+
+        using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(result.Folder, "version.json")));
+        var root = json.RootElement;
+        Assert.Equal("detect", root.GetProperty("targetTask").GetString());
+        Assert.Equal(new[] { "detect", "segment" }, root.GetProperty("targetTasks").EnumerateArray().Select(item => item.GetString()).ToArray());
+    }
+
+    [Fact]
     public void VersionJson_HoldsTheConfigAsSaved_SoTheExportCanBeRebuilt()
     {
         var versionId = CreateVersion(Config(new AugmentConfig { Multiplier = 3, FlipHorizontal = true }));

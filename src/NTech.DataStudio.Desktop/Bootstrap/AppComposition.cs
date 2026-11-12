@@ -18,6 +18,7 @@ using NTech.DataStudio.Exporters;
 using NTech.DataStudio.Imaging.Augment;
 using NTech.DataStudio.Imaging.Codecs;
 using NTech.DataStudio.Imaging.Segmentation;
+using NTech.DataStudio.Storage.Files;
 using NTech.DataStudio.Storage.Profiles;
 using NTech.DataStudio.Storage.Settings;
 using NTech.DataStudio.Storage.Sqlite;
@@ -33,19 +34,31 @@ public static class AppComposition
         var sam = new SamSegmenter(SamSegmenter.DefaultFolder());
         var samModels = new SamModelService(sam, new SamModelDownloader(), SamSegmenter.DefaultFolder());
         var settings = new SettingsService(new JsonSettingsStore(JsonSettingsStore.DefaultPath()));
-        var autoLabeler = new OnnxAutoLabeler();
-        autoLabeler.SetModel(settings.AutoLabelModel);
-        settings.Changed += (_, _) => autoLabeler.SetModel(settings.AutoLabelModel);
+        var segmentLabeler = new OnnxAutoLabeler();
+        var boxDetector = new OnnxBoxDetector();
+        void ApplyAutoLabelModels()
+        {
+            segmentLabeler.SetModel(settings.AutoLabelModel);
+            boxDetector.SetModel(settings.AutoLabelDetectModel);
+        }
+
+        ApplyAutoLabelModels();
+        settings.Changed += (_, _) => ApplyAutoLabelModels();
+        var autoLabeler = new ConfiguredAutoLabeler(settings, segmentLabeler, new DetectThenSegmentLabeler(boxDetector, sam), new BoxAutoLabeler(boxDetector));
         var folderPicker = new WpfFolderPicker();
         var prompt = new DialogPrompt();
         var codec = new OpenCvImageCodec();
         var engine = new OpenCvAugmentationEngine();
         var profiles = new YamlModelProfileCatalog(Path.Combine(AppContext.BaseDirectory, "profiles"));
 
+        var packages = new ProjectPackageService(projects, new ZipProjectPackager());
         var projectView = new ProjectViewModel(
             projects,
             folderPicker,
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            new ProjectPackageViewModel(
+                projects, packages, folderPicker, new WpfFilePicker(), new ExplorerFolderOpener(), prompt,
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
 
         var prepareView = new PrepareViewModel(projects, new (string, Geometry, PrepareStepViewModel)[]
         {
@@ -60,7 +73,7 @@ public static class AppComposition
         {
             ("Project", "Icon.Project", projectView),
             ("Prepare", "Icon.Prepare", prepareView),
-            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings, sam, samModels, new AutoLabelService(autoLabeler))),
+            ("Annotate", "Icon.Annotate", new AnnotateViewModel(projects, prompt, new ImageLoader(), settings, sam, samModels, new AutoLabelService(autoLabeler.For))),
             ("Dataset", "Icon.Dataset", new DatasetViewModel(
                 projects, new DatasetService(projects, engine), prompt)),
             ("Export", "Icon.Export", new ExportViewModel(

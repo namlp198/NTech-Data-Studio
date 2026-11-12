@@ -8,6 +8,8 @@ namespace NTech.DataStudio.Storage.Settings;
 public sealed class JsonSettingsStore : ISettingsStore
 {
     private const int FormatVersion = 1;
+    private const string SegmentName = "segment";
+    private const string DetectSamName = "detect_sam";
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
@@ -34,7 +36,11 @@ public sealed class JsonSettingsStore : ISettingsStore
                 string.IsNullOrWhiteSpace(file?.LastProject) ? null : file.LastProject,
                 file?.MagicBoxMode ?? false,
                 string.IsNullOrWhiteSpace(file?.AutoLabelModel) ? null : file.AutoLabelModel,
-                file?.AutoLabelMinScore is { } score && score is >= 0.05 and <= 0.95 ? score : 0.4);
+                file?.AutoLabelMinScore is { } score && score is >= 0.05 and <= 0.95 ? score : 0.4,
+                file?.AutoLabelEnabled ?? false,
+                file?.AutoLabelMode == DetectSamName ? AutoLabelMode.DetectSam : AutoLabelMode.Segment,
+                string.IsNullOrWhiteSpace(file?.AutoLabelDetectModel) ? null : file.AutoLabelDetectModel,
+                file?.AutoLabelDetectMinScore is { } detectScore && detectScore is >= 0.05 and <= 0.95 ? detectScore : 0.4);
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -55,7 +61,11 @@ public sealed class JsonSettingsStore : ISettingsStore
                 LastProject = settings.LastProject,
                 MagicBoxMode = settings.MagicBoxMode,
                 AutoLabelModel = settings.AutoLabelModel,
-                AutoLabelMinScore = settings.AutoLabelMinScore
+                AutoLabelMinScore = settings.AutoLabelMinScore,
+                AutoLabelEnabled = settings.AutoLabelEnabled,
+                AutoLabelMode = settings.AutoLabelMode == AutoLabelMode.DetectSam ? DetectSamName : SegmentName,
+                AutoLabelDetectModel = settings.AutoLabelDetectModel,
+                AutoLabelDetectMinScore = settings.AutoLabelDetectMinScore
             };
             File.WriteAllText(temp, JsonSerializer.Serialize(file, Options));
             File.Move(temp, _path, overwrite: true);
@@ -74,5 +84,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         public bool MagicBoxMode { get; set; }
         public string? AutoLabelModel { get; set; }
         public double? AutoLabelMinScore { get; set; }
+        public bool AutoLabelEnabled { get; set; }
+        public string? AutoLabelMode { get; set; }
+        public string? AutoLabelDetectModel { get; set; }
+        public double? AutoLabelDetectMinScore { get; set; }
     }
 }

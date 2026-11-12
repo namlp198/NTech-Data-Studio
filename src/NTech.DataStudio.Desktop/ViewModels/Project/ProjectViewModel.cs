@@ -24,63 +24,51 @@ public sealed partial class ProjectViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
-    private Option<TaskKind?> _newTask;
     private bool _syncingTask;
 
     [ObservableProperty]
     private string? _errorMessage;
 
-    public ProjectViewModel(ProjectService projects, IFolderPicker folderPicker, string defaultParentFolder)
+    public ProjectViewModel(ProjectService projects, IFolderPicker folderPicker, string defaultParentFolder, ProjectPackageViewModel package)
     {
+        Package = package;
         _projects = projects;
         _folderPicker = folderPicker;
         _parentFolder = defaultParentFolder;
 
-        TaskOptions.Add(new Option<TaskKind?>("Chưa chọn (dùng được mọi công cụ vẽ)", null));
         foreach (var task in TargetTasks.All)
-            TaskOptions.Add(new Option<TaskKind?>(TargetTasks.Label(task), task));
-        _newTask = TaskOptions.First(option => option.Value == TaskKind.Segment);
-        SyncCurrentTask();
+        {
+            // Segment by default for a new project: polygons also export as Detect.
+            NewTasks.Add(new TaskChoice(task, task == TaskKind.Segment, () => { }));
+            CurrentTasks.Add(new TaskChoice(task, false, () => OnCurrentTaskToggled()));
+        }
+
+        SyncCurrentTasks();
 
         _projects.CurrentChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(Current));
             OnPropertyChanged(nameof(HasProject));
-            SyncCurrentTask();
+            SyncCurrentTasks();
         };
     }
 
-    /// <summary>Choices for the task a project aims at (decision 0014).</summary>
-    public ObservableCollection<Option<TaskKind?>> TaskOptions { get; } = new();
+    /// <summary>Packing the project into a .zip and opening one (decision 0020).</summary>
+    public ProjectPackageViewModel Package { get; }
 
-    /// <summary>Task of the project about to be created. Segment by default: polygons also export as Detect.</summary>
-    public Option<TaskKind?> NewTask
-    {
-        get => _newTask;
-        set => SetProperty(ref _newTask, value);
-    }
+    /// <summary>The tasks offered for the project about to be created (decision 0019: any number can be ticked).</summary>
+    public ObservableCollection<TaskChoice> NewTasks { get; } = new();
 
-    private Option<TaskKind?>? _currentTask;
+    /// <summary>The tasks of the open project; ticking or unticking one saves it at once.</summary>
+    public ObservableCollection<TaskChoice> CurrentTasks { get; } = new();
 
-    /// <summary>Task of the open project; choosing another one saves it at once.</summary>
-    public Option<TaskKind?>? CurrentTask
-    {
-        get => _currentTask;
-        set
-        {
-            if (value is null || !SetProperty(ref _currentTask, value)) return;
-            if (!_syncingTask) _ = SaveTaskAsync(value.Value);
-        }
-    }
-
-    private void SyncCurrentTask()
+    private void SyncCurrentTasks()
     {
         _syncingTask = true;
         try
         {
-            CurrentTask = _projects.Current is { } project
-                ? TaskOptions.First(option => option.Value == project.TargetTask)
-                : null;
+            var tasks = _projects.Current?.Tasks ?? Array.Empty<TaskKind>();
+            foreach (var choice in CurrentTasks) choice.SetWithoutNotice(tasks.Contains(choice.Task));
         }
         finally
         {
@@ -88,7 +76,19 @@ public sealed partial class ProjectViewModel : ObservableObject
         }
     }
 
-    private async Task SaveTaskAsync(TaskKind? task) => await RunAsync(() => _projects.SetTargetTaskAsync(task));
+    private void OnCurrentTaskToggled()
+    {
+        if (_syncingTask || _projects.Current is null) return;
+
+        var tasks = CurrentTasks.Where(choice => choice.IsChecked).Select(choice => choice.Task).ToList();
+        _ = RunAsync(async () =>
+        {
+            await _projects.SetTargetTasksAsync(tasks);
+            // A failed save leaves the boxes showing what the project really has.
+            SyncCurrentTasks();
+        });
+    }
+
     public ProjectSummary? Current => _projects.Current;
 
     public bool HasProject => _projects.Current is not null;
@@ -109,7 +109,7 @@ public sealed partial class ProjectViewModel : ObservableObject
     {
         await RunAsync(async () =>
         {
-            await _projects.CreateAsync(ParentFolder, NewProjectName, NewTask.Value);
+            await _projects.CreateAsync(ParentFolder, NewProjectName, NewTasks.Where(choice => choice.IsChecked).Select(choice => choice.Task).ToList());
             NewProjectName = string.Empty;
         });
     }
@@ -152,5 +152,41 @@ public sealed partial class ProjectViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+}
+
+/// <summary>One task of a project with its tick box (decision 0019).</summary>
+public sealed partial class TaskChoice : ObservableObject
+{
+    private readonly Action _changed;
+    private bool _silent;
+
+    public TaskChoice(TaskKind task, bool isChecked, Action changed)
+    {
+        Task = task;
+        _silent = true;
+        IsChecked = isChecked;
+        _silent = false;
+        _changed = changed;
+        Label = TargetTasks.Label(task);
+    }
+
+    public TaskKind Task { get; }
+    public string Label { get; }
+
+    [ObservableProperty]
+    private bool _isChecked;
+
+    partial void OnIsCheckedChanged(bool value)
+    {
+        if (!_silent) _changed();
+    }
+
+    /// <summary>Shows what the project has without telling the owner a change was made.</summary>
+    public void SetWithoutNotice(bool value)
+    {
+        _silent = true;
+        try { IsChecked = value; }
+        finally { _silent = false; }
     }
 }

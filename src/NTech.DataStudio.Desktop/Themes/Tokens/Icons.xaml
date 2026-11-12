@@ -66,6 +66,10 @@
     <!-- Status strip -->
     <Geometry x:Key="Icon.Warning">M9,3 L16,15.5 H2 Z M9,7.5 V11 M9,12.8 V13.2</Geometry>
     <Geometry x:Key="Icon.Check">M3,9.5 L7,13.5 L15,4.5</Geometry>
+    <!-- Glyphs drawn inside the filled status circle (Status.Label), 18x18 box -->
+    <Geometry x:Key="Icon.Status.Ok">M5.2,9.4 L7.9,12 L12.8,6.2</Geometry>
+    <Geometry x:Key="Icon.Status.Warn">M9,4.8 V10.2 M9,12.7 V13</Geometry>
+    <Geometry x:Key="Icon.Status.Error">M6,6 L12,12 M12,6 L6,12</Geometry>
     <Geometry x:Key="Icon.FitFrame">M3,6.5 V3 H6.5 M11.5,3 H15 V6.5 M15,11.5 V15 H11.5 M6.5,15 H3 V11.5</Geometry>
     <Geometry x:Key="Icon.Close">M4.5,4.5 L13.5,13.5 M13.5,4.5 L4.5,13.5</Geometry>
     <Geometry x:Key="Icon.Report">M4,2 H11 L14.5,5.5 V16 H4 Z M11,2 V5.5 H14.5 M6.5,9 H12 M6.5,12 H12</Geometry>

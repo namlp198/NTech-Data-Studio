@@ -158,12 +158,13 @@
             </Border>
 
             <!-- Hint or error from the editor -->
-            <Border Style="{StaticResource Badge.Pill}" HorizontalAlignment="Center" VerticalAlignment="Top"
-                    Margin="{StaticResource Layout.AnnotateHintMargin}"
-                    Visibility="{Binding EditorMessage, Converter={StaticResource NullToCollapsed}}">
-                <TextBlock Style="{StaticResource Text.Body}" Foreground="{StaticResource Brush.Status.Warning}"
-                           AutomationProperties.AutomationId="AnnotateMessage" Text="{Binding EditorMessage}" />
-            </Border>
+            <ContentControl Style="{StaticResource Status.Label}" Tag="warn"
+                            HorizontalAlignment="Center" VerticalAlignment="Top"
+                            Margin="{StaticResource Layout.AnnotateHintMargin}"
+                            FontSize="{StaticResource FontSize.Body}"
+                            AutomationProperties.AutomationId="AnnotateMessage"
+                            Visibility="{Binding EditorMessage, Converter={StaticResource NullToCollapsed}}"
+                            Content="{Binding EditorMessage}" />
 
             <!-- Right panel: classes and the labels of this image -->
             <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{StaticResource Layout.AnnotatePanelMargin}">
@@ -355,13 +356,22 @@
                                     Content="Dừng gán" AutomationProperties.AutomationId="AnnotateAutoLabelStop"
                                     Visibility="{Binding IsBatchRunning, Converter={StaticResource BoolToVisibility}}"
                                     Command="{Binding CancelAutoLabelCommand}" />
+                            <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Right.SM}"
+                                      Width="{StaticResource Layout.FilterWidth}" VerticalAlignment="Center"
+                                      AutomationProperties.AutomationId="AnnotateAutoLabelTask" AutomationProperties.Name="Gán tự động theo task"
+                                      ToolTip="Project có nhiều task: chọn task mà các nút Gán tự động làm (Detect ra box, Segment ra polygon)"
+                                      Visibility="{Binding HasAutoLabelTaskChoice, Converter={StaticResource BoolToVisibility}}"
+                                      ItemsSource="{Binding AutoLabelTasks}" DisplayMemberPath="Label"
+                                      SelectedItem="{Binding SelectedAutoLabelTask}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
                                     Content="Gán tự động tất cả" AutomationProperties.AutomationId="AnnotateAutoLabelAll"
                                     ToolTip="Gán tự động cho các ảnh chưa gán nhãn. Ảnh đã tích chọn vào dataset được giữ nguyên."
+                                    Visibility="{Binding IsAutoLabelEnabled, Converter={StaticResource BoolToVisibility}}"
                                     Command="{Binding AutoLabelAllCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
                                     Content="Gán tự động" AutomationProperties.AutomationId="AnnotateAutoLabel"
-                                    ToolTip="Thêm polygon do model đã chọn ở Cài đặt tìm được trên ảnh này"
+                                    ToolTip="Thêm nhãn do model đã chọn ở Cài đặt tìm được trên ảnh này (box cho Detect, polygon cho Segment)"
+                                    Visibility="{Binding IsAutoLabelEnabled, Converter={StaticResource BoolToVisibility}}"
                                     Command="{Binding AutoLabelCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Content="Chép nhãn ảnh trước"
                                     ToolTip="Chép nhãn và tag từ ảnh đứng trước" Command="{Binding CopyFromPreviousCommand}" />

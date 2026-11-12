@@ -22,6 +22,10 @@
     <!-- Page screens (Project, Prepare, Dataset, Export) -->
     <sys:Double x:Key="Layout.PageContentMaxWidth">960</sys:Double>
     <sys:Double x:Key="Layout.FormFieldWidth">480</sys:Double>
+    <GridLength x:Key="Layout.SettingsNavWidth">200</GridLength>
+    <sys:Double x:Key="Layout.SettingsContentMaxWidth">760</sys:Double>
+    <GridLength x:Key="Layout.SettingsLabelWidth">160</GridLength>
+    <sys:Double x:Key="Layout.SettingsSliderWidth">320</sys:Double>
     <sys:Double x:Key="Layout.PreviewHeight">420</sys:Double>
     <sys:Double x:Key="Layout.ThumbnailCellHeight">48</sys:Double>
     <DataGridLength x:Key="Layout.ThumbnailColumnWidth">88</DataGridLength>

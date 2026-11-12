@@ -5,6 +5,8 @@ using NTech.DataStudio.Application.Abstractions;
 using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Settings;
 using NTech.DataStudio.Desktop.Services;
+using NTech.DataStudio.Desktop.ViewModels.Prepare;
+using NTech.DataStudio.Domain.Profiles;
 using NTech.DataStudio.Desktop.Shell;
 
 namespace NTech.DataStudio.Desktop.ViewModels.Settings;
@@ -58,29 +60,36 @@ public sealed class ShortcutGroupViewModel
 }
 
 /// <summary>
-/// The Settings screen. Its one section so far is Hot-Key: change the keys of the Annotate actions, saved at once
-/// (decision 0015). A change takes effect without a restart because Annotate reads the same <see cref="SettingsService"/>.
+/// The Settings screen (decision 0019): a list of sections and the one shown. Automatic labeling is the advanced option
+/// (decisions 0017 and 0018), Magic polygon holds its SAM model (0016) and Hot-Key changes the keys of the Annotate actions
+/// (0015). Every change is saved at once and takes effect without a restart because the other screens read the same
+/// <see cref="SettingsService"/>.
 /// </summary>
+/// <summary>The sections of the Settings screen.</summary>
+public enum SettingsSection
+{
+    AutoLabel,
+    Magic,
+    Shortcuts
+}
+
 public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 {
     private readonly SettingsService _settings;
     private readonly SamModelService _models;
     private readonly IFolderOpener _opener;
-    private readonly IAutoLabeler _autoLabeler;
-    private readonly IFilePicker _files;
-    private readonly List<ShortcutRowViewModel> _rows = new();
+        private readonly List<ShortcutRowViewModel> _rows = new();
     private ShortcutRowViewModel? _capturing;
 
     [ObservableProperty]
     private string? _statusMessage;
 
-    public SettingsViewModel(SettingsService settings, SamModelService models, IFolderOpener opener, IAutoLabeler autoLabeler, IFilePicker files)
+    public SettingsViewModel(SettingsService settings, SamModelService models, IFolderOpener opener, ConfiguredAutoLabeler autoLabeler, IFilePicker files)
     {
         _settings = settings;
         _models = models;
         _opener = opener;
-        _autoLabeler = autoLabeler;
-        _files = files;
+        AutoLabel = new AutoLabelSettingsViewModel(settings, autoLabeler, models, files);
         _models.Changed += (_, _) => RefreshModel();
 
         var groups = new List<ShortcutGroupViewModel>();
@@ -98,49 +107,39 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
     public IReadOnlyList<ShortcutGroupViewModel> Groups { get; }
 
-    // ---- Automatic labeling model (decision 0017) ----
+    // ---- The sections of the screen (decision 0019) ----
 
-    public string AutoLabelModelPath => _settings.AutoLabelModel ?? string.Empty;
-    public bool HasAutoLabelModel => _settings.AutoLabelModel is not null;
+    [ObservableProperty]
+    private SettingsSection _section = SettingsSection.AutoLabel;
 
-    public string AutoLabelStatusText
+    public bool IsAutoLabelSection
     {
-        get
-        {
-            if (_settings.AutoLabelModel is null)
-                return "Chưa chọn model. Chọn file .onnx segment do Trainer xuất (cạnh nó phải có model.meta.json); Annotate sẽ có nút Gán tự động.";
-            return _autoLabeler.Unavailable
-                   ?? $"Model dùng được. Class: {string.Join(", ", _autoLabeler.ClassNames)}.";
-        }
+        get => Section == SettingsSection.AutoLabel;
+        set { if (value) Section = SettingsSection.AutoLabel; }
     }
 
-    public bool AutoLabelProblem => _settings.AutoLabelModel is not null && _autoLabeler.Unavailable is not null;
-
-    /// <summary>The score threshold in percent, 5 to 95.</summary>
-    public double AutoLabelMinScorePercent
+    public bool IsMagicSection
     {
-        get => Math.Round(_settings.AutoLabelMinScore * 100);
-        set
-        {
-            _settings.SetAutoLabelMinScore(value / 100);
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(AutoLabelMinScoreText));
-        }
+        get => Section == SettingsSection.Magic;
+        set { if (value) Section = SettingsSection.Magic; }
     }
 
-    public string AutoLabelMinScoreText => $"Ngưỡng tin cậy {Math.Round(_settings.AutoLabelMinScore * 100)}%: model chỉ giữ vật thể có điểm từ mức này trở lên.";
-
-    [RelayCommand]
-    private void ChooseAutoLabelModel()
+    public bool IsShortcutsSection
     {
-        var current = _settings.AutoLabelModel;
-        var initial = current is null ? null : Path.GetDirectoryName(current);
-        if (_files.Pick("Chọn model segment (.onnx)", "ONNX (*.onnx)|*.onnx", initial) is { } path)
-            _settings.SetAutoLabelModel(path);
+        get => Section == SettingsSection.Shortcuts;
+        set { if (value) Section = SettingsSection.Shortcuts; }
     }
 
-    [RelayCommand]
-    private void ClearAutoLabelModel() => _settings.SetAutoLabelModel(null);
+    partial void OnSectionChanged(SettingsSection value)
+    {
+        StopCapture();
+        OnPropertyChanged(nameof(IsAutoLabelSection));
+        OnPropertyChanged(nameof(IsMagicSection));
+        OnPropertyChanged(nameof(IsShortcutsSection));
+    }
+
+    /// <summary>The automatic labeling section: the advanced switch and the Detect and Segment cards.</summary>
+    public AutoLabelSettingsViewModel AutoLabel { get; }
 
     // ---- Magic polygon model (decision 0016) ----
 
@@ -155,6 +154,11 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
         : _models.IsReady
             ? "Đã có đủ hai file model. Công cụ Magic polygon dùng được ở Annotate (project nhắm Segment)."
             : "Chưa có model. Cần tải hai file (khoảng 45 MB) một lần; sau đó công cụ chạy offline.";
+
+    /// <summary>The words of the state badge of the SAM model and its kind (ok, warn, error) for the colour.</summary>
+    public string ModelBadgeText => _models.Error is not null ? "Có lỗi" : _models.IsReady ? "Đã có model" : _models.IsDownloading ? "Đang tải" : "Chưa có model";
+
+    public string ModelBadgeKind => _models.Error is not null ? "error" : _models.IsReady ? "ok" : "warn";
 
     public double ModelProgressPercent => (_models.Progress?.Fraction ?? 0) * 100;
 
@@ -171,7 +175,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
         foreach (var name in new[]
                  {
                      nameof(ModelReady), nameof(ModelMissing), nameof(IsDownloadingModel), nameof(ModelError),
-                     nameof(ModelStatusText), nameof(ModelProgressPercent)
+                     nameof(ModelStatusText), nameof(ModelProgressPercent), nameof(ModelBadgeText), nameof(ModelBadgeKind)
                  })
             OnPropertyChanged(name);
         DownloadModelCommand.NotifyCanExecuteChanged();
@@ -218,12 +222,6 @@ public sealed partial class SettingsViewModel : ObservableObject, IActivatable
 
         OnPropertyChanged(nameof(ProblemMessage));
         OnPropertyChanged(nameof(HasCustom));
-        foreach (var name in new[]
-                 {
-                     nameof(AutoLabelModelPath), nameof(HasAutoLabelModel), nameof(AutoLabelStatusText), nameof(AutoLabelProblem),
-                     nameof(AutoLabelMinScorePercent), nameof(AutoLabelMinScoreText)
-                 })
-            OnPropertyChanged(name);
         ResetAllCommand.NotifyCanExecuteChanged();
     }
 

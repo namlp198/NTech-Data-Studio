@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using NTech.DataStudio.Application.Annotate;
 using NTech.DataStudio.Application.Tests.Annotate;
 using NTech.DataStudio.Application.Datasets;
@@ -21,52 +22,84 @@ public class TargetTaskTests : IDisposable
 
     public void Dispose() => _temp.Dispose();
 
+    private static readonly TaskKind[] Segment = { TaskKind.Segment };
+
     [Fact]
     public async Task Create_StoresTheTaskAndOpenReadsItBack()
     {
-        var created = await _service.CreateAsync(_temp.Path, "p", TaskKind.Segment);
-        Assert.Equal(TaskKind.Segment, created.TargetTask);
+        var created = await _service.CreateAsync(_temp.Path, "p", Segment);
+        Assert.Equal(Segment, created.Tasks);
 
         _service.Close();
         var reopened = await _service.OpenAsync(created.RootPath);
-        Assert.Equal(TaskKind.Segment, reopened.TargetTask);
+        Assert.Equal(Segment, reopened.Tasks);
     }
 
     [Fact]
     public async Task ProjectWithoutATask_HasNone()
     {
         var created = await _service.CreateAsync(_temp.Path, "p");
-        Assert.Null(created.TargetTask);
+        Assert.Empty(created.Tasks);
     }
 
     [Fact]
-    public async Task SetTargetTask_ChangesAndClearsItAndRaisesCurrentChanged()
+    public async Task AProjectCanAimAtSeveralTasks_KeptInTheOrderOfTheCatalogWithoutRepeats()
     {
-        await _service.CreateAsync(_temp.Path, "p", TaskKind.Detect);
+        var created = await _service.CreateAsync(_temp.Path, "p", new[] { TaskKind.Segment, TaskKind.Detect, TaskKind.Segment });
+        Assert.Equal(new[] { TaskKind.Detect, TaskKind.Segment }, created.Tasks);
+
+        _service.Close();
+        var reopened = await _service.OpenAsync(created.RootPath);
+        Assert.Equal(new[] { TaskKind.Detect, TaskKind.Segment }, reopened.Tasks);
+    }
+
+    [Fact]
+    public async Task AProjectOfBeforeSeveralTasks_ReadsItsOneTaskFromTheOldKey()
+    {
+        var created = await _service.CreateAsync(_temp.Path, "p", new[] { TaskKind.Detect, TaskKind.Segment });
+        _service.Close();
+
+        // Put the project back as an older build left it: only the single key, no set.
+        using (var connection = new SqliteConnection($"Data Source={Path.Combine(created.RootPath, "project.db")};Pooling=False"))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM project_meta WHERE key = 'target_tasks'; UPDATE project_meta SET value = 'obb' WHERE key = 'target_task';";
+            command.ExecuteNonQuery();
+        }
+
+        var reopened = await _service.OpenAsync(created.RootPath);
+        Assert.Equal(new[] { TaskKind.Obb }, reopened.Tasks);
+    }
+
+    [Fact]
+    public async Task SetTargetTasks_ChangesAndClearsThemAndRaisesCurrentChanged()
+    {
+        await _service.CreateAsync(_temp.Path, "p", new[] { TaskKind.Detect });
         var raised = 0;
         _service.CurrentChanged += (_, _) => raised++;
 
-        await _service.SetTargetTaskAsync(TaskKind.Obb);
-        Assert.Equal(TaskKind.Obb, _service.Current!.TargetTask);
+        await _service.SetTargetTasksAsync(new[] { TaskKind.Detect, TaskKind.Obb });
+        Assert.Equal(new[] { TaskKind.Detect, TaskKind.Obb }, _service.Current!.Tasks);
         Assert.Equal(1, raised);
 
-        await _service.SetTargetTaskAsync(TaskKind.Obb);
+        await _service.SetTargetTasksAsync(new[] { TaskKind.Obb, TaskKind.Detect });
         Assert.Equal(1, raised);
 
-        await _service.SetTargetTaskAsync(null);
-        Assert.Null(_service.Current!.TargetTask);
+        await _service.SetTargetTasksAsync(Array.Empty<TaskKind>());
+        Assert.Empty(_service.Current!.Tasks);
 
         var reopened = await _service.OpenAsync(_service.Current.RootPath);
-        Assert.Null(reopened.TargetTask);
+        Assert.Empty(reopened.Tasks);
     }
 
     [Fact]
-    public async Task SetTargetTask_RefusesAnomalyAndAClosedProject()
+    public async Task SetTargetTasks_RefusesAnomalyAndAClosedProject()
     {
-        await Assert.ThrowsAsync<ProjectException>(() => _service.SetTargetTaskAsync(TaskKind.Detect));
+        await Assert.ThrowsAsync<ProjectException>(() => _service.SetTargetTasksAsync(new[] { TaskKind.Detect }));
 
         await _service.CreateAsync(_temp.Path, "p");
-        await Assert.ThrowsAsync<ProjectException>(() => _service.SetTargetTaskAsync(TaskKind.Anomaly));
+        await Assert.ThrowsAsync<ProjectException>(() => _service.SetTargetTasksAsync(new[] { TaskKind.Detect, TaskKind.Anomaly }));
     }
 
     [Theory]
@@ -88,13 +121,37 @@ public class TargetTaskTests : IDisposable
         Assert.Equal(allowed, TaskTools.WhyOff(target, tool) is null);
     }
 
+    [Theory]
+    [InlineData(AnnotateTool.Box, true)]
+    [InlineData(AnnotateTool.Polygon, true)]
+    [InlineData(AnnotateTool.MagicPolygon, true)]
+    [InlineData(AnnotateTool.RotatedBox, false)]
+    [InlineData(AnnotateTool.Tag, false)]
+    [InlineData(AnnotateTool.Select, true)]
+    public void SeveralTasks_AllowTheToolsOfAnyOfThem(AnnotateTool tool, bool allowed)
+    {
+        var tasks = new[] { TaskKind.Detect, TaskKind.Segment };
+
+        Assert.Equal(allowed, TaskTools.Allows(tasks, tool));
+        Assert.Equal(allowed, TaskTools.WhyOff(tasks, tool) is null);
+    }
+
+    [Fact]
+    public void WhyOff_NamesEveryTaskOfTheProject()
+    {
+        var why = TaskTools.WhyOff(new[] { TaskKind.Detect, TaskKind.Segment }, AnnotateTool.Tag);
+
+        Assert.Contains("Detect", why);
+        Assert.Contains("Segment", why);
+    }
+
     [Fact]
     public void Editor_RefusesAToolTheTaskDoesNotAllow_AndCyclingSkipsIt()
     {
         using var fixture = new AnnotateFixture();
         var store = fixture.OpenStore();
         var service = fixture.Service(store);
-        var editor = new AnnotationEditor(service, new AnnotationClipboard()) { TargetTask = TaskKind.Segment };
+        var editor = new AnnotationEditor(service, new AnnotationClipboard()) { TargetTasks = Segment };
         editor.Open(fixture.OpenImage(service, 1));
 
         editor.SetTool(AnnotateTool.Box);
@@ -126,11 +183,11 @@ public class TargetTaskTests : IDisposable
         editor.SetTool(AnnotateTool.Box);
         Assert.Equal(AnnotateTool.Box, editor.Tool);
 
-        editor.TargetTask = TaskKind.Segment;
+        editor.TargetTasks = Segment;
         Assert.Equal(AnnotateTool.Select, editor.Tool);
     }
 
-    private static ValidationReport Validate(ModelProfile profile, TaskKind? target)
+    private static ValidationReport Validate(ModelProfile profile, params TaskKind[] target)
     {
         var image = new DatasetImage(1, 1, null, "master/m1.jpg", 1000, 800, ImageStatus.Labeled,
             new Dictionary<long, int>(), new HashSet<long>());
@@ -163,12 +220,21 @@ public class TargetTaskTests : IDisposable
         Assert.Contains("Segment", issue.Message);
     }
 
-    [Theory]
-    [InlineData(TaskKind.Detect)]
-    [InlineData(null)]
-    public void Validator_SaysNothingWhenTheTasksMatchOrNoneIsSet(TaskKind? target)
+    [Fact]
+    public void Validator_SaysNothingWhenTheProfileTaskIsOneOfTheProjectsOrNoneIsSet()
     {
-        var report = Validate(DetectProfile, target);
-        Assert.DoesNotContain(report.Issues, item => item.Message.Contains("Project nhắm"));
+        Assert.DoesNotContain(Validate(DetectProfile, TaskKind.Detect).Issues, item => item.Message.Contains("Project nhắm"));
+        Assert.DoesNotContain(Validate(DetectProfile, TaskKind.Detect, TaskKind.Segment).Issues, item => item.Message.Contains("Project nhắm"));
+        Assert.DoesNotContain(Validate(DetectProfile).Issues, item => item.Message.Contains("Project nhắm"));
+    }
+
+    [Fact]
+    public void Validator_NamesEveryTaskOfAProjectThatDoesNotMatch()
+    {
+        var report = Validate(DetectProfile, TaskKind.Segment, TaskKind.Obb);
+
+        var issue = Assert.Single(report.Issues, item => item.Message.Contains("Project nhắm"));
+        Assert.Contains("Segment", issue.Message);
+        Assert.Contains("OBB", issue.Message);
     }
 }

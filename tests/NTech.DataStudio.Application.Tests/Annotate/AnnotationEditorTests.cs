@@ -575,7 +575,7 @@ public class AnnotationEditorTests : IDisposable
         AnnotationSource.Model, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
     [Fact]
-    public void AddAutoLabels_ReplaceRemovesTheOldOnesInTheSameEdit_AddKeepsThem()
+    public void AddAutoLabels_ReplaceRemovesTheOldOnesOfTheSameKindInTheSameEdit_AddKeepsThem()
     {
         DrawBox(10, 10, 40, 40);
         DrawBox(60, 10, 90, 40);
@@ -583,12 +583,33 @@ public class AnnotationEditorTests : IDisposable
         Assert.True(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
         Assert.Equal(3, Document.Annotations.Count);
 
+        // Model() makes polygons: redoing them leaves the two boxes alone (a project with Detect and Segment keeps both).
         Assert.True(_editor.AddAutoLabels(new[] { Model(120), Model(150) }, replaceExisting: true));
-        Assert.Equal(2, Document.Annotations.Count);
-        Assert.All(Document.Annotations, annotation => Assert.Equal(AnnotationSource.Model, annotation.Source));
+        Assert.Equal(4, Document.Annotations.Count);
+        Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Box));
+        Assert.All(Document.Annotations.Where(annotation => annotation.Kind == ShapeKind.Polygon),
+            annotation => Assert.Equal(AnnotationSource.Model, annotation.Source));
+        Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Polygon));
 
         Assert.True(_editor.Undo());
         Assert.Equal(3, Document.Annotations.Count);
+    }
+
+    [Fact]
+    public void AddAutoLabels_ReplaceWithBoxesLeavesThePolygons()
+    {
+        Assert.True(_editor.AddAutoLabels(new[] { Model(100), Model(150) }, replaceExisting: false));
+        var now = DateTimeOffset.UtcNow;
+        var box = new Annotation(Guid.NewGuid(), Document.ImageId, _classId, ShapeKind.Box,
+            new PixelRect(5, 5, 20, 20).Corners(), AnnotationSource.Model, now, now);
+        Assert.True(_editor.AddAutoLabels(new[] { box }, replaceExisting: false));
+
+        var again = new Annotation(Guid.NewGuid(), Document.ImageId, _classId, ShapeKind.Box,
+            new PixelRect(30, 5, 20, 20).Corners(), AnnotationSource.Model, now, now);
+        Assert.True(_editor.AddAutoLabels(new[] { again }, replaceExisting: true));
+
+        Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Polygon));
+        Assert.Equal(1, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Box));
     }
 
     [Fact]

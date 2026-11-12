@@ -6,11 +6,11 @@ namespace NTech.DataStudio.Application.Abstractions;
 public interface IProjectStore
 {
     /// <exception cref="ProjectException">The folder is not empty or cannot be written.</exception>
-    Task<ProjectSummary> CreateAsync(string folder, string name, TaskKind? targetTask = null, CancellationToken cancellationToken = default);
+    Task<ProjectSummary> CreateAsync(string folder, string name, IReadOnlyList<TaskKind>? targetTasks = null, CancellationToken cancellationToken = default);
 
-    /// <summary>Sets or clears the project's target task. Labels are not touched.</summary>
+    /// <summary>Sets the target tasks of the project (none clears them). Labels are not touched.</summary>
     /// <exception cref="ProjectException">The project cannot be written.</exception>
-    Task<ProjectSummary> SetTargetTaskAsync(string folder, TaskKind? targetTask, CancellationToken cancellationToken = default);
+    Task<ProjectSummary> SetTargetTasksAsync(string folder, IReadOnlyList<TaskKind> targetTasks, CancellationToken cancellationToken = default);
 
     /// <exception cref="ProjectException">The folder holds no readable project of a supported version.</exception>
     Task<ProjectSummary> OpenAsync(string folder, CancellationToken cancellationToken = default);

@@ -68,7 +68,7 @@ public sealed class ExportService
     /// <exception cref="OperationCanceledException">Stopped by the user; nothing is left behind.</exception>
     public ExportResult Export(ExportRequest request, IProgress<ExportProgress>? progress = null, CancellationToken cancellationToken = default)
     {
-        request = request with { TargetTask = _projects.Current?.TargetTask };
+        request = request with { TargetTasks = _projects.Current?.Tasks };
         var kind = ExportKinds.For(request.Profile)
             ?? throw new InvalidOperationException($"Profile {request.Profile.Id} không có định dạng xuất.");
         var exporter = _exporters.FirstOrDefault(candidate => candidate.Kind == kind)
@@ -189,7 +189,7 @@ public sealed class ExportService
             profile,
             imgsz,
             master => File.Exists(Path.Combine(root, master)),
-            _projects.Current?.TargetTask));
+            _projects.Current?.Tasks));
 
     // ---- building the picture list ----
 

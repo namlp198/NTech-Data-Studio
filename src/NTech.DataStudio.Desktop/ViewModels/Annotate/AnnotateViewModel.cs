@@ -159,6 +159,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         _classFilter = AllClassesOption;
         ClassFilters.Add(AllClassesOption);
         _projects.CurrentChanged += OnProjectChanged;
+        RefreshAutoLabelTasks();
     }
 
     /// <summary>The canvas listens to these; the view model only says what to show.</summary>
@@ -226,9 +227,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         : "Tắt: rê chuột để xem trước, bấm để lấy vật thể (phân tích cả ảnh).";
 
     public bool IsMagicTool { get => Tool == AnnotateTool.MagicPolygon; set => ChooseTool(value, AnnotateTool.MagicPolygon); }
-    public bool IsMagicToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.MagicPolygon) && Magic.Unavailable is null;
+    public bool IsMagicToolEnabled => TaskTools.Allows(TargetTasks, AnnotateTool.MagicPolygon) && Magic.Unavailable is null;
     public string MagicToolTip =>
-        TaskTools.WhyOff(TargetTask, AnnotateTool.MagicPolygon) is { } why ? $"{Hints.Text(ShortcutAction.MagicPolygonTool)} - {why}"
+        TaskTools.WhyOff(TargetTasks, AnnotateTool.MagicPolygon) is { } why ? $"{Hints.Text(ShortcutAction.MagicPolygonTool)} - {why}"
         : Magic.Unavailable is { } missing ? $"Magic polygon - {missing} Mở Cài đặt để tải model."
         : Hints.Text(ShortcutAction.MagicPolygonTool);
 
@@ -237,12 +238,12 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public bool IsTagTool { get => Tool == AnnotateTool.Tag; set => ChooseTool(value, AnnotateTool.Tag); }
     public bool IsPanTool { get => Tool == AnnotateTool.Pan; set => ChooseTool(value, AnnotateTool.Pan); }
 
-    private TaskKind? TargetTask => _projects.Current?.TargetTask;
+    private IReadOnlyList<TaskKind> TargetTasks => _projects.Current?.Tasks ?? Array.Empty<TaskKind>();
 
-    public bool IsBoxToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Box);
-    public bool IsPolygonToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Polygon);
-    public bool IsObbToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.RotatedBox);
-    public bool IsTagToolEnabled => TaskTools.Allows(TargetTask, AnnotateTool.Tag);
+    public bool IsBoxToolEnabled => TaskTools.Allows(TargetTasks, AnnotateTool.Box);
+    public bool IsPolygonToolEnabled => TaskTools.Allows(TargetTasks, AnnotateTool.Polygon);
+    public bool IsObbToolEnabled => TaskTools.Allows(TargetTasks, AnnotateTool.RotatedBox);
+    public bool IsTagToolEnabled => TaskTools.Allows(TargetTasks, AnnotateTool.Tag);
 
     /// <summary>Tooltips that name the keys an action has now (they change when the user rebinds).</summary>
     public ShortcutHints Hints { get; }
@@ -253,15 +254,17 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     public string TagToolTip => ToolTip(ShortcutAction.TagTool, AnnotateTool.Tag);
 
     private string ToolTip(ShortcutAction action, AnnotateTool tool) =>
-        TaskTools.WhyOff(TargetTask, tool) is { } why ? $"{Hints.Text(action)} - {why}" : Hints.Text(action);
+        TaskTools.WhyOff(TargetTasks, tool) is { } why ? $"{Hints.Text(action)} - {why}" : Hints.Text(action);
 
     private void RaiseTargetTaskChanged()
     {
-        if (Editor is { } editor) editor.TargetTask = TargetTask;
+        RefreshAutoLabelTasks();
+        if (Editor is { } editor) editor.TargetTasks = TargetTasks;
         foreach (var name in new[]
                  {
                      nameof(IsBoxToolEnabled), nameof(IsMagicToolEnabled), nameof(MagicToolTip), nameof(IsPolygonToolEnabled), nameof(IsObbToolEnabled), nameof(IsTagToolEnabled),
-                     nameof(BoxToolTip), nameof(PolygonToolTip), nameof(ObbToolTip), nameof(TagToolTip)
+                     nameof(BoxToolTip), nameof(PolygonToolTip), nameof(ObbToolTip), nameof(TagToolTip),
+                     nameof(IsAutoLabelEnabled), nameof(HasAutoLabelTaskChoice)
                  })
             OnPropertyChanged(name);
     }
@@ -329,7 +332,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             HasImages = _allImages.Count > 0;
             LoadSelectionOnly();
 
-            var editor = new AnnotationEditor(_service, _clipboard) { TargetTask = TargetTask, Magic = Magic };
+            var editor = new AnnotationEditor(_service, _clipboard) { TargetTasks = TargetTasks, Magic = Magic };
             editor.Changed += OnEditorChanged;
             editor.Edited += OnEdited;
             Editor = editor;
@@ -819,6 +822,42 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     private readonly AutoLabelService _autoLabel;
 
+    /// <summary>The tasks that can be labeled automatically in this project (decision 0019): Detect and Segment among its tasks.</summary>
+    public ObservableCollection<Option<TaskKind>> AutoLabelTasks { get; } = new();
+
+    [ObservableProperty]
+    private Option<TaskKind>? _selectedAutoLabelTask;
+
+    /// <summary>The task the Gán tự động buttons work for; Segment while none is offered.</summary>
+    private TaskKind AutoLabelTask => SelectedAutoLabelTask?.Value ?? TaskKind.Segment;
+
+    /// <summary>The selector shows only when the project has more than one task to choose from, and the option is on.</summary>
+    public bool HasAutoLabelTaskChoice => IsAutoLabelEnabled && AutoLabelTasks.Count > 1;
+
+    private void RefreshAutoLabelTasks()
+    {
+        var wanted = AutoLabelService.TasksFor(TargetTasks);
+        if (!AutoLabelTasks.Select(option => option.Value).SequenceEqual(wanted))
+        {
+            var previous = SelectedAutoLabelTask?.Value;
+            AutoLabelTasks.Clear();
+            foreach (var task in wanted) AutoLabelTasks.Add(new Option<TaskKind>(TargetTasks_Label(task), task));
+            SelectedAutoLabelTask = AutoLabelTasks.FirstOrDefault(option => option.Value == previous) ?? AutoLabelTasks.FirstOrDefault();
+        }
+
+        OnPropertyChanged(nameof(HasAutoLabelTaskChoice));
+        AutoLabelCommand.NotifyCanExecuteChanged();
+        AutoLabelAllCommand.NotifyCanExecuteChanged();
+    }
+
+    private static string TargetTasks_Label(TaskKind task) => NTech.DataStudio.Domain.Profiles.TargetTasks.Label(task);
+
+    /// <summary>What the automatic labels of the chosen task are called in words for the user.</summary>
+    private static string ShapeWord(TaskKind task) => task == TaskKind.Detect ? "box" : "polygon";
+
+    /// <summary>The advanced option in Settings (decision 0018): off, the automatic labeling buttons do not exist.</summary>
+    public bool IsAutoLabelEnabled => _settings.AutoLabelEnabled;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AutoLabelCommand))]
     [NotifyCanExecuteChangedFor(nameof(AutoLabelAllCommand))]
@@ -831,6 +870,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     [ObservableProperty]
     private string? _autoLabelMessage;
+
+    private static string BoxOutlineText(int count) =>
+        $"{count} vật thể SAM không cắt được nên giữ nguyên khung (polygon 4 đỉnh): hãy sửa tay.";
 
     private bool CanAutoLabel() => !IsAutoLabeling && _current is not null;
 
@@ -856,7 +898,8 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         if (_store is null || _service is null) return;
 
         var classes = _store.LoadClasses();
-        if (_autoLabel.Check(classes) is { } problem)
+        var task = AutoLabelTask;
+        if (_autoLabel.Check(classes, task) is { } problem)
         {
             AutoLabelMessage = problem;
             return;
@@ -872,7 +915,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
                 "Gán tự động hàng loạt",
                 $"{fresh.Count} ảnh chưa gán nhãn sẽ được gán. Ngoài ra có {labeled.Count} ảnh đã có nhãn nhưng chưa được tích chọn vào dataset (ảnh đã tích chọn được giữ nguyên).\n\n"
                 + "Ghi đè: giữ nhãn hiện tại của các ảnh đó và thêm nhãn của model lên trên.\n"
-                + "Xóa hết, gán mới: xóa nhãn hiện tại của các ảnh đó rồi gán lại bằng model.\n"
+                + $"Xóa hết, gán mới: xóa các nhãn {ShapeWord(task)} hiện tại của các ảnh đó rồi gán lại bằng model.\n"
                 + "Hủy lệnh: không gán gì cả.",
                 ExistingLabelChoices,
                 PromptSeverity.Question);
@@ -887,13 +930,13 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             return;
         }
 
-        var minScore = _settings.AutoLabelMinScore;
+        var minScore = _settings.MinScoreFor(task);
         IsAutoLabeling = true;
         IsBatchRunning = true;
         _batchCts = new CancellationTokenSource();
         var token = _batchCts.Token;
         var generation = _loadVersion;
-        int processed = 0, labelCount = 0, imagesLabeled = 0, nothing = 0, failed = 0;
+        int processed = 0, labelCount = 0, imagesLabeled = 0, nothing = 0, failed = 0, boxOutlines = 0;
         string? firstError = null;
         var skipped = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         var cancelled = false;
@@ -905,10 +948,11 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
                 AutoLabelMessage = $"Gán tự động {processed + 1} / {targets.Count}: {row.FileName}";
                 try
                 {
-                    var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore, token);
+                    var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore, task, token);
                     if (generation != _loadVersion || _service is null) return;
 
                     foreach (var name in result.SkippedClasses) skipped.Add(name);
+                    boxOutlines += result.BoxOutlineCount;
                     if (result.Annotations.Count == 0)
                     {
                         nothing++;
@@ -954,6 +998,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         {
             $"{(cancelled ? "Đã dừng sau" : "Xong:")} {imagesLabeled} ảnh được gán ({labelCount} nhãn, từ {minScore:P0}). Hãy duyệt từng ảnh."
         };
+        if (boxOutlines > 0) parts.Add(BoxOutlineText(boxOutlines));
         if (nothing > 0) parts.Add($"{nothing} ảnh model không thấy vật thể nào.");
         if (failed > 0) parts.Add($"{failed} ảnh lỗi (đầu tiên: {firstError}).");
         if (skipped.Count > 0) parts.Add($"Bỏ qua class không có trong project: {string.Join(", ", skipped)}.");
@@ -970,7 +1015,10 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         }
 
         var document = _service!.Open(row.Image);
-        var before = replace ? document.Annotations.ToList() : new List<NTech.DataStudio.Domain.Annotations.Annotation>();
+        // Redoing the polygons keeps the boxes of a Detect + Segment project, and the other way round.
+        var before = replace
+            ? document.Annotations.Where(annotation => labels.Any(label => label.Kind == annotation.Kind)).ToList()
+            : new List<NTech.DataStudio.Domain.Annotations.Annotation>();
         _service.Execute(document, new EditRequest(before, labels, Array.Empty<long>(), Array.Empty<long>()));
         row.Update(document);
     }
@@ -981,7 +1029,8 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         if (_current is not { } row || _store is null || Editor is not { Document: { } document } editor) return;
 
         var classes = _store.LoadClasses();
-        if (_autoLabel.Check(classes) is { } problem)
+        var task = AutoLabelTask;
+        if (_autoLabel.Check(classes, task) is { } problem)
         {
             AutoLabelMessage = problem;
             return;
@@ -993,7 +1042,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             var choice = _prompt.Choose(
                 "Gán nhãn tự động",
                 $"Ảnh này đã có {document.LabelCount} nhãn.\n\n"
-                + "Xóa hết, gán mới: xóa các nhãn hiện tại (trừ nhãn đang khóa) rồi gán lại bằng model.\n"
+                + $"Xóa hết, gán mới: xóa các nhãn {ShapeWord(task)} hiện tại (trừ nhãn đang khóa) rồi gán lại bằng model.\n"
                 + "Ghi đè: giữ nhãn hiện tại và thêm nhãn của model lên trên.",
                 new[]
                 {
@@ -1010,8 +1059,8 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         AutoLabelMessage = "Đang gán nhãn tự động...";
         try
         {
-            var minScore = _settings.AutoLabelMinScore;
-            var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore);
+            var minScore = _settings.MinScoreFor(task);
+            var result = await _autoLabel.LabelAsync(row.MasterFullPath, row.Id, classes, minScore, task);
             if (!ReferenceEquals(row, _current) || !ReferenceEquals(editor, Editor) || editor.Document?.ImageId != row.Id)
             {
                 AutoLabelMessage = null;
@@ -1021,6 +1070,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             var skipped = result.SkippedClasses.Count > 0
                 ? $" Bỏ qua class không có trong project: {string.Join(", ", result.SkippedClasses)}."
                 : string.Empty;
+            if (result.BoxOutlineCount > 0) skipped += " " + BoxOutlineText(result.BoxOutlineCount);
             if (result.Annotations.Count == 0)
             {
                 AutoLabelMessage = $"Model không thấy vật thể nào từ {minScore:P0} trở lên.{skipped}";

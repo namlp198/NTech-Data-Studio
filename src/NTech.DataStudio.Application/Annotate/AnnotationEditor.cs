@@ -21,7 +21,7 @@ public sealed class AnnotationEditor
     private readonly HashSet<Guid> _hidden = new();
     private readonly HashSet<Guid> _locked = new();
     private Drag? _drag;
-    private TaskKind? _targetTask;
+    private IReadOnlyList<TaskKind> _targetTasks = Array.Empty<TaskKind>();
     private MagicPolygonController? _magic;
     private PixelPoint? _magicStart;
     private bool _magicRefine;
@@ -40,14 +40,15 @@ public sealed class AnnotationEditor
 
     public ImageDocument? Document { get; private set; }
     public AnnotateTool Tool { get; private set; } = AnnotateTool.Select;
-    /// <summary>What the project is for; the drawing tools that do not fit it are off (decision 0014). Null allows all.</summary>
-    public TaskKind? TargetTask
+    /// <summary>What the project is for; the drawing tools that fit none of its tasks are off (decisions 0014 and 0019). Empty allows all.</summary>
+    public IReadOnlyList<TaskKind> TargetTasks
     {
-        get => _targetTask;
+        get => _targetTasks;
         set
         {
-            if (_targetTask == value) return;
-            _targetTask = value;
+            value ??= Array.Empty<TaskKind>();
+            if (_targetTasks.SequenceEqual(value)) return;
+            _targetTasks = value;
             if (!TaskTools.Allows(value, Tool)) SetTool(AnnotateTool.Select);
             else RaiseChanged();
         }
@@ -154,9 +155,9 @@ public sealed class AnnotationEditor
 
     public void SetTool(AnnotateTool tool)
     {
-        if (!TaskTools.Allows(TargetTask, tool))
+        if (!TaskTools.Allows(TargetTasks, tool))
         {
-            Message = $"Công cụ này {TaskTools.WhyOff(TargetTask, tool)}. Đổi task ở màn hình Project.";
+            Message = $"Công cụ này {TaskTools.WhyOff(TargetTasks, tool)}. Đổi task ở màn hình Project.";
             RaiseChanged();
             return;
         }
@@ -184,7 +185,7 @@ public sealed class AnnotationEditor
     /// <summary>The next tool (+1) or the previous one (-1) in rail order, wrapping around.</summary>
     public void CycleTool(int step)
     {
-        var tools = Enum.GetValues<AnnotateTool>().Where(tool => TaskTools.Allows(TargetTask, tool)).ToArray();
+        var tools = Enum.GetValues<AnnotateTool>().Where(tool => TaskTools.Allows(TargetTasks, tool)).ToArray();
         var index = Array.IndexOf(tools, Tool);
         SetTool(tools[((index + step) % tools.Length + tools.Length) % tools.Length]);
     }
@@ -314,8 +315,9 @@ public sealed class AnnotationEditor
     {
         if (Document is null || labels.Count == 0) return false;
 
+        // Replacing removes the labels of the kind being generated only: a project with Detect and Segment keeps its boxes when polygons are redone.
         var before = replaceExisting
-            ? Document.Annotations.Where(annotation => !_locked.Contains(annotation.Id)).ToList()
+            ? Document.Annotations.Where(annotation => !_locked.Contains(annotation.Id) && labels.Any(label => label.Kind == annotation.Kind)).ToList()
             : new List<Annotation>();
         if (before.Count > 0) SelectedId = null;
         return Run(new EditRequest(before, labels, Array.Empty<long>(), Array.Empty<long>())) is not null;

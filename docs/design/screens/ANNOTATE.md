@@ -108,7 +108,7 @@ Nhãn bị khóa thì Class và Xóa bị làm mờ. Chuột phải lên chỗ t
 
 ## Công cụ theo task mục tiêu
 
-Project có task mục tiêu (quyết định 0014, chọn ở màn hình Project). Rail chỉ bật công cụ vẽ hợp với task: Detect bật Box, Segment bật Polygon, OBB bật Rotated box, Classify bật Tag. Chọn và Pan luôn bật. Công cụ tắt bị làm mờ, tooltip nói vì sao ("tắt vì project nhắm ..."), phím tắt của nó không làm gì (hiện lời nhắc ở thanh trạng thái), và Q / Shift+Q bỏ qua nó. Đổi task giữa lúc đang dùng một công cụ vừa bị tắt thì về Chọn. Nhãn đã có thuộc loại khác vẫn hiện và sửa được. Project chưa chọn task (project cũ) bật mọi công cụ như trước. Logic ở `TaskTools` và `AnnotationEditor.TargetTask`.
+Project có một hoặc nhiều task mục tiêu (quyết định 0014 và 0019, tích ở màn hình Project). Rail bật công cụ vẽ khi bất kỳ task nào của project cần nó (project Detect + Segment bật cả Box, Polygon và Magic polygon). Với từng task: Detect bật Box, Segment bật Polygon, OBB bật Rotated box, Classify bật Tag. Chọn và Pan luôn bật. Công cụ tắt bị làm mờ, tooltip nói vì sao ("tắt vì project nhắm ..."), phím tắt của nó không làm gì (hiện lời nhắc ở thanh trạng thái), và Q / Shift+Q bỏ qua nó. Đổi task giữa lúc đang dùng một công cụ vừa bị tắt thì về Chọn. Nhãn đã có thuộc loại khác vẫn hiện và sửa được. Project chưa chọn task (project cũ) bật mọi công cụ như trước. Logic ở `TaskTools` và `AnnotationEditor.TargetTasks`.
 
 ## Magic polygon (tự tách vật thể)
 
@@ -122,3 +122,14 @@ Công cụ thứ ba trên thanh công cụ (biểu tượng đũa phép, phím M
 - **Tinh chỉnh trước khi lấy:** Shift+bấm thêm điểm trong vật thể, bấm phải thêm điểm ngoài vật thể (đánh dấu xanh và đỏ); Backspace bỏ điểm vừa thêm. Ở công cụ này bấm phải không mở menu nhãn.
 - **Thiếu model:** nút bị làm mờ, tooltip nói lý do và chỉ sang Cài đặt, nơi có nút Tải model (xem `SETTINGS.md`). Thư mục model: `%LOCALAPPDATA%\NTech\DataStudio\models\sam\` (`mobile_sam_image_encoder.onnx`, `sam_mask_decoder_single.onnx`).
 - **Chưa làm:** phân tích trước ảnh kế, tách theo hộp, lỗ bên trong polygon.
+
+## Gán tự động bằng model (quyết định 0017 và 0018)
+
+- Các nút "Gán tự động" và "Gán tự động tất cả" ở dải ảnh chỉ có khi bật tùy chọn nâng cao "Bật gán nhãn tự động" ở Cài đặt (mặc định tắt).
+- Cách gán chọn ở Cài đặt: model segment (tự vẽ polygon), hoặc model detect + SAM (detect tìm khung, SAM cắt từng khung). Vật thể mà SAM không cắt được giữ là polygon 4 đỉnh (khung), và dòng thông báo cuối lượt nói số lượng để bạn sửa tay.
+
+### Gán tự động theo task (quyết định 0019)
+
+- Project có cả Detect và Segment: ô "Gán tự động theo task" (AutomationId `AnnotateAutoLabelTask`) hiện cạnh các nút Gán tự động. Detect gán **box** từ model detect; Segment gán **polygon** (model segment, hoặc detect + SAM). Project một task không có ô này.
+- "Xóa hết, gán mới" chỉ xóa nhãn cùng loại hình với thứ sắp gán (polygon hoặc box); nhãn loại kia và nhãn khóa được giữ.
+- Mỗi task có ngưỡng tin cậy riêng ở Cài đặt.

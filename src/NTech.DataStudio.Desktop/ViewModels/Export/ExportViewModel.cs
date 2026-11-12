@@ -210,7 +210,7 @@ public sealed partial class ExportViewModel : ObservableObject, IActivatable
 
                 SelectedVersion = Versions.FirstOrDefault(option => option.Value.Id == previousVersion) ?? Versions.FirstOrDefault();
                 SelectedProfile = Profiles.FirstOrDefault(option => option.Value.Id == previousProfile)
-                    ?? Profiles.FirstOrDefault(option => option.Value.Task == _projects.Current?.TargetTask)
+                    ?? Profiles.FirstOrDefault(option => _projects.Current?.Tasks.Contains(option.Value.Task) == true)
                     ?? Profiles.FirstOrDefault();
                 if (SelectedProfile is { } selected && previousProfile != selected.Value.Id)
                     ImgszText = selected.Value.ImgszDefault.ToString(CultureInfo.InvariantCulture);

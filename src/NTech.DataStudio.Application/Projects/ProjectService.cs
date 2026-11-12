@@ -17,7 +17,7 @@ public sealed class ProjectService
 
     public event EventHandler? CurrentChanged;
 
-    public async Task<ProjectSummary> CreateAsync(string parentFolder, string name, TaskKind? targetTask = null, CancellationToken cancellationToken = default)
+    public async Task<ProjectSummary> CreateAsync(string parentFolder, string name, IReadOnlyList<TaskKind>? targetTasks = null, CancellationToken cancellationToken = default)
     {
         var trimmedName = (name ?? string.Empty).Trim();
         if (trimmedName.Length == 0)
@@ -27,7 +27,7 @@ public sealed class ProjectService
         if (string.IsNullOrWhiteSpace(parentFolder))
             throw new ProjectException("Chưa chọn thư mục đặt project.");
 
-        var summary = await _store.CreateAsync(Path.Combine(parentFolder, trimmedName), trimmedName, targetTask, cancellationToken);
+        var summary = await _store.CreateAsync(Path.Combine(parentFolder, trimmedName), trimmedName, ValidTasks(targetTasks), cancellationToken);
         SetCurrent(summary);
         return summary;
     }
@@ -39,16 +39,24 @@ public sealed class ProjectService
         return summary;
     }
 
-    /// <summary>Changes what the project is for. Existing labels stay as they are.</summary>
-    /// <exception cref="ProjectException">No project is open, or it cannot be written.</exception>
-    public async Task SetTargetTaskAsync(TaskKind? targetTask, CancellationToken cancellationToken = default)
+    /// <summary>Changes what the project is for: any set of tasks, none included. Existing labels stay as they are.</summary>
+    /// <exception cref="ProjectException">No project is open, a task cannot be a project task, or it cannot be written.</exception>
+    public async Task SetTargetTasksAsync(IReadOnlyList<TaskKind> targetTasks, CancellationToken cancellationToken = default)
     {
         var project = Current ?? throw new ProjectException("Chưa mở project.");
-        if (targetTask is { } task && !TargetTasks.All.Contains(task))
-            throw new ProjectException($"{TargetTasks.Label(task)} không dùng được làm task của project.");
-        if (project.TargetTask == targetTask) return;
+        var tasks = ValidTasks(targetTasks);
+        if (project.Tasks.SequenceEqual(tasks)) return;
 
-        SetCurrent(await _store.SetTargetTaskAsync(project.RootPath, targetTask, cancellationToken));
+        SetCurrent(await _store.SetTargetTasksAsync(project.RootPath, tasks, cancellationToken));
+    }
+
+    private static IReadOnlyList<TaskKind> ValidTasks(IReadOnlyList<TaskKind>? tasks)
+    {
+        foreach (var task in tasks ?? Array.Empty<TaskKind>())
+            if (!TargetTasks.All.Contains(task))
+                throw new ProjectException($"{TargetTasks.Label(task)} không dùng được làm task của project.");
+
+        return TargetTasks.Normalize(tasks);
     }
 
     public void Close() => SetCurrent(null);

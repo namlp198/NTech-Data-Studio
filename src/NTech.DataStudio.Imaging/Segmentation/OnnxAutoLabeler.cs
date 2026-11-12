@@ -169,7 +169,7 @@ public sealed class OnnxAutoLabeler : IAutoLabeler, IDisposable
     }
 
     /// <summary>Fit, centre, pad with 114, RGB, 0..1, NCHW: what the Trainer's own check does.</summary>
-    private static float[] Letterbox(Mat bgr, LetterboxFrame frame)
+    internal static float[] Letterbox(Mat bgr, LetterboxFrame frame)
     {
         using var resized = new Mat();
         Cv2.Resize(bgr, resized, new Size(frame.NewWidth, frame.NewHeight), 0, 0, InterpolationFlags.Linear);

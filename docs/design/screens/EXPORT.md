@@ -66,4 +66,4 @@ Ba profile segmentation: `yolo26-segment` (YOLO txt, polygon chuẩn hóa), `rf-
 
 ## Task mục tiêu của project
 
-Profile có task khác task mục tiêu của project (quyết định 0014) thì kiểm tra báo một cảnh báo, không chặn: polygon vẫn xuất được thành box. Lỗi thật vẫn do các kiểm tra sẵn có bắt (ví dụ ảnh chỉ có box mà profile là Segment). Màn hình chọn sẵn profile đầu tiên cùng task với project, và `version.json` ghi `targetTask`.
+Profile có task không nằm trong các task mục tiêu của project (quyết định 0014 và 0019) thì kiểm tra báo một cảnh báo, không chặn: polygon vẫn xuất được thành box. Lỗi thật vẫn do các kiểm tra sẵn có bắt (ví dụ ảnh chỉ có box mà profile là Segment). Màn hình chọn sẵn profile đầu tiên cùng task với project, và `version.json` ghi `targetTasks` (mảng) và `targetTask` (task đầu tiên).

@@ -21,6 +21,10 @@ public sealed class SettingsService
             MagicBoxMode = stored.MagicBoxMode;
             AutoLabelModel = stored.AutoLabelModel;
             AutoLabelMinScore = stored.AutoLabelMinScore;
+            AutoLabelEnabled = stored.AutoLabelEnabled;
+            AutoLabelMode = stored.AutoLabelMode;
+            AutoLabelDetectModel = stored.AutoLabelDetectModel;
+            AutoLabelDetectMinScore = stored.AutoLabelDetectMinScore;
         }
         catch (SettingsException exception)
         {
@@ -42,6 +46,43 @@ public sealed class SettingsService
         Save();
     }
 
+    /// <summary>Advanced option (decision 0018): automatic labeling is available at all. Off until the user turns it on.</summary>
+    public bool AutoLabelEnabled { get; private set; }
+
+    public void SetAutoLabelEnabled(bool on)
+    {
+        if (AutoLabelEnabled == on) return;
+
+        AutoLabelEnabled = on;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Which kind of model labels the pictures.</summary>
+    public AutoLabelMode AutoLabelMode { get; private set; }
+
+    public void SetAutoLabelMode(AutoLabelMode mode)
+    {
+        if (AutoLabelMode == mode) return;
+
+        AutoLabelMode = mode;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>The detect .onnx used with SAM (decision 0018), or null. Kept apart from <see cref="AutoLabelModel"/> so switching modes loses neither.</summary>
+    public string? AutoLabelDetectModel { get; private set; }
+
+    public void SetAutoLabelDetectModel(string? path)
+    {
+        path = string.IsNullOrWhiteSpace(path) ? null : path;
+        if (string.Equals(path, AutoLabelDetectModel, StringComparison.Ordinal)) return;
+
+        AutoLabelDetectModel = path;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>The segment .onnx used for automatic labeling (decision 0017), or null.</summary>
     public string? AutoLabelModel { get; private set; }
 
@@ -57,6 +98,23 @@ public sealed class SettingsService
         Save();
         Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Lowest score of an automatic Detect label, 0.05 to 0.95 (decision 0019).</summary>
+    public double AutoLabelDetectMinScore { get; private set; } = 0.4;
+
+    public void SetAutoLabelDetectMinScore(double score)
+    {
+        score = Math.Round(Math.Clamp(score, 0.05, 0.95), 2);
+        if (Math.Abs(score - AutoLabelDetectMinScore) < 1e-9) return;
+
+        AutoLabelDetectMinScore = score;
+        Save();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>The score threshold of the automatic labeling of a task.</summary>
+    public double MinScoreFor(NTech.DataStudio.Domain.Profiles.TaskKind task) =>
+        task == NTech.DataStudio.Domain.Profiles.TaskKind.Detect ? AutoLabelDetectMinScore : AutoLabelMinScore;
 
     public void SetAutoLabelMinScore(double score)
     {
@@ -119,7 +177,8 @@ public sealed class SettingsService
     {
         try
         {
-            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject, MagicBoxMode, AutoLabelModel, AutoLabelMinScore));
+            _store.Save(new AppSettings(Shortcuts.ToStored(), LastProject, MagicBoxMode, AutoLabelModel, AutoLabelMinScore,
+                AutoLabelEnabled, AutoLabelMode, AutoLabelDetectModel, AutoLabelDetectMinScore));
             Problem = null;
         }
         catch (SettingsException exception)

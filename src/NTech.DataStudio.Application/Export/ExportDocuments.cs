@@ -66,8 +66,14 @@ internal static class ExportDocuments
             writer.WriteStartObject();
             writer.WriteString("format", kind.Id());
             writer.WriteString("profile", request.Profile.Id);
-            if (request.TargetTask is { } target)
-                writer.WriteString("targetTask", TargetTasks.Key(target));
+            if (request.TargetTasks is { Count: > 0 } targets)
+            {
+                // targetTask (the first) stays for readers of the single-task format; targetTasks is the whole set (decision 0019).
+                writer.WriteString("targetTask", TargetTasks.Key(TargetTasks.Normalize(targets)[0]));
+                writer.WriteStartArray("targetTasks");
+                foreach (var task in TargetTasks.Normalize(targets)) writer.WriteStringValue(TargetTasks.Key(task));
+                writer.WriteEndArray();
+            }
             writer.WriteNumber("imgsz", request.Imgsz);
             writer.WriteString("imageFormat", request.ImageFormat.ToString().ToLowerInvariant());
             if (request.ImageFormat == ExportImageFormat.Jpeg)

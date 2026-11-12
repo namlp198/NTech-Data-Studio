@@ -8,11 +8,11 @@ namespace NTech.DataStudio.Storage.Sqlite;
 
 public sealed class SqliteProjectStore : IProjectStore
 {
-    public Task<ProjectSummary> CreateAsync(string folder, string name, TaskKind? targetTask = null, CancellationToken cancellationToken = default) =>
-        Task.Run(() => Guarded(() => Create(folder, name, targetTask), folder), cancellationToken);
+    public Task<ProjectSummary> CreateAsync(string folder, string name, IReadOnlyList<TaskKind>? targetTasks = null, CancellationToken cancellationToken = default) =>
+        Task.Run(() => Guarded(() => Create(folder, name, targetTasks), folder), cancellationToken);
 
-    public Task<ProjectSummary> SetTargetTaskAsync(string folder, TaskKind? targetTask, CancellationToken cancellationToken = default) =>
-        Task.Run(() => Guarded(() => SetTargetTask(folder, targetTask), folder), cancellationToken);
+    public Task<ProjectSummary> SetTargetTasksAsync(string folder, IReadOnlyList<TaskKind> targetTasks, CancellationToken cancellationToken = default) =>
+        Task.Run(() => Guarded(() => SetTargetTasks(folder, targetTasks), folder), cancellationToken);
 
     public Task<ProjectSummary> OpenAsync(string folder, CancellationToken cancellationToken = default) =>
         Task.Run(() => Guarded(() => Open(folder), folder), cancellationToken);
@@ -23,7 +23,7 @@ public sealed class SqliteProjectStore : IProjectStore
 
     public IDatasetStore OpenDatasetStore(string folder) => new SqliteDatasetStore(new ProjectFolderLayout(folder));
 
-    private static ProjectSummary Create(string folder, string name, TaskKind? targetTask)
+    private static ProjectSummary Create(string folder, string name, IReadOnlyList<TaskKind>? targetTasks)
     {
         var layout = new ProjectFolderLayout(folder);
         if (Directory.Exists(layout.RootPath) && Directory.EnumerateFileSystemEntries(layout.RootPath).Any())
@@ -41,12 +41,12 @@ public sealed class SqliteProjectStore : IProjectStore
         command.Parameters.AddWithValue("$name", name);
         command.Parameters.AddWithValue("$createdAt", DateTimeOffset.UtcNow.ToString("O"));
         command.ExecuteNonQuery();
-        WriteTargetTask(connection, targetTask);
+        WriteTargetTasks(connection, targetTasks ?? Array.Empty<TaskKind>());
 
         return ReadSummary(connection, layout);
     }
 
-    private static ProjectSummary SetTargetTask(string folder, TaskKind? targetTask)
+    private static ProjectSummary SetTargetTasks(string folder, IReadOnlyList<TaskKind> targetTasks)
     {
         var layout = new ProjectFolderLayout(folder);
         if (!File.Exists(layout.DatabasePath))
@@ -57,24 +57,47 @@ public sealed class SqliteProjectStore : IProjectStore
         if (!db.TryMigrate(connection))
             throw new ProjectException("Project này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
 
-        WriteTargetTask(connection, targetTask);
+        WriteTargetTasks(connection, targetTasks);
         return ReadSummary(connection, layout);
     }
 
-    private static void WriteTargetTask(SqliteConnection connection, TaskKind? targetTask)
+    /// <summary>
+    /// Writes <c>target_tasks</c> (the keys joined by commas). The first task is also kept in the old <c>target_task</c> key so
+    /// an older build still shows one task; a project written before this (only the old key) reads as that one task.
+    /// </summary>
+    private static void WriteTargetTasks(SqliteConnection connection, IReadOnlyList<TaskKind> targetTasks)
+    {
+        var tasks = TargetTasks.Normalize(targetTasks);
+        Write(connection, "target_tasks", tasks.Count == 0 ? null : TargetTasks.Key(tasks));
+        Write(connection, "target_task", tasks.Count == 0 ? null : TargetTasks.Key(tasks[0]));
+    }
+
+    private static void Write(SqliteConnection connection, string key, string? value)
     {
         using var command = connection.CreateCommand();
-        if (targetTask is { } task)
+        if (value is not null)
         {
-            command.CommandText = "INSERT INTO project_meta (key, value) VALUES ('target_task', $value) ON CONFLICT (key) DO UPDATE SET value = excluded.value;";
-            command.Parameters.AddWithValue("$value", TargetTasks.Key(task));
+            command.CommandText = "INSERT INTO project_meta (key, value) VALUES ($key, $value) ON CONFLICT (key) DO UPDATE SET value = excluded.value;";
+            command.Parameters.AddWithValue("$key", key);
+            command.Parameters.AddWithValue("$value", value);
         }
         else
         {
-            command.CommandText = "DELETE FROM project_meta WHERE key = 'target_task';";
+            command.CommandText = "DELETE FROM project_meta WHERE key = $key;";
+            command.Parameters.AddWithValue("$key", key);
         }
 
         command.ExecuteNonQuery();
+    }
+
+    private static IReadOnlyList<TaskKind> ReadTargetTasks(SqliteConnection connection)
+    {
+        if (ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'target_tasks';") is string stored)
+            return TargetTasks.ParseSet(stored);
+
+        return TargetTasks.Parse(ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'target_task';") as string) is { } single
+            ? new[] { single }
+            : Array.Empty<TaskKind>();
     }
 
     private static ProjectSummary Open(string folder)
@@ -102,7 +125,7 @@ public sealed class SqliteProjectStore : IProjectStore
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM active_images WHERE status IN ('labeled', 'reviewed', 'null');"),
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM classes;"),
             ProjectDb.Count(connection, "SELECT COUNT(*) FROM versions;"),
-            TargetTasks.Parse(ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'target_task';") as string));
+            ReadTargetTasks(connection));
     }
 
     private static ProjectSummary Guarded(Func<ProjectSummary> action, string folder)
