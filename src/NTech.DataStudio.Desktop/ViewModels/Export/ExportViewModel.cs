@@ -20,6 +20,9 @@ namespace NTech.DataStudio.Desktop.ViewModels.Export;
 public sealed record IssueRow(bool IsError, string Message)
 {
     public string Text => (IsError ? "Lỗi: " : "Cảnh báo: ") + Message;
+
+    /// <summary>The tag shown in front of the message, so severity does not rest on colour alone.</summary>
+    public string Label => IsError ? "LỖI" : "CẢNH BÁO";
 }
 
 /// <summary>
@@ -88,6 +91,13 @@ public sealed partial class ExportViewModel : ObservableObject, IActivatable
         _selectedImageFormat = ImageFormats[0];
 
         _projects.CurrentChanged += OnProjectChanged;
+        Issues.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasIssues));
+            OnPropertyChanged(nameof(HasErrors));
+            OnPropertyChanged(nameof(HasOnlyWarnings));
+            OnPropertyChanged(nameof(IssuesHeadline));
+        };
     }
 
     public IReadOnlyList<Option<ExportImageFormat>> ImageFormats { get; }
@@ -99,6 +109,23 @@ public sealed partial class ExportViewModel : ObservableObject, IActivatable
     public bool ShowNoVersions => HasProject && !IsLoading && LoadError is null && Versions.Count == 0;
     public bool ShowForm => HasProject && !IsLoading && LoadError is null && Versions.Count > 0;
     public bool HasIssues => Issues.Count > 0;
+    public bool HasErrors => Issues.Any(issue => issue.IsError);
+    public bool HasOnlyWarnings => HasIssues && !HasErrors;
+
+    /// <summary>The banner's headline: what the findings mean for the export, not just how many there are.</summary>
+    public string IssuesHeadline
+    {
+        get
+        {
+            var errors = Issues.Count(issue => issue.IsError);
+            var warnings = Issues.Count - errors;
+            if (errors > 0)
+                return warnings > 0
+                    ? $"Không thể xuất: {errors} lỗi cần sửa, kèm {warnings} cảnh báo"
+                    : $"Không thể xuất: {errors} lỗi cần sửa";
+            return $"{warnings} cảnh báo: vẫn xuất được, nhưng hãy xem lại trước";
+        }
+    }
     public bool HasResult => ResultMessage is not null;
     public bool IsIdle => !IsBusy;
 

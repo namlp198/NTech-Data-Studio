@@ -54,6 +54,9 @@
     <SolidColorBrush x:Key="Brush.Status.Success" Color="{StaticResource Color.Status.Success}" />
     <SolidColorBrush x:Key="Brush.Status.Warning" Color="{StaticResource Color.Status.Warning}" />
     <SolidColorBrush x:Key="Brush.Status.Error" Color="{StaticResource Color.Status.Error}" />
+    <!-- Tinted fills for alert panels, about 18% of the status colour. Brushes only: the Trainer port mirrors Color keys. -->
+    <SolidColorBrush x:Key="Brush.Status.ErrorSoft" Color="#2EE45858" />
+    <SolidColorBrush x:Key="Brush.Status.WarningSoft" Color="#2EF2B84B" />
     <SolidColorBrush x:Key="Brush.Status.Info" Color="{StaticResource Color.Status.Info}" />
     <SolidColorBrush x:Key="Brush.Status.Neutral" Color="{StaticResource Color.Status.Neutral}" />
 

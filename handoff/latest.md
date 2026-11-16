@@ -182,3 +182,16 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 - **Lỗi tìm được nhờ chạy thật**: token `Layout.SettingsLabelWidth` ban đầu là `Double` mà `ColumnDefinition.Width` đòi `GridLength`, làm app thoát khi mở Cài đặt (build vẫn xanh). Đã đổi thành `GridLength`.
 - **Chưa kiểm tra**: gán Detect với model detect thật (máy này không có ONNX detect); các hộp chọn file/thư mục của Windows và hộp xác nhận khi bấm Đóng gói / Mở từ file .zip chưa bấm thử bằng tay; gói 3,4 GB có ảnh nguồn của project thật. Cần người thử.
 - **Lưu ý**: `AutoLabel`, `ProjectSummary`, `PackageManifest` tự định nghĩa so sánh bằng giá trị cho danh sách task. Số thứ tự quyết định 0019 và 0020 theo Data Studio; nhánh Trainer có thể đã dùng các số này (đã có sẵn trùng 0014 từ trước).
+
+## Cảnh báo box và polygon trùng nhau khi xuất (2026-11-16)
+
+- `DatasetValidator` cảnh báo (không chặn) khi một box và một polygon hoặc rotated box **cùng class** trên cùng ảnh có khung bao chồng nhau từ `DuplicateIou` (0,7): xuất ra sẽ thành hai nhãn cho một vật. Áp cho mọi định dạng xuất. Lý do: project nhiều task (0019) cho vẽ cả box lẫn polygon, và không có chỗ nào khác phát hiện nhãn đôi.
+- Không áp cho hai box trùng nhau, hai nhãn khác class, hay nhãn chỉ chồng một phần. Ngưỡng 0,7 là số thử, chưa chỉnh trên dữ liệu thật.
+- Test: thêm 4 ca ở `DatasetValidatorTests` (Application 423 qua, toàn solution xanh). **Chưa chạy app**: chưa xem cảnh báo hiện ở màn Export.
+- Không làm: tự xóa nhãn trùng, cảnh báo ngay trong Annotate.
+
+## Khung lỗi và cảnh báo nổi bật ở màn Export (2026-11-16)
+
+- Lỗi và cảnh báo của validator nằm trong một khung rộng ngay dưới tiêu đề: nền và viền trái theo mức độ (đỏ khi có lỗi, vàng khi chỉ cảnh báo), tiêu đề nói hệ quả ("Không thể xuất: N lỗi cần sửa"), mỗi dòng có nhãn LỖI hoặc CẢNH BÁO. Thẻ "Kiểm tra" bên phải chỉ còn dòng tóm tắt.
+- Token mới: `Brush.Status.ErrorSoft`, `Brush.Status.WarningSoft` (brush, không có `Color.*` để khỏi vỡ `TokenParityTests` của Trainer), `Border.Alert`, `Layout.IssueTagWidth`.
+- Build 0 cảnh báo, toàn bộ test qua. App khởi động được; **chưa mở màn Export để xem khung bằng mắt**. Màn Dataset và Prepare chưa đổi.

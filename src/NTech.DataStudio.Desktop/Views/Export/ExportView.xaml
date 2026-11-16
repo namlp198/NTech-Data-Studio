@@ -49,6 +49,67 @@
                     </StackPanel>
                 </DockPanel>
 
+                <!-- Findings of the validator: wide and coloured so an error cannot be missed -->
+                <Border Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.LG}"
+                        BorderThickness="{StaticResource Border.Alert}" CornerRadius="{StaticResource Radius.SM}"
+                        AutomationProperties.AutomationId="ExportIssuesBanner"
+                        Visibility="{Binding HasIssues, Converter={StaticResource BoolToVisibility}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Brush.Status.WarningSoft}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Warning}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource Brush.Status.ErrorSoft}" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Error}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" AutomationProperties.AutomationId="ExportIssuesHeadline"
+                                   Text="{Binding IssuesHeadline}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.SectionHeader}">
+                                    <Setter Property="Foreground" Value="{StaticResource Brush.Status.Warning}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ItemsControl ItemsSource="{Binding Issues}" Margin="{StaticResource Gap.Top.SM}"
+                                      AutomationProperties.AutomationId="ExportIssues">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="{StaticResource Gap.Top.SM}" AutomationProperties.Name="{Binding Text}">
+                                        <Border DockPanel.Dock="Left" VerticalAlignment="Top" MinWidth="{StaticResource Layout.IssueTagWidth}"
+                                                Padding="{StaticResource Inset.XS}" CornerRadius="{StaticResource Radius.SM}"
+                                                Margin="{StaticResource Gap.Right.SM}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{StaticResource Brush.Status.Warning}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource Brush.Status.Error}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Style="{StaticResource Text.Label}" HorizontalAlignment="Center"
+                                                       FontWeight="Bold" Foreground="{StaticResource Brush.Background.App}"
+                                                       Text="{Binding Label}" />
+                                        </Border>
+                                        <TextBlock Style="{StaticResource Text.Body}" TextWrapping="Wrap" Text="{Binding Message}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
                 <!-- Progress, result, error -->
                 <StackPanel Margin="{StaticResource Gap.Top.MD}" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
                     <DockPanel>
@@ -137,25 +198,9 @@
                                        AutomationProperties.AutomationId="ExportValidating"
                                        Visibility="{Binding IsValidating, Converter={StaticResource BoolToVisibility}}"
                                        Text="Đang kiểm tra..." />
-                            <ItemsControl ItemsSource="{Binding Issues}" Margin="{StaticResource Gap.Top.SM}" AutomationProperties.AutomationId="ExportIssues">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                                                   AutomationProperties.Name="{Binding Text}" Text="{Binding Text}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
-                                                    <Setter Property="Foreground" Value="{StaticResource Brush.Status.Warning}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsError}" Value="True">
-                                                            <Setter Property="Foreground" Value="{StaticResource Brush.Status.Error}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                       Visibility="{Binding HasIssues, Converter={StaticResource BoolToVisibility}}"
+                                       Text="Chi tiết lỗi và cảnh báo nằm ở khung phía trên." />
                         </StackPanel>
                     </Border>
                 </Grid>

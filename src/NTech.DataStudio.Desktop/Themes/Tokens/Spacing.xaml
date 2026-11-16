@@ -32,6 +32,8 @@
     <Thickness x:Key="Gap.Bottom.SM">0,0,0,8</Thickness>
 
     <Thickness x:Key="Border.Bottom">0,0,0,1</Thickness>
+    <!-- Alert panel: a thick bar on the left carries the severity colour. -->
+    <Thickness x:Key="Border.Alert">4,1,1,1</Thickness>
 
     <!-- Annotate: floating panels sit over the canvas, clear of the thumbnail strip below. -->
     <Thickness x:Key="Layout.AnnotateRailMargin">16,0,0,0</Thickness>
