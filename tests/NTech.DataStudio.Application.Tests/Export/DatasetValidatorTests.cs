@@ -159,6 +159,43 @@ public class DatasetValidatorTests
         Assert.True(Has(report, IssueSeverity.Warning, "box bao quanh"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ABoxAndAPolygonOfOneClassOnTheSameObject_AreWarnedAsDuplicates_ForEveryProfile(bool segment)
+    {
+        // Healthy already has a red box at (100,100,200,150) on image 1; the polygon hugs the same area.
+        var scenario = Healthy().Polygon(1, Red.Id, (105, 105), (295, 110), (290, 245), (100, 240));
+
+        var report = scenario.Validate(segment ? Segment : Detect);
+
+        // Segment also errors for the other 59 box-only images; that is not what this test is about.
+        var issue = report.Issues.Single(item => item.Message.Contains("hai nhãn cho một vật"));
+        Assert.Equal(IssueSeverity.Warning, issue.Severity);
+        Assert.Contains("1 box trong 1 ảnh", issue.Message);
+        Assert.Contains("m1.jpg", issue.Message);
+    }
+
+    [Fact]
+    public void ABoxAndAPolygonThatDoNotOverlapMuchOrDifferInClass_AreNotDuplicates()
+    {
+        var elsewhere = Healthy().Polygon(1, Red.Id, (600, 500), (800, 500), (700, 700));
+        var otherClass = Healthy().Polygon(1, Blue.Id, (100, 100), (300, 100), (300, 250), (100, 250));
+        var halfCovered = Healthy().Polygon(1, Red.Id, (100, 100), (200, 100), (200, 250), (100, 250));
+
+        Assert.DoesNotContain(elsewhere.Validate(Segment).Issues, item => item.Message.Contains("hai nhãn"));
+        Assert.DoesNotContain(otherClass.Validate(Segment).Issues, item => item.Message.Contains("hai nhãn"));
+        Assert.DoesNotContain(halfCovered.Validate(Segment).Issues, item => item.Message.Contains("hai nhãn"));
+    }
+
+    [Fact]
+    public void TwoBoxesOnTheSameObject_AreNotCalledDuplicates()
+    {
+        var scenario = Healthy().Box(1, Red.Id);
+
+        Assert.DoesNotContain(scenario.Validate().Issues, item => item.Message.Contains("hai nhãn"));
+    }
+
     [Fact]
     public void Points_AreWarnedAbout_NotRejected()
     {

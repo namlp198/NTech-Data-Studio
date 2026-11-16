@@ -50,6 +50,12 @@ public static class DatasetValidator
     /// <summary>Fewer labels of a class than this is thin for a model to learn from.</summary>
     public const int MinLabelsPerClass = 50;
 
+    /// <summary>
+    /// A box and a polygon of one class whose bounding boxes overlap this much are taken to be one object drawn twice
+    /// (a project with Detect and Segment tasks, decision 0019): every format would write both.
+    /// </summary>
+    public const double DuplicateIou = 0.7;
+
     private const double OutsideTolerancePx = 0.5;
     private const int ExamplesShown = 3;
 
@@ -101,6 +107,7 @@ public static class DatasetValidator
 
             var shapes = 0;
             var polygons = 0;
+            var drawn = new List<(long ClassId, ShapeKind Kind, PixelRect Bounds)>();
             foreach (var annotation in input.Annotations(image.Id))
             {
                 if (!known.ContainsKey(annotation.ClassId))
@@ -128,6 +135,7 @@ public static class DatasetValidator
                 shapes++;
                 if (annotation.Kind is ShapeKind.Polygon or ShapeKind.RotatedBox) polygons++;
                 Count(counts, mapped, split);
+                drawn.Add((mapped, annotation.Kind, PolygonMath.BoundingBox(annotation.Points)));
 
                 switch (kind)
                 {
@@ -152,6 +160,13 @@ public static class DatasetValidator
 
             if (kind.NeedsPolygons() && shapes > 0 && polygons == 0)
                 problems.Add("onlyBoxes", name);
+
+            foreach (var box in drawn.Where(item => item.Kind == ShapeKind.Box))
+            {
+                if (drawn.Any(other => other.Kind != ShapeKind.Box && other.ClassId == box.ClassId
+                        && Iou(box.Bounds, other.Bounds) >= DuplicateIou))
+                    problems.Add("doubleShape", name);
+            }
         }
 
         AddProblemIssues(issues, problems, input, kind);
@@ -244,6 +259,9 @@ public static class DatasetValidator
         Report(issues, problems, "toPolygon", IssueSeverity.Warning, "box sẽ xuất thành polygon 4 đỉnh", "nhãn");
         Report(issues, problems, "polygonToObb", IssueSeverity.Warning,
             "polygon sẽ xuất thành hình chữ nhật diện tích nhỏ nhất bao quanh", "nhãn");
+        Report(issues, problems, "doubleShape", IssueSeverity.Warning,
+            $"nằm gần trùng với một polygon hoặc rotated box cùng class (IoU khung bao từ {DuplicateIou:P0}); "
+            + "xuất ra sẽ thành hai nhãn cho một vật, hãy xóa một trong hai", "box");
         Report(issues, problems, "small", IssueSeverity.Warning,
             $"nhỏ hơn {input.Profile.MinObjectPx} px ở imgsz {input.Imgsz}, trainer khó học được", "nhãn");
     }
@@ -312,6 +330,17 @@ public static class DatasetValidator
         var sy = (double)preprocess.Height / typical.Height;
         var resize = preprocess.Resize == ResizeMode.Fill ? Math.Max(sx, sy) : Math.Min(sx, sy);
         return resize * input.Imgsz / Math.Max(preprocess.Width, preprocess.Height);
+    }
+
+    private static double Iou(PixelRect first, PixelRect second)
+    {
+        var width = Math.Min(first.Right, second.Right) - Math.Max(first.X, second.X);
+        var height = Math.Min(first.Bottom, second.Bottom) - Math.Max(first.Y, second.Y);
+        if (width <= 0 || height <= 0) return 0;
+
+        var overlap = width * height;
+        var union = first.Width * first.Height + second.Width * second.Height - overlap;
+        return union > 0 ? overlap / union : 0;
     }
 
     private static void Count(Dictionary<long, int[]> counts, long classId, SplitKind split)
