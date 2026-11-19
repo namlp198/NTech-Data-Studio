@@ -118,6 +118,10 @@ internal static class ProjectMigrations
             SELECT images.* FROM images
             JOIN source_images ON source_images.id = images.source_image_id
             WHERE source_images.reject_reason IS NULL AND images.status <> 'rejected';
+        """,
+        // 3: deleting an image from Annotate marks it rejected and remembers the status it had, so Restore brings it back as it was.
+        """
+        ALTER TABLE images ADD COLUMN deleted_from TEXT;
         """
     };
 }

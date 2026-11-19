@@ -411,7 +411,48 @@
                         </StackPanel>
                     </DockPanel>
 
+                    <!-- Second row: bulk selection for the dataset (left) and deleting images (right) -->
+                    <DockPanel DockPanel.Dock="Top" Margin="{StaticResource Gap.Top.SM}">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
+                                       AutomationProperties.AutomationId="AnnotateDeleteMessage"
+                                       Visibility="{Binding DeleteMessage, Converter={StaticResource NullToCollapsed}}"
+                                       Text="{Binding DeleteMessage}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
+                                    Content="Hoàn tác xóa" AutomationProperties.AutomationId="AnnotateUndoDelete"
+                                    ToolTip="Đưa lại các ảnh vừa xóa"
+                                    Visibility="{Binding HasUndoDelete, Converter={StaticResource BoolToVisibility}}"
+                                    Command="{Binding UndoDeleteCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Right.SM}"
+                                    Content="Khôi phục ảnh đã xóa" AutomationProperties.AutomationId="AnnotateRestoreDeleted"
+                                    ToolTip="Đưa mọi ảnh đã xóa trở lại project, với trạng thái và nhãn như trước khi xóa"
+                                    Visibility="{Binding HasDeleted, Converter={StaticResource BoolToVisibility}}"
+                                    Command="{Binding RestoreDeletedCommand}" />
+                            <Button Style="{StaticResource Button.Danger}" Content="Xóa ảnh"
+                                    AutomationProperties.AutomationId="AnnotateDeleteImages"
+                                    ToolTipService.ShowDuration="30000"
+                                    ToolTip="{Binding Hints[DeleteImage]}"
+                                    Command="{Binding DeleteImagesCommand}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal"
+                                    Visibility="{Binding SelectionOnly, Converter={StaticResource BoolToVisibility}}">
+                            <Button Style="{StaticResource Button.Secondary}" Content="Chọn tất cả"
+                                    AutomationProperties.AutomationId="AnnotateSelectAll"
+                                    ToolTip="Tích chọn mọi ảnh đang hiện theo bộ lọc (trạng thái, class). Ảnh bị lọc ẩn không bị đổi."
+                                    Command="{Binding SelectAllShownCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    Content="Bỏ chọn tất cả" AutomationProperties.AutomationId="AnnotateClearSelection"
+                                    ToolTip="Bỏ tích mọi ảnh đang hiện theo bộ lọc"
+                                    Command="{Binding ClearShownSelectionCommand}" />
+                            <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    Content="Đảo chọn" AutomationProperties.AutomationId="AnnotateInvertSelection"
+                                    ToolTip="Ảnh đang tích thì bỏ, ảnh chưa tích thì tích, trong số ảnh đang hiện theo bộ lọc"
+                                    Command="{Binding InvertShownSelectionCommand}" />
+                        </StackPanel>
+                    </DockPanel>
+
                     <ListBox x:Name="ThumbList" Margin="{StaticResource Gap.Top.SM}" AutomationProperties.Name="Danh sách ảnh"
+                             SelectionMode="Extended"
                              ItemsSource="{Binding Images}" SelectedItem="{Binding SelectedImage}"
                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              SelectionChanged="OnThumbSelectionChanged">

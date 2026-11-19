@@ -22,6 +22,20 @@ public interface IAnnotationStore : IDisposable
 
     void SetInDataset(long imageId, bool value);
 
+    /// <summary>Sets the flag of many images in one transaction (select all, clear, invert).</summary>
+    void SetInDatasetMany(IReadOnlyCollection<long> imageIds, bool value);
+
+    /// <summary>
+    /// Takes images out of the project: marks them rejected (no file is touched, labels stay) and remembers their status. Decision 0005 and 0022.
+    /// </summary>
+    void DeleteImages(IReadOnlyCollection<long> imageIds);
+
+    /// <summary>Ids of the images deleted from Annotate, which <see cref="RestoreImages"/> can bring back.</summary>
+    IReadOnlyList<long> LoadDeletedIds();
+
+    /// <summary>Puts deleted images back with the status they had.</summary>
+    void RestoreImages(IReadOnlyCollection<long> imageIds);
+
     ImageContent LoadContent(long imageId);
 
     /// <exception cref="InvalidOperationException">The image no longer exists.</exception>

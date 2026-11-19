@@ -130,6 +130,85 @@ internal sealed class SqliteAnnotationStore : IAnnotationStore
         }
     }
 
+    public void SetInDatasetMany(IReadOnlyCollection<long> imageIds, bool value)
+    {
+        if (imageIds.Count == 0) return;
+        lock (_gate)
+        {
+            using var transaction = _connection.BeginTransaction();
+            foreach (var id in imageIds)
+            {
+                using var command = _connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = "UPDATE images SET in_dataset = $value WHERE id = $id;";
+                command.Parameters.AddWithValue("$value", value ? 1 : 0);
+                command.Parameters.AddWithValue("$id", id);
+                command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        }
+    }
+
+    public void DeleteImages(IReadOnlyCollection<long> imageIds)
+    {
+        if (imageIds.Count == 0) return;
+        lock (_gate)
+        {
+            using var transaction = _connection.BeginTransaction();
+            foreach (var id in imageIds)
+            {
+                using var command = _connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = "UPDATE images SET deleted_from = status, status = 'rejected' WHERE id = $id AND status <> 'rejected';";
+                command.Parameters.AddWithValue("$id", id);
+                command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        }
+    }
+
+    public IReadOnlyList<long> LoadDeletedIds()
+    {
+        lock (_gate)
+        {
+            using var command = _connection.CreateCommand();
+            command.CommandText = """
+                SELECT id FROM images
+                WHERE status = 'rejected' AND deleted_from IS NOT NULL
+                  AND source_image_id IN (SELECT id FROM source_images WHERE reject_reason IS NULL)
+                ORDER BY id;
+                """;
+            using var reader = command.ExecuteReader();
+            var ids = new List<long>();
+            while (reader.Read()) ids.Add(reader.GetInt64(0));
+            return ids;
+        }
+    }
+
+    public void RestoreImages(IReadOnlyCollection<long> imageIds)
+    {
+        if (imageIds.Count == 0) return;
+        lock (_gate)
+        {
+            using var transaction = _connection.BeginTransaction();
+            foreach (var id in imageIds)
+            {
+                using var command = _connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = """
+                    UPDATE images SET status = deleted_from, deleted_from = NULL
+                    WHERE id = $id AND status = 'rejected' AND deleted_from IS NOT NULL;
+                    """;
+                command.Parameters.AddWithValue("$id", id);
+                command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        }
+    }
+
     public ImageContent LoadContent(long imageId)
     {
         lock (_gate)

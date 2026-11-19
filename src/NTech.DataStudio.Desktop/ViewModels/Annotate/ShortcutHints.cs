@@ -45,6 +45,9 @@ public sealed class ShortcutHints : INotifyPropertyChanged
         ShortcutAction.FitView => With("Vừa khung", action),
         ShortcutAction.ZoomIn => With("Phóng to", action),
         ShortcutAction.ZoomOut => With("Thu nhỏ", action),
+        ShortcutAction.DeleteImage =>
+            $"Xóa ảnh ({Keys(action)}): gỡ ảnh đang mở khỏi project. Ctrl hoặc Shift+bấm trên dải ảnh để chọn nhiều ảnh rồi xóa một lần. "
+            + "File và nhãn không bị xóa khỏi đĩa; khôi phục được bằng nút Khôi phục ảnh đã xóa.",
         ShortcutAction.ToggleNull =>
             $"Đánh dấu Null ({Keys(action)}): ảnh này không có vật thể cần tìm. Ảnh Null vào dataset như ảnh không nhãn, giúp model bớt báo nhầm "
             + "(màn Dataset cho giữ lại một phần trăm ảnh Null). Chỉ bấm được khi ảnh chưa có nhãn. Bấm lại để bỏ dấu Null.",

@@ -37,9 +37,9 @@
 
     <!-- Annotate: floating panels sit over the canvas, clear of the thumbnail strip below. -->
     <Thickness x:Key="Layout.AnnotateRailMargin">16,0,0,0</Thickness>
-    <Thickness x:Key="Layout.AnnotatePanelMargin">0,16,16,168</Thickness>
+    <Thickness x:Key="Layout.AnnotatePanelMargin">0,16,16,212</Thickness>
     <Thickness x:Key="Layout.AnnotateStripMargin">88,0,16,16</Thickness>
-    <Thickness x:Key="Layout.AnnotateActionMargin">0,0,0,168</Thickness>
+    <Thickness x:Key="Layout.AnnotateActionMargin">0,0,0,212</Thickness>
     <Thickness x:Key="Layout.AnnotateInfoMargin">88,16,0,0</Thickness>
     <Thickness x:Key="Layout.AnnotateHintMargin">0,16,0,0</Thickness>
 

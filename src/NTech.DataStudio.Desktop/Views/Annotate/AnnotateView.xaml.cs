@@ -123,5 +123,9 @@ public partial class AnnotateView : UserControl
     {
         if (ThumbList.SelectedItem is { } item)
             ThumbList.ScrollIntoView(item);
+
+        // Ctrl or Shift click picks several thumbnails; the view model deletes the lot.
+        if (DataContext is AnnotateViewModel model)
+            model.SetStripSelection(ThumbList.SelectedItems.OfType<ImageRowViewModel>());
     }
 }

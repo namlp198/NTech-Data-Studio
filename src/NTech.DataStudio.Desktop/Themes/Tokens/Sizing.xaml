@@ -31,7 +31,7 @@
     <DataGridLength x:Key="Layout.ThumbnailColumnWidth">88</DataGridLength>
     <DataGridLength x:Key="Layout.ActionColumnWidth">128</DataGridLength>
     <!-- Annotate -->
-    <sys:Double x:Key="Layout.ThumbnailStripHeight">168</sys:Double>
+    <sys:Double x:Key="Layout.ThumbnailStripHeight">212</sys:Double>
     <sys:Double x:Key="Layout.FilterWidth">160</sys:Double>
     <sys:Double x:Key="Layout.DividerThickness">1</sys:Double>
     <sys:Double x:Key="Layout.ThumbnailItemWidth">104</sys:Double>

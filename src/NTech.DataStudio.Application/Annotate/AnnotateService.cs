@@ -40,6 +40,19 @@ public sealed class AnnotateService
     /// <summary>Not a label edit, so it stays out of undo.</summary>
     public void SetInDataset(long imageId, bool value) => _store.SetInDataset(imageId, value);
 
+    public void SetInDatasetMany(IReadOnlyCollection<long> imageIds, bool value) => _store.SetInDatasetMany(imageIds, value);
+
+    /// <summary>Not a label edit either: no undo. The labels of a deleted image stay in the project.</summary>
+    public void DeleteImages(IReadOnlyCollection<long> imageIds)
+    {
+        _store.DeleteImages(imageIds);
+        foreach (var id in imageIds) _histories.Remove(id);
+    }
+
+    public IReadOnlyList<long> LoadDeletedIds() => _store.LoadDeletedIds();
+
+    public void RestoreImages(IReadOnlyCollection<long> imageIds) => _store.RestoreImages(imageIds);
+
     public ImageContent LoadContent(long imageId) => _store.LoadContent(imageId);
 
     public ImageDocument Open(AnnotateImage image) => new(image, _store.LoadContent(image.Id));

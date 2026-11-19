@@ -331,6 +331,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             _allImages = images.Select(MakeRow).ToList();
             HasImages = _allImages.Count > 0;
             LoadSelectionOnly();
+            RefreshDeletedCount();
 
             var editor = new AnnotationEditor(_service, _clipboard) { TargetTasks = TargetTasks, Magic = Magic };
             editor.Changed += OnEditorChanged;
@@ -1270,6 +1271,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             case ShortcutAction.Escape: editor.Escape(); return true;
             case ShortcutAction.ToggleNull: editor.ToggleNull(); return true;
             case ShortcutAction.Delete: editor.DeleteSelected(); return true;
+            case ShortcutAction.DeleteImage: DeleteImagesCommand.Execute(null); return true;
             case ShortcutAction.Undo: Undo(); return true;
             case ShortcutAction.Redo: Redo(); return true;
             case ShortcutAction.Copy: editor.Copy(); return true;
