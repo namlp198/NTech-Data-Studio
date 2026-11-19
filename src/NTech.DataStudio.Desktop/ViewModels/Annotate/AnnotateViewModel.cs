@@ -144,6 +144,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
         models.Changed += (_, _) => RaiseTargetTaskChanged();
         _settings = settings;
         Magic = new MagicPolygonController(segmenter);
+        _boxConverter = new BoxToPolygonConverter(segmenter);
         Magic.Changed += (_, _) =>
         {
             OnPropertyChanged(nameof(MagicStatus));
@@ -264,7 +265,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
                  {
                      nameof(IsBoxToolEnabled), nameof(IsMagicToolEnabled), nameof(MagicToolTip), nameof(IsPolygonToolEnabled), nameof(IsObbToolEnabled), nameof(IsTagToolEnabled),
                      nameof(BoxToolTip), nameof(PolygonToolTip), nameof(ObbToolTip), nameof(TagToolTip),
-                     nameof(IsAutoLabelEnabled), nameof(HasAutoLabelTaskChoice)
+                     nameof(IsAutoLabelEnabled), nameof(HasAutoLabelTaskChoice), nameof(CanConvertBoxes)
                  })
             OnPropertyChanged(name);
     }

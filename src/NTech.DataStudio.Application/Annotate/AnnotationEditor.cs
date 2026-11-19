@@ -323,6 +323,21 @@ public sealed class AnnotationEditor
         return Run(new EditRequest(before, labels, Array.Empty<long>(), Array.Empty<long>())) is not null;
     }
 
+    /// <summary>The boxes of a conversion give way to its polygons, as one edit (one Undo brings the boxes back; decision 0022).</summary>
+    public bool ApplyConversion(BoxConversion conversion)
+    {
+        if (Document is null || conversion.Polygons.Count == 0) return false;
+
+        SelectedId = null;
+        return Run(new EditRequest(conversion.Boxes, conversion.Polygons, Array.Empty<long>(), Array.Empty<long>())) is not null;
+    }
+
+    /// <summary>The boxes of this image that a conversion would take (locked ones stay as they are).</summary>
+    public IReadOnlyList<Annotation> ConvertibleBoxes() =>
+        Document is null
+            ? Array.Empty<Annotation>()
+            : Document.Annotations.Where(annotation => annotation.Kind == ShapeKind.Box && !_locked.Contains(annotation.Id)).ToList();
+
     public bool CommitPolygon(IReadOnlyList<PixelPoint> outline)
     {
         if (Document is null) return false;
@@ -756,6 +771,12 @@ public sealed class AnnotationEditor
             }
 
             return edit;
+        }
+        catch (ShapeMixException exception)
+        {
+            Message = exception.Message;
+            RaiseChanged();
+            return null;
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {

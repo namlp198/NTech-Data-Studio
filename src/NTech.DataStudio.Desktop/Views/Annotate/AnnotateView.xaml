@@ -434,8 +434,22 @@
                                     ToolTip="{Binding Hints[DeleteImage]}"
                                     Command="{Binding DeleteImagesCommand}" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal"
-                                    Visibility="{Binding SelectionOnly, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Right.SM}"
+                                        Visibility="{Binding CanConvertBoxes, Converter={StaticResource BoolToVisibility}}">
+                                <Button Style="{StaticResource Button.Secondary}" Content="Box thành polygon (SAM)"
+                                        AutomationProperties.AutomationId="AnnotateConvertBoxes"
+                                        ToolTipService.ShowDuration="30000"
+                                        ToolTip="Thay các box của ảnh này bằng polygon: SAM cắt vật thể trong mỗi box, cùng class. Box SAM không cắt được thì thành polygon hình chữ nhật. Ảnh chỉ còn polygon (mỗi ảnh chỉ có một loại hình), hoàn tác được trong một lần. Cần model SAM (Cài đặt)."
+                                        Command="{Binding ConvertBoxesCommand}" />
+                                <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                        Content="Chuyển tất cả ảnh" AutomationProperties.AutomationId="AnnotateConvertAllBoxes"
+                                        ToolTipService.ShowDuration="30000"
+                                        ToolTip="Làm như nút bên cạnh cho mọi ảnh trong project có box, mỗi ảnh một lần hoàn tác. Dùng khi bạn đã có bộ nhãn box (tự vẽ hoặc do model detect gán) và muốn bộ dữ liệu Segment. Dataset Detect vẫn xuất được từ polygon."
+                                        Command="{Binding ConvertAllBoxesCommand}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding SelectionOnly, Converter={StaticResource BoolToVisibility}}">
                             <Button Style="{StaticResource Button.Secondary}" Content="Chọn tất cả"
                                     AutomationProperties.AutomationId="AnnotateSelectAll"
                                     ToolTip="Tích chọn mọi ảnh đang hiện theo bộ lọc (trạng thái, class). Ảnh bị lọc ẩn không bị đổi."
@@ -448,6 +462,7 @@
                                     Content="Đảo chọn" AutomationProperties.AutomationId="AnnotateInvertSelection"
                                     ToolTip="Ảnh đang tích thì bỏ, ảnh chưa tích thì tích, trong số ảnh đang hiện theo bộ lọc"
                                     Command="{Binding InvertShownSelectionCommand}" />
+                            </StackPanel>
                         </StackPanel>
                     </DockPanel>
 

@@ -11,7 +11,7 @@ namespace NTech.DataStudio.Application.Annotate;
 public sealed class DetectThenSegmentLabeler : IAutoLabeler
 {
     /// <summary>Overlap (intersection over union) between the bounds of a cut-out and its box below which the cut-out is judged to be something else.</summary>
-    public const double MinAgreement = 0.3;
+    public const double MinAgreement = BoxCutter.MinAgreement;
 
     private readonly IBoxDetector _detector;
     private readonly ISmartSegmenter _segmenter;
@@ -47,27 +47,6 @@ public sealed class DetectThenSegmentLabeler : IAutoLabeler
         return labels.OrderByDescending(label => label.Score).ToList();
     }
 
-    /// <summary>The outline SAM gives for the box, or null when it gave none or one that does not look like the object of the box.</summary>
-    private async Task<IReadOnlyList<PixelPoint>?> CutOutAsync(string imagePath, PixelRect? region, PixelRect box, CancellationToken cancellationToken)
-    {
-        var request = new SegmentRequest(Array.Empty<SegmentPrompt>(), box);
-        var outline = await _segmenter.SegmentAsync(imagePath, region, request, cancellationToken);
-        if (outline is null || outline.Count < 3) return null;
-
-        var left = outline.Min(point => point.X);
-        var top = outline.Min(point => point.Y);
-        var bounds = new PixelRect(left, top, outline.Max(point => point.X) - left, outline.Max(point => point.Y) - top);
-        return Agreement(bounds, box) >= MinAgreement ? outline : null;
-    }
-
-    internal static double Agreement(PixelRect first, PixelRect second)
-    {
-        var width = Math.Min(first.Right, second.Right) - Math.Max(first.X, second.X);
-        var height = Math.Min(first.Bottom, second.Bottom) - Math.Max(first.Y, second.Y);
-        if (width <= 0 || height <= 0) return 0;
-
-        var intersection = width * height;
-        var union = first.Area + second.Area - intersection;
-        return union <= 0 ? 0 : intersection / union;
-    }
+    private Task<IReadOnlyList<PixelPoint>?> CutOutAsync(string imagePath, PixelRect? region, PixelRect box, CancellationToken cancellationToken) =>
+        BoxCutter.CutOutAsync(_segmenter, imagePath, region, box, cancellationToken);
 }

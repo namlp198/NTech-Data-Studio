@@ -577,39 +577,57 @@ public class AnnotationEditorTests : IDisposable
     [Fact]
     public void AddAutoLabels_ReplaceRemovesTheOldOnesOfTheSameKindInTheSameEdit_AddKeepsThem()
     {
+        Assert.True(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
+        Assert.True(_editor.AddAutoLabels(new[] { Model(130) }, replaceExisting: false));
+        Assert.Equal(2, Document.Annotations.Count);
+
+        Assert.True(_editor.AddAutoLabels(new[] { Model(120), Model(150), Model(180) }, replaceExisting: true));
+        Assert.Equal(3, Document.Annotations.Count);
+        Assert.All(Document.Annotations, annotation => Assert.Equal(AnnotationSource.Model, annotation.Source));
+
+        Assert.True(_editor.Undo());
+        Assert.Equal(2, Document.Annotations.Count);
+    }
+
+    // Decision 0022: an image holds boxes or polygons, never both, so a labeler of the other shape is refused.
+    [Fact]
+    public void AddAutoLabels_PolygonsAreRefusedOnAnImageWithBoxes_AndTheBoxesStay()
+    {
         DrawBox(10, 10, 40, 40);
         DrawBox(60, 10, 90, 40);
 
-        Assert.True(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
-        Assert.Equal(3, Document.Annotations.Count);
+        Assert.False(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
+        Assert.False(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: true));
 
-        // Model() makes polygons: redoing them leaves the two boxes alone (a project with Detect and Segment keeps both).
-        Assert.True(_editor.AddAutoLabels(new[] { Model(120), Model(150) }, replaceExisting: true));
-        Assert.Equal(4, Document.Annotations.Count);
         Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Box));
-        Assert.All(Document.Annotations.Where(annotation => annotation.Kind == ShapeKind.Polygon),
-            annotation => Assert.Equal(AnnotationSource.Model, annotation.Source));
-        Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Polygon));
-
-        Assert.True(_editor.Undo());
-        Assert.Equal(3, Document.Annotations.Count);
+        Assert.DoesNotContain(Document.Annotations, annotation => annotation.Kind == ShapeKind.Polygon);
+        Assert.Contains("đã có box", _editor.Message);
     }
 
     [Fact]
-    public void AddAutoLabels_ReplaceWithBoxesLeavesThePolygons()
+    public void AddAutoLabels_BoxesAreRefusedOnAnImageWithPolygons_AndThePolygonsStay()
     {
         Assert.True(_editor.AddAutoLabels(new[] { Model(100), Model(150) }, replaceExisting: false));
         var now = DateTimeOffset.UtcNow;
         var box = new Annotation(Guid.NewGuid(), Document.ImageId, _classId, ShapeKind.Box,
             new PixelRect(5, 5, 20, 20).Corners(), AnnotationSource.Model, now, now);
-        Assert.True(_editor.AddAutoLabels(new[] { box }, replaceExisting: false));
 
-        var again = new Annotation(Guid.NewGuid(), Document.ImageId, _classId, ShapeKind.Box,
-            new PixelRect(30, 5, 20, 20).Corners(), AnnotationSource.Model, now, now);
-        Assert.True(_editor.AddAutoLabels(new[] { again }, replaceExisting: true));
+        Assert.False(_editor.AddAutoLabels(new[] { box }, replaceExisting: false));
 
         Assert.Equal(2, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Polygon));
-        Assert.Equal(1, Document.Annotations.Count(annotation => annotation.Kind == ShapeKind.Box));
+        Assert.DoesNotContain(Document.Annotations, annotation => annotation.Kind == ShapeKind.Box);
+        Assert.Contains("đã có polygon", _editor.Message);
+    }
+
+    [Fact]
+    public void ABoxDrawnOnAnImageWithPolygons_IsRefusedWithAMessage()
+    {
+        Assert.True(_editor.AddAutoLabels(new[] { Model(100) }, replaceExisting: false));
+
+        DrawBox(10, 10, 40, 40);
+
+        Assert.DoesNotContain(Document.Annotations, annotation => annotation.Kind == ShapeKind.Box);
+        Assert.Contains("đã có polygon", _editor.Message);
     }
 
     [Fact]

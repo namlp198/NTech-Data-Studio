@@ -67,6 +67,9 @@ public sealed class AnnotateService
     /// <returns>The edit that was applied, or null when it would change nothing.</returns>
     public AnnotationEdit? Execute(ImageDocument document, EditRequest request)
     {
+        if (ShapeFamilyRule.Check(document.Annotations, request) is { } refused)
+            throw new ShapeMixException(refused);
+
         var tagsAdded = request.TagsAdded.Where(tag => !document.Tags.Contains(tag)).Distinct().ToList();
         var tagsRemoved = request.TagsRemoved.Where(document.Tags.Contains).Distinct().ToList();
 
