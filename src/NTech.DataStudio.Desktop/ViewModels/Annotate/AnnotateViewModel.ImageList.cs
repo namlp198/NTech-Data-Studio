@@ -27,6 +27,14 @@ public sealed partial class AnnotateViewModel
         DeleteImagesCommand.NotifyCanExecuteChanged();
     }
 
+    /// <summary>What these buttons can do depends on the image open and its labels, which change under them.</summary>
+    private void RaiseImageCommandsChanged()
+    {
+        ConvertBoxesCommand.NotifyCanExecuteChanged();
+        ConvertAllBoxesCommand.NotifyCanExecuteChanged();
+        DeleteImagesCommand.NotifyCanExecuteChanged();
+    }
+
     private void RefreshDeletedCount() => DeletedCount = _service?.LoadDeletedIds().Count ?? 0;
 
     // ---- select for the dataset (only the images the filters show) ----

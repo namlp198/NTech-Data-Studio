@@ -111,6 +111,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AutoLabelAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConvertAllBoxesCommand))]
     private bool _hasImages;
 
     /// <summary>On: a dataset takes only the images ticked in the strip. Off: every labeled image.</summary>
@@ -445,6 +446,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
             RefreshTags();
             UpdateImageInfo();
             RaiseHistoryChanged();
+            RaiseImageCommandsChanged();
             PreloadNeighbor();
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -549,6 +551,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     private void OnEditorChanged(object? sender, EventArgs e)
     {
+        RaiseImageCommandsChanged();
         OnPropertyChanged(nameof(IsDrawing));
         OnPropertyChanged(nameof(EditorMessage));
         RaiseToolChanged();
@@ -558,6 +561,7 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
 
     private void OnEdited(object? sender, AnnotationEdit edit)
     {
+        RaiseImageCommandsChanged();
         if (_current is null || Editor?.Document is not { } document) return;
 
         _current.Update(document);
@@ -863,6 +867,9 @@ public sealed partial class AnnotateViewModel : ObservableObject, IActivatable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AutoLabelCommand))]
     [NotifyCanExecuteChangedFor(nameof(AutoLabelAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConvertBoxesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConvertAllBoxesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteImagesCommand))]
     private bool _isAutoLabeling;
 
     [ObservableProperty]
