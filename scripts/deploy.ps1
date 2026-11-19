@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Test, publish, package and optionally deliver the NTech Data Studio installer.
+    Test, publish, package and optionally deliver the NTech Labeling Studio installer.
 
 .DESCRIPTION
     1. Runs all tests in Release (skip with -SkipTests).

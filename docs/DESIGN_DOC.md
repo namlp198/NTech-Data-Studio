@@ -1,6 +1,6 @@
 > Bản lưu trong repo của tài liệu thiết kế. Khác bản gốc ở một điểm: namespace, assembly và project đổi từ tên cũ sang `NTech.DataStudio.*` theo [quyết định 0002](../decisions/0002_namespace-ntech-datastudio.md).
 
-# Tài liệu thiết kế NTech Data Studio
+# Tài liệu thiết kế NTech Labeling Studio
 
 Nov 6, 2026 · @ndev
 
@@ -21,7 +21,7 @@ MVP là một sản phẩm mới, đặt trong repo riêng. Nó chỉ mượn pa
 
 **Ranh giới sản phẩm:**
 
-- **NTech Data Studio** gồm công cụ dữ liệu (MVP này) và **Trainer** (sau MVP). Hai phần phát hành cùng nhau trong một sản phẩm.
+- **NTech Labeling Studio** gồm công cụ dữ liệu (MVP này) và **Trainer** (sau MVP). Hai phần phát hành cùng nhau trong một sản phẩm.
 - **NVision** là sản phẩm riêng. NVision chỉ nhận file `.nvmodel` do Trainer xuất ra; không đọc dataset và không gọi trực tiếp vào Data Studio. Đặc tả `.nvmodel` sẽ viết khi làm Trainer.
 - **Namespace:** toàn bộ code dùng `NTech.DataStudio.*`, kể cả Trainer (`NTech.DataStudio.Trainer`). Không dùng `NTech.NVision.*`.
 
@@ -151,13 +151,13 @@ ntech-data-studio/
 #   trainer/python/                      PyTorch, RF-DETR, script train/export
 ```
 
-Tên sản phẩm hiển thị là **NTech Data Studio**, còn namespace, tên assembly và tên project là `NTech.DataStudio.*`. Sau MVP, Trainer được thêm vào cùng solution dưới dạng `src/NTech.DataStudio.Trainer` (phần C#: gọi process Python, theo dõi train, đóng gói `.nvmodel`).
+Tên sản phẩm hiển thị là **NTech Labeling Studio**, còn namespace, tên assembly và tên project là `NTech.DataStudio.*`. Sau MVP, Trainer được thêm vào cùng solution dưới dạng `src/NTech.DataStudio.Trainer` (phần C#: gọi process Python, theo dõi train, đóng gói `.nvmodel`).
 
 ## Tái sử dụng Geo Measure
 
 Geo Measure (khoảng 2.450 dòng) dùng lại được **mô hình tương tác và cấu trúc code**, nhưng phần hình học phải viết lại. Code hiện tại làm việc trên tọa độ WGS84 và vẽ trên GMap.NET, còn annotator làm việc trên tọa độ pixel của ảnh.
 
-| Thành phần trong robo-station | Cách dùng trong NTech Data Studio |
+| Thành phần trong robo-station | Cách dùng trong NTech Labeling Studio |
 | --- | --- |
 | `GeoDrawingSession` (state machine vẽ 1 hình: vertices, candidate, `CanFinish`, kiểm tra tự cắt) | Port sang `AnnotationDrawingSession` dùng `PixelPoint(X, Y)`. Giữ nguyên logic Line/Polygon/Rectangle, bỏ Circle, thêm RotatedBox |
 | `GeoMeasureShapeType`, `GeoMeasureFeature` | Đổi thành `ShapeKind` (Box, Polygon, RotatedBox, Point) và `Annotation` (Id, ClassId, Points, Source, CreatedAt) |
@@ -174,7 +174,7 @@ Cách làm: **copy có chọn lọc sang repo mới**. Không tách thư viện 
 
 ## Design system (theo robo-station)
 
-NTech Data Studio dùng **chung ngôn ngữ thiết kế với robo-station**: giao diện tối kiểu "modern industrial control", canvas chiếm toàn màn hình, công cụ và panel nổi trên canvas, mọi màu và kích thước lấy từ token. Bước đầu tiên là copy nguyên `Themes/` của robo-station sang, rồi viết 2 file làm chuẩn cho repo mới:
+NTech Labeling Studio dùng **chung ngôn ngữ thiết kế với robo-station**: giao diện tối kiểu "modern industrial control", canvas chiếm toàn màn hình, công cụ và panel nổi trên canvas, mọi màu và kích thước lấy từ token. Bước đầu tiên là copy nguyên `Themes/` của robo-station sang, rồi viết 2 file làm chuẩn cho repo mới:
 
 - `docs/design/DESIGN_SYSTEM.md`: bảng token (màu, chữ, khoảng cách, bo góc, kích thước), component dùng chung và trạng thái.
 - `docs/design/UI_GUIDELINES.md`: bố cục, hành vi, những điều cấm. Rút gọn từ `UI_GUIDELINES.md` của robo-station, bỏ phần robot/mission.
@@ -220,7 +220,7 @@ src/NTech.DataStudio.Desktop/Themes/
 
 **Chữ, khoảng cách, kích thước** (copy nguyên): font Segoe UI và Cascadia Mono (số liệu, toạ độ, kích thước ảnh). Cỡ chữ Display 28, H1 24, H2 20, H3 16, Body 14, BodySmall 13, Caption 12, Micro 11. Khoảng cách 4 / 8 / 12 / 16 / 24 / 32. Bo góc 4 / 8 / 12. Control cao 28 / 36 / 44, icon 14 / 18 / 24. TopBar 48, tool rail 56, floating panel rộng 320.
 
-**Bố cục NTech Data Studio** theo HUD shell của robo-station:
+**Bố cục NTech Labeling Studio** theo HUD shell của robo-station:
 
 - **TopBar 48 px:** bên trái là ViewSelector gồm Project · Prepare · Annotate · Dataset · Export; bên phải là StatusIconStrip gồm tên project, số ảnh đã gán / tổng số, cảnh báo validator.
 - **Annotate:** canvas ảnh full-bleed. Tool rail 56 px nổi bên trái (Select, Box, Polygon, OBB, Tag, Zoom, Fit). Floating panel 320 px bên phải chứa Class và Nhãn. Dải thumbnail nổi ở đáy. Strip Finish/Undo/Cancel giống hệt Geo Measure.
@@ -408,7 +408,7 @@ names:
 - Lệnh train mẫu, ví dụ `yolo train model=yolo26s.pt data=data.yaml imgsz=1280`.
 - Tùy chọn nén thành `.zip`.
 
-**Nhập nhãn có sẵn:** đọc YOLO txt và COCO JSON. Nhờ vậy, dữ liệu đã gán trước đó bằng Roboflow, X-AnyLabeling hay CVAT đều đưa vào NTech Data Studio được.
+**Nhập nhãn có sẵn:** đọc YOLO txt và COCO JSON. Nhờ vậy, dữ liệu đã gán trước đó bằng Roboflow, X-AnyLabeling hay CVAT đều đưa vào NTech Labeling Studio được.
 
 ## Thứ tự thực hiện và tiêu chí nghiệm thu
 
@@ -446,5 +446,5 @@ Mình không phải luật sư. Trước khi bán, nên nhờ người chuyên v
 
 1. **Pre-label bằng model:** chạy model ONNX qua ONNX Runtime (MIT) ngay trong C#. Người dùng chỉ cần sửa, tốc độ gán nhãn tăng nhiều lần.
 2. **SAM click-to-segment:** encoder/decoder ONNX. Kiểm tra license từng phiên bản SAM trước khi nhúng.
-3. **Trainer (đi cùng NTech Data Studio):** process Python riêng (PyTorch, RF-DETR) giao tiếp với app qua HTTP local. App gọi train, theo dõi metric, xuất ONNX/TensorRT, rồi nạp model ngược lại cho pre-label. Đây là vòng active learning. Đầu ra giao cho bên ngoài duy nhất là file `.nvmodel`, dành cho NVision. Thiết kế hiện hành của Trainer nằm ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, đổi thứ tự (làm YOLO detect nhiều phiên bản trước RF-DETR) và cách giao tiếp theo quyết định 0009 và 0010.
+3. **Trainer (đi cùng NTech Labeling Studio):** process Python riêng (PyTorch, RF-DETR) giao tiếp với app qua HTTP local. App gọi train, theo dõi metric, xuất ONNX/TensorRT, rồi nạp model ngược lại cho pre-label. Đây là vòng active learning. Đầu ra giao cho bên ngoài duy nhất là file `.nvmodel`, dành cho NVision. Thiết kế hiện hành của Trainer nằm ở `docs/trainer/TRAINER_SYSTEM_DESIGN.md`, đổi thứ tự (làm YOLO detect nhiều phiên bản trước RF-DETR) và cách giao tiếp theo quyết định 0009 và 0010.
 4. Keypoint/pose, video, nhiều người dùng qua LAN, đóng gói và license key.

@@ -102,7 +102,7 @@ public sealed class OnnxBoxDetector : IBoxDetector, IDisposable
 
         var output = root.GetProperty("output");
         if (output.GetProperty("kind").GetString() != DetectKind)
-            throw new InvalidDataException("Đầu ra của model không phải dạng detect mà Data Studio đọc được.");
+            throw new InvalidDataException("Đầu ra của model không phải dạng detect mà Labeling Studio đọc được.");
         if (!output.GetProperty("nms_embedded").GetBoolean())
             throw new InvalidDataException("Model không nhúng NMS nên chưa đọc được.");
 

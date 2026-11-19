@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Publish a Release build of NTech Data Studio, ready for packaging.
+    Publish a Release build of NTech Labeling Studio, ready for packaging.
 
 .DESCRIPTION
-    Runs `dotnet publish` on the Desktop project into .\publish\NTechDataStudio.
+    Runs `dotnet publish` on the Desktop project into .\publish\NTechLabelingStudio.
     Defaults to a self-contained win-x64 publish, so the installer does not
     need the .NET Desktop Runtime on the target machine. The version comes from
     Directory.Build.props unless -Version is given.
@@ -31,7 +31,7 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "_common.ps1")
 
 $Project = Join-Path $RepoRoot "src\NTech.DataStudio.Desktop\NTech.DataStudio.Desktop.csproj"
-if (-not $OutputDir) { $OutputDir = Join-Path $RepoRoot "publish\NTechDataStudio" }
+if (-not $OutputDir) { $OutputDir = Join-Path $RepoRoot "publish\NTechLabelingStudio" }
 $Version = Resolve-Version -Explicit $Version
 $dotnet = Resolve-Dotnet -Explicit $DotnetPath
 

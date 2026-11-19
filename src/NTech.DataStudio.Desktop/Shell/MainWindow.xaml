@@ -15,7 +15,7 @@
         xmlns:sharedVm="clr-namespace:NTech.DataStudio.Desktop.ViewModels.Shared"
         xmlns:projectView="clr-namespace:NTech.DataStudio.Desktop.Views.Project"
         xmlns:sharedView="clr-namespace:NTech.DataStudio.Desktop.Views.Shared"
-        Title="NTech Data Studio"
+        Title="NTech Labeling Studio"
         Width="1280" Height="800" MinWidth="960" MinHeight="700"
         WindowStartupLocation="CenterScreen" WindowState="Maximized"
         Background="{StaticResource Brush.Background.App}"

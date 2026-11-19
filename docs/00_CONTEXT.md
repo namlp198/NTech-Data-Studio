@@ -14,7 +14,7 @@ Cập nhật: 2026-11-07
 - Imaging: đọc header không giải nén, SHA-256, pHash, dHash, phương sai Laplacian, phơi sáng, stretch 16-bit về 8-bit, resize, tile, crop ROI.
 - Desktop: Themes port từ robo-station, TopBar, màn hình Project, wizard Prepare 4 bước, Annotate, Dataset, Export.
 - 8 model profile trong `profiles/` (gồm segmentation: yolo26-segment, rf-detr-segment, maskrcnn-segment).
-- Build và phát hành: `scripts\build`, `package`, `deploy` (mỗi lệnh có `.ps1` và `.bat`), `installer\NTech-DataStudio.iss`. Xem README. Đã chạy thật: installer 70 MB, cài vào thư mục tạm, chạy app đã cài, gỡ sạch.
+- Build và phát hành: `scripts\build`, `package`, `deploy` (mỗi lệnh có `.ps1` và `.bat`), `installer\NTech-LabelingStudio.iss`. Xem README. Đã chạy thật: installer 70 MB, cài vào thư mục tạm, chạy app đã cài, gỡ sạch.
 
 ## Chưa có
 

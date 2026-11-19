@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-        NTech Data Studio dark theme. Tokens are aggregated in _Tokens.xaml and each
+        NTech Labeling Studio dark theme. Tokens are aggregated in _Tokens.xaml and each
         component dictionary self-merges them, so token StaticResources resolve
         regardless of merge nesting. docs/design/DESIGN_SYSTEM.md.
     -->

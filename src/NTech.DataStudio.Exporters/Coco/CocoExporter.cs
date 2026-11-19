@@ -43,7 +43,7 @@ public sealed class CocoExporter : IDatasetExporter
         {
             writer.WriteStartObject();
             writer.WriteStartObject("info");
-            writer.WriteString("description", "NTech Data Studio");
+            writer.WriteString("description", "NTech Labeling Studio");
             writer.WriteEndObject();
 
             writer.WriteStartArray("categories");

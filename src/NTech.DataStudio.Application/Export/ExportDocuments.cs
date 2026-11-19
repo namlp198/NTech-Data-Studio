@@ -140,7 +140,7 @@ internal static class ExportDocuments
         var text = new StringBuilder();
         text.AppendLine($"# Dataset {version.Name}");
         text.AppendLine();
-        text.AppendLine($"Xuất từ NTech Data Studio, profile `{request.Profile.Id}`, định dạng `{kind.Id()}`.");
+        text.AppendLine($"Xuất từ NTech Labeling Studio, profile `{request.Profile.Id}`, định dạng `{kind.Id()}`.");
         text.AppendLine($"Version `{version.Name}`, seed {version.Seed}. Cấu hình đầy đủ nằm trong `version.json`.");
         text.AppendLine();
 

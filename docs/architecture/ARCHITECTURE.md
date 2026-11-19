@@ -17,7 +17,7 @@ Hướng phụ thuộc: `Desktop → Application → Domain`. Imaging, Storage v
 
 ## Ranh giới sản phẩm
 
-- NTech Data Studio gồm công cụ dữ liệu (MVP) và Trainer (sau MVP, `NTech.DataStudio.Trainer`).
+- NTech Labeling Studio gồm công cụ dữ liệu (MVP) và Trainer (sau MVP, `NTech.DataStudio.Trainer`).
 - NVision là sản phẩm riêng, chỉ nhận file `.nvmodel` do Trainer xuất.
 
 ## Lệch so với cây thư mục trong tài liệu thiết kế

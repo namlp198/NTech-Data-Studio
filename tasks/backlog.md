@@ -78,7 +78,7 @@ Thiết kế và điều kiện đạt của từng mốc: `docs/trainer/TRAINER
 ## Đóng gói
 
 - [ ] Icon ứng dụng `Assets/AppIcon.ico`
-- [x] `scripts/` build, package, deploy và `installer/NTech-DataStudio.iss`
+- [x] `scripts/` build, package, deploy và `installer/NTech-LabelingStudio.iss`
 - [ ] Ký số installer (cần chứng chỉ)
 - [ ] Thử cài lên máy sạch chưa có .NET để xác nhận bản self-contained; mới thử trên máy dev
 - [ ] `samples/` và `tests/TestData/`

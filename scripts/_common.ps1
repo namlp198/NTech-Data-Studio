@@ -2,9 +2,9 @@
 # Keep this file ASCII: Windows PowerShell 5.1 reads BOM-less files as ANSI.
 
 $script:RepoRoot = Split-Path -Parent $PSScriptRoot
-$script:AppName = "NTech Data Studio"
+$script:AppName = "NTech Labeling Studio"
 $script:ExeName = "NTech.DataStudio.Desktop.exe"
-$script:SetupBaseName = "NTech-DataStudio-Setup"
+$script:SetupBaseName = "NTech-LabelingStudio-Setup"
 
 function Resolve-Dotnet {
     param([string]$Explicit)

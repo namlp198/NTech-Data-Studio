@@ -103,7 +103,7 @@ dotnet test NTech.DataStudio.slnx
 dotnet run --project src\NTech.DataStudio.Desktop
 ```
 
-Đổi script, `installer/NTech-DataStudio.iss` hay cách publish thì chạy `scripts\deploy.bat -SkipTests` và cài thử installer vào thư mục tạm (`/VERYSILENT /CURRENTUSER /DIR=...`), rồi chạy app đã cài và gỡ ra. Đừng đóng gói hay chép installer đi nơi khác khi chưa được yêu cầu.
+Đổi script, `installer/NTech-LabelingStudio.iss` hay cách publish thì chạy `scripts\deploy.bat -SkipTests` và cài thử installer vào thư mục tạm (`/VERYSILENT /CURRENTUSER /DIR=...`), rồi chạy app đã cài và gỡ ra. Đừng đóng gói hay chép installer đi nơi khác khi chưa được yêu cầu.
 
 Báo đúng những gì đã chạy và kết quả, cùng những gì còn cần người kiểm tra.
 

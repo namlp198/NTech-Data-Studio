@@ -1,8 +1,8 @@
-# NTech Data Studio
+# NTech Labeling Studio
 
 Ứng dụng desktop chạy hoàn toàn offline: ảnh thô → dataset sạch → gán nhãn → tăng cường → xuất bộ dữ liệu train được ngay cho YOLO26 (và COCO cho RF-DETR).
 
-Tên hiển thị là **NTech Data Studio**. Namespace, assembly và project là `NTech.DataStudio.*`.
+Tên hiển thị là **NTech Labeling Studio** (trước đây là NTech Data Studio, xem [quyết định 0021](decisions/0021_display-name-labeling-studio.md)). Namespace, assembly và project vẫn là `NTech.DataStudio.*`.
 
 ## Trạng thái
 
@@ -26,8 +26,8 @@ Cần [Inno Setup 6](https://jrsoftware.org/isdl.php) để đóng gói. Version
 
 | Lệnh | Làm gì |
 | --- | --- |
-| `scripts\build.bat` | Publish Release, self-contained win-x64, ra `publish\NTechDataStudio` |
-| `scripts\package.bat` | Publish rồi đóng gói Inno Setup, ra `dist\NTech-DataStudio-Setup-<version>.exe` |
+| `scripts\build.bat` | Publish Release, self-contained win-x64, ra `publish\NTechLabelingStudio` |
+| `scripts\package.bat` | Publish rồi đóng gói Inno Setup, ra `dist\NTech-LabelingStudio-Setup-<version>.exe` |
 | `scripts\deploy.bat` | Chạy test, đóng gói, ghi file `.sha256`; thêm `-Destination <thư mục>` để chép đi và kiểm tra lại hash |
 
 ```powershell

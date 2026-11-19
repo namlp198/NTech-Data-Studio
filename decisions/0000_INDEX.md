@@ -23,3 +23,4 @@
 | [0019](0019_project-multiple-tasks-and-auto-label-per-task.md) | Project có nhiều task mục tiêu; gán tự động theo task (Detect ra box, Segment ra polygon); Cài đặt chia mục | 2026-11-11 |
 | [0020](0020_project-package-zip.md) | Đóng gói project thành file .zip có version (manifest, backup SQLite, giải nén an toàn) | 2026-11-11 |
 | [0022](0022_one-shape-per-image-and-box-to-polygon.md) | Mỗi ảnh một loại hình (box hoặc polygon); chuyển box thành polygon bằng SAM; xóa và khôi phục ảnh trong Annotate | 2026-11-19 |
+| [0021](0021_display-name-labeling-studio.md) | Tên hiển thị đổi thành NTech Labeling Studio; định danh kỹ thuật, AppId và thư mục dữ liệu người dùng giữ nguyên | 2026-11-19 |

@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Build the NTech Data Studio Windows installer with Inno Setup.
+    Build the NTech Labeling Studio Windows installer with Inno Setup.
 
 .DESCRIPTION
     Publishes the app (via build.ps1 unless -SkipBuild) and runs the Inno Setup 6
-    compiler (ISCC.exe) on installer\NTech-DataStudio.iss, producing
-    dist\NTech-DataStudio-Setup-<Version>.exe.
+    compiler (ISCC.exe) on installer\NTech-LabelingStudio.iss, producing
+    dist\NTech-LabelingStudio-Setup-<Version>.exe.
 
     Requires Inno Setup 6 (https://jrsoftware.org/isdl.php). ISCC.exe is located
     via -InnoSetupPath, the ISCC command on PATH, or the default install folders.
@@ -26,8 +26,8 @@ param(
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "_common.ps1")
 
-$Iss = Join-Path $RepoRoot "installer\NTech-DataStudio.iss"
-$PublishDir = Join-Path $RepoRoot "publish\NTechDataStudio"
+$Iss = Join-Path $RepoRoot "installer\NTech-LabelingStudio.iss"
+$PublishDir = Join-Path $RepoRoot "publish\NTechLabelingStudio"
 $DistDir = Join-Path $RepoRoot "dist"
 $Version = Resolve-Version -Explicit $Version
 

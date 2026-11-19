@@ -20,7 +20,7 @@ public sealed record PackageEstimate(long CoreBytes, int CoreFiles, long SourceB
 /// is a package, that this app can read it, and what is in it.
 /// </summary>
 /// <param name="FormatVersion">Version of the package layout itself.</param>
-/// <param name="AppVersion">Version of NTech Data Studio that made the package.</param>
+/// <param name="AppVersion">Version of NTech Labeling Studio that made the package.</param>
 /// <param name="SchemaVersion">Version of the project database inside; an app that knows fewer versions refuses the package.</param>
 /// <param name="PackageNumber">1 for the first package of the project, then 2, 3 and so on; it is in the file name (<c>name_v003.zip</c>).</param>
 /// <param name="Tasks">Keys of the target tasks of the project (decision 0019).</param>

@@ -184,7 +184,7 @@ public sealed class ZipProjectPackager : IProjectPackager
         connection.Open();
         var schema = ProjectDb.ReadSchemaVersion(connection);
         if (schema > ProjectMigrations.Scripts.Count)
-            throw new PackageException("Project này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
+            throw new PackageException("Project này được tạo bằng phiên bản NTech Labeling Studio mới hơn. Hãy cập nhật ứng dụng.");
 
         var name = ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'name';") as string;
         var tasks = TargetTasks.ParseSet(ProjectDb.Scalar(connection, "SELECT value FROM project_meta WHERE key = 'target_tasks';") as string
@@ -272,14 +272,14 @@ public sealed class ZipProjectPackager : IProjectPackager
         {
             using var archive = ZipFile.OpenRead(zipPath);
             var entry = archive.GetEntry(ManifestName)
-                        ?? throw new PackageException("File này không phải gói project của NTech Data Studio (thiếu " + ManifestName + ").");
+                        ?? throw new PackageException("File này không phải gói project của NTech Labeling Studio (thiếu " + ManifestName + ").");
             using var reader = entry.Open();
             var manifest = JsonSerializer.Deserialize<PackageManifest>(reader, Json)
                            ?? throw new PackageException("Không đọc được " + ManifestName + " trong gói.");
             if (manifest.FormatVersion > FormatVersion)
-                throw new PackageException("Gói này được tạo bằng phiên bản NTech Data Studio mới hơn (định dạng gói " + manifest.FormatVersion + "). Hãy cập nhật ứng dụng.");
+                throw new PackageException("Gói này được tạo bằng phiên bản NTech Labeling Studio mới hơn (định dạng gói " + manifest.FormatVersion + "). Hãy cập nhật ứng dụng.");
             if (manifest.SchemaVersion > ProjectMigrations.Scripts.Count)
-                throw new PackageException("Project trong gói này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
+                throw new PackageException("Project trong gói này được tạo bằng phiên bản NTech Labeling Studio mới hơn. Hãy cập nhật ứng dụng.");
             return manifest;
         }
         catch (Exception exception) when (exception is InvalidDataException or JsonException or IOException or UnauthorizedAccessException)

@@ -58,7 +58,7 @@ public abstract class YoloLabelExporter : IDatasetExporter
     {
         var has = output.Entries.Select(entry => entry.Split).Distinct().ToHashSet();
         var yaml = new StringBuilder();
-        yaml.AppendLine("# NTech Data Studio. Relative paths resolve from the folder this file is in.");
+        yaml.AppendLine("# NTech Labeling Studio. Relative paths resolve from the folder this file is in.");
         yaml.AppendLine("train: images/train");
         if (has.Contains(SplitKind.Val)) yaml.AppendLine("val: images/val");
         if (has.Contains(SplitKind.Test)) yaml.AppendLine("test: images/test");

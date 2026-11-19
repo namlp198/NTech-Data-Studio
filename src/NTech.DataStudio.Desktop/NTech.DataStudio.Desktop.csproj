@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>NTech.DataStudio.Desktop</RootNamespace>
     <AssemblyName>NTech.DataStudio.Desktop</AssemblyName>
-    <AssemblyTitle>NTech Data Studio</AssemblyTitle>
+    <AssemblyTitle>NTech Labeling Studio</AssemblyTitle>
     <!-- Skip the WPF framework's translated resource folders (cs, de, tr, ...): the UI is not localized through them. -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>

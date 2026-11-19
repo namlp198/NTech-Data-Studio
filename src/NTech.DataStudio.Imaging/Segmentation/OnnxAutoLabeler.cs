@@ -103,7 +103,7 @@ public sealed class OnnxAutoLabeler : IAutoLabeler, IDisposable
 
         var output = root.GetProperty("output");
         if (output.GetProperty("kind").GetString() != SegmentKind)
-            throw new InvalidDataException("Đầu ra của model không phải dạng segment mà Data Studio đọc được.");
+            throw new InvalidDataException("Đầu ra của model không phải dạng segment mà Labeling Studio đọc được.");
         if (!output.GetProperty("nms_embedded").GetBoolean())
             throw new InvalidDataException("Model không nhúng NMS nên chưa đọc được.");
 

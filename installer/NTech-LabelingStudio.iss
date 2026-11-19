@@ -1,8 +1,8 @@
-; Inno Setup script for NTech Data Studio.
+; Inno Setup script for NTech Labeling Studio.
 ; Build with scripts\package.ps1 (it passes /DMyAppVersion, /DSourceDir and /O).
-; Manual: iscc /DMyAppVersion=0.1.0 /DSourceDir=..\publish\NTechDataStudio installer\NTech-DataStudio.iss
+; Manual: iscc /DMyAppVersion=0.1.0 /DSourceDir=..\publish\NTechLabelingStudio installer\NTech-LabelingStudio.iss
 
-#define MyAppName "NTech Data Studio"
+#define MyAppName "NTech Labeling Studio"
 #define MyAppPublisher "NTech"
 #define MyAppExeName "NTech.DataStudio.Desktop.exe"
 
@@ -12,7 +12,7 @@
 
 ; Folder holding the published app (output of scripts\build.ps1).
 #ifndef SourceDir
-  #define SourceDir "..\publish\NTechDataStudio"
+  #define SourceDir "..\publish\NTechLabelingStudio"
 #endif
 
 [Setup]
@@ -24,12 +24,12 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 VersionInfoVersion={#MyAppVersion}
-DefaultDirName={autopf}\NTech Data Studio
+DefaultDirName={autopf}\NTech Labeling Studio
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 OutputDir=..\dist
-OutputBaseFilename=NTech-DataStudio-Setup-{#MyAppVersion}
+OutputBaseFilename=NTech-LabelingStudio-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible

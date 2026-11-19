@@ -55,7 +55,7 @@ public sealed class SqliteProjectStore : IProjectStore
         var db = new ProjectDb(layout.DatabasePath);
         using var connection = db.Open();
         if (!db.TryMigrate(connection))
-            throw new ProjectException("Project này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
+            throw new ProjectException("Project này được tạo bằng phiên bản NTech Labeling Studio mới hơn. Hãy cập nhật ứng dụng.");
 
         WriteTargetTasks(connection, targetTasks);
         return ReadSummary(connection, layout);
@@ -109,7 +109,7 @@ public sealed class SqliteProjectStore : IProjectStore
         var db = new ProjectDb(layout.DatabasePath);
         using var connection = db.Open();
         if (!db.TryMigrate(connection))
-            throw new ProjectException("Project này được tạo bằng phiên bản NTech Data Studio mới hơn. Hãy cập nhật ứng dụng.");
+            throw new ProjectException("Project này được tạo bằng phiên bản NTech Labeling Studio mới hơn. Hãy cập nhật ứng dụng.");
 
         layout.EnsureDirectories();
         return ReadSummary(connection, layout);
