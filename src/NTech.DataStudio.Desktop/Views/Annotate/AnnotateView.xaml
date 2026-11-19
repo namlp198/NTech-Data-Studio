@@ -379,11 +379,16 @@
                                     Visibility="{Binding IsAutoLabelEnabled, Converter={StaticResource BoolToVisibility}}"
                                     Command="{Binding AutoLabelCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Content="Chép nhãn ảnh trước"
-                                    ToolTip="Chép nhãn và tag từ ảnh đứng trước" Command="{Binding CopyFromPreviousCommand}" />
+                                    ToolTipService.ShowDuration="30000"
+                                    ToolTip="Chép nhãn và tag từ ảnh đứng ngay trước ảnh này trong danh sách đầy đủ (không theo bộ lọc), co theo kích thước ảnh. Chỉ thêm vào, không xóa nhãn đang có, và hoàn tác được trong một lần. Hợp với camera cố định, vật nằm cùng chỗ giữa các ảnh liên tiếp."
+                                    Command="{Binding CopyFromPreviousCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    ToolTipService.ShowDuration="30000"
                                     ToolTip="{Binding Hints[ToggleNull]}" Content="{Binding NullButtonText}"
                                     Command="{Binding ToggleNullCommand}" />
                             <Button Style="{StaticResource Button.Secondary}" Margin="{StaticResource Gap.Left.SM}"
+                                    ToolTipService.ShowDuration="30000"
+                                    ToolTip="Duyệt: xác nhận bạn đã kiểm tra nhãn của ảnh này (ảnh có nhãn hoặc ảnh Null). Nhãn do model gán có chấm tím cho tới khi duyệt, duyệt xong thành chấm xanh. Bấm lại để rút duyệt. Sửa một ảnh đã duyệt thì nó quay về Labeled và cần duyệt lại. Duyệt là dấu để bạn theo dõi ảnh nào đã kiểm; nó không chặn việc tạo dataset."
                                     Content="{Binding ReviewButtonText}" Command="{Binding ToggleReviewedCommand}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">

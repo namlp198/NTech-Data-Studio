@@ -40,9 +40,11 @@ public sealed partial class NormalizeStepViewModel : PrepareStepViewModel
     [NotifyPropertyChangedFor(nameof(IsDownscale))]
     [NotifyPropertyChangedFor(nameof(IsTile))]
     [NotifyPropertyChangedFor(nameof(IsRoi))]
+    [NotifyPropertyChangedFor(nameof(MethodHelp))]
     private Option<GeometryMethod> _selectedMethod;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MaxEdgeHelp))]
     private int _selectedMaxEdge = 2048;
 
     [ObservableProperty]
@@ -57,9 +59,11 @@ public sealed partial class NormalizeStepViewModel : PrepareStepViewModel
     private PixelRect? _roi;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FormatHelp))]
     private Option<MasterFormat> _selectedFormat;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonoHelp))]
     private Option<MonoMode> _selectedMono;
 
     [ObservableProperty]
@@ -130,6 +134,14 @@ public sealed partial class NormalizeStepViewModel : PrepareStepViewModel
         new Option<MonoMode>("Ảnh mono giữ 1 kênh", MonoMode.KeepOneChannel),
         new Option<MonoMode>("Ảnh mono nhân thành 3 kênh", MonoMode.TripleChannel)
     };
+
+    public string ProfileHelp => NormalizeHelp.Profile;
+    public string MinObjectHelp => NormalizeHelp.MinObject;
+    public string LockedHelp => NormalizeHelp.Locked;
+    public string MethodHelp => NormalizeHelp.Method(SelectedMethod.Value).Text;
+    public string MaxEdgeHelp => NormalizeHelp.MaxEdge(SelectedMaxEdge).Text;
+    public string FormatHelp => NormalizeHelp.Format(SelectedFormat.Value).Text;
+    public string MonoHelp => NormalizeHelp.Mono(SelectedMono.Value).Text;
 
     public bool IsDownscale => SelectedMethod.Value == GeometryMethod.Downscale;
     public bool IsTile => SelectedMethod.Value == GeometryMethod.Tile;

@@ -30,16 +30,28 @@
                 <!-- Settings -->
                 <Border Grid.Column="0" Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" VerticalAlignment="Top">
                     <StackPanel>
+                        <Border Style="{StaticResource Notice.Warning}" Margin="{StaticResource Gap.Bottom.SM}">
+                            <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="NormalizeLockedNote"
+                                       Foreground="{StaticResource Brush.Text.Primary}" Text="{Binding LockedHelp}" />
+                        </Border>
+
                         <TextBlock Style="{StaticResource Text.Label}" Text="Model profile" />
                         <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
-                                  AutomationProperties.Name="Model profile"
+                                  AutomationProperties.Name="Model profile" ToolTip="{Binding ProfileHelp}"
+                                  ToolTipService.ShowDuration="30000"
                                   ItemsSource="{Binding Profiles}" DisplayMemberPath="Id"
                                   SelectedItem="{Binding SelectedProfile}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   Text="{Binding ProfileHelp}" />
 
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Vật thể nhỏ nhất (px trên ảnh gốc)" />
                         <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.XS}"
-                                 AutomationProperties.Name="Vật thể nhỏ nhất"
+                                 AutomationProperties.Name="Vật thể nhỏ nhất" ToolTip="{Binding MinObjectHelp}"
+                                 ToolTipService.ShowDuration="30000"
                                  Text="{Binding MinObjectPxText, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   Text="{Binding MinObjectHelp}" />
 
                         <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap"
                                    AutomationProperties.AutomationId="NormalizeRecommendation"
@@ -56,14 +68,20 @@
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cách xử lý hình học" />
                         <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                   AutomationProperties.Name="Cách xử lý hình học"
+                                  ToolTip="{Binding MethodHelp}" ToolTipService.ShowDuration="30000"
                                   ItemsSource="{Binding Methods}" DisplayMemberPath="Label"
                                   SelectedItem="{Binding SelectedMethod}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="NormalizeMethodHelp" Text="{Binding MethodHelp}" />
 
                         <StackPanel Visibility="{Binding IsDownscale, Converter={StaticResource BoolToVisibility}}">
                             <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cạnh dài master tối đa" />
                             <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                       AutomationProperties.Name="Cạnh dài master tối đa"
+                                      ToolTip="{Binding MaxEdgeHelp}" ToolTipService.ShowDuration="30000"
                                       ItemsSource="{Binding MaxEdges}" SelectedItem="{Binding SelectedMaxEdge}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="NormalizeMaxEdgeHelp" Text="{Binding MaxEdgeHelp}" />
                         </StackPanel>
 
                         <StackPanel Visibility="{Binding IsTile, Converter={StaticResource BoolToVisibility}}">
@@ -86,14 +104,20 @@
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Định dạng master" />
                         <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                   AutomationProperties.Name="Định dạng master"
+                                  ToolTip="{Binding FormatHelp}" ToolTipService.ShowDuration="30000"
                                   ItemsSource="{Binding Formats}" DisplayMemberPath="Label"
                                   SelectedItem="{Binding SelectedFormat}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="NormalizeFormatHelp" Text="{Binding FormatHelp}" />
 
                         <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Ảnh mono" />
                         <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                   AutomationProperties.Name="Ảnh mono"
+                                  ToolTip="{Binding MonoHelp}" ToolTipService.ShowDuration="30000"
                                   ItemsSource="{Binding MonoModes}" DisplayMemberPath="Label"
                                   SelectedItem="{Binding SelectedMono}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="NormalizeMonoHelp" Text="{Binding MonoHelp}" />
                     </StackPanel>
                 </Border>
 

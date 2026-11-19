@@ -54,6 +54,15 @@
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
+    <!-- A note that must not be missed but is not an error: tinted fill, thick bar on the left (as the Export findings). -->
+    <Style x:Key="Notice.Warning" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource Brush.Status.WarningSoft}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Status.Warning}" />
+        <Setter Property="BorderThickness" Value="{StaticResource Border.Alert}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}" />
+        <Setter Property="Padding" Value="{StaticResource Inset.SM}" />
+    </Style>
+
     <!--
         Backing for any text that sits over the image or another background that changes (hints, warnings, errors,
         loading words): opaque, so the words stay readable on any picture. Text on a fixed surface does not need it.
