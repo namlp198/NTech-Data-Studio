@@ -1,0 +1,35 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Tokens/_Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        What choosing an option does (Normalize step). Bind a ContentControl's Content to an OptionHelp
+        (What, Benefit, Drawback) and set ContentTemplate to this. The three lead words are bold and coloured
+        (blue, green, amber) so the gain and the cost can be found at a glance; the words carry the meaning too.
+    -->
+    <DataTemplate x:Key="Help.Option">
+        <Border Background="{StaticResource Brush.Background.Elevated}" BorderBrush="{StaticResource Brush.Status.Info}"
+                BorderThickness="{StaticResource Border.Alert}" CornerRadius="{StaticResource Radius.SM}"
+                Padding="{StaticResource Inset.MD}" Margin="{StaticResource Gap.Top.SM}">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" FontFamily="{StaticResource Font.Primary}" FontSize="{StaticResource FontSize.BodySmall}"
+                           Foreground="{StaticResource Brush.Text.Primary}">
+                    <Run FontSize="{StaticResource FontSize.Body}" FontWeight="Bold" Foreground="{StaticResource Brush.Status.Info}" Text="Khi chọn: " /><Run Text="{Binding What, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource Gap.Top.SM}" FontFamily="{StaticResource Font.Primary}"
+                           FontSize="{StaticResource FontSize.BodySmall}" Foreground="{StaticResource Brush.Text.Primary}">
+                    <Run FontSize="{StaticResource FontSize.Body}" FontWeight="Bold" Foreground="{StaticResource Brush.Status.Success}" Text="Lợi ích: " /><Run Text="{Binding Benefit, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource Gap.Top.SM}" FontFamily="{StaticResource Font.Primary}"
+                           FontSize="{StaticResource FontSize.BodySmall}" Foreground="{StaticResource Brush.Text.Primary}">
+                    <Run FontSize="{StaticResource FontSize.Body}" FontWeight="Bold" Foreground="{StaticResource Brush.Status.Warning}" Text="Bất lợi: " /><Run Text="{Binding Drawback, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

@@ -20,6 +20,7 @@
         <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Lists.xaml" />
         <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Slider.xaml" />
         <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Settings.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/NTech.DataStudio.Desktop;component/Themes/Components/Help.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

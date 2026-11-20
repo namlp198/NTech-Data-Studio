@@ -206,3 +206,8 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 - **Test**: Application 441, toàn solution xanh, build 0 cảnh báo. Chạy app thật qua UI Automation trên **bản sao** project (không mở project thật vì migration 3 sửa DB; `settings.json` đã khôi phục): hàng nút mới hiện đúng, Chọn tất cả 338 → 367, Bỏ chọn 0, Đảo chọn 367, Xóa ảnh có hộp xác nhận, danh sách 367 → 366 ngay, Hoàn tác xóa trả 367, nút Khôi phục ẩn khi không còn ảnh xóa. Lỗi tìm được khi chạy: nút Chuyển tất cả ảnh bị khóa vì lệnh không được báo khi `HasImages` đổi; đã sửa.
 - **Chưa kiểm tra**: Ctrl/Shift chọn nhiều ảnh rồi xóa bằng chuột; vẽ box lên ảnh có polygon trong app (kiểm bằng test); chạy Box thành polygon với SAM thật (chỉ test bằng segmenter giả; project bản sao chỉ có polygon nên nút đúng ra bị khóa); độ chính xác của SAM trên box thật; cài installer.
 - **Lưu ý**: project có sẵn ảnh lẫn box và polygon vẫn mở và sửa được (quy tắc chỉ chặn việc đưa thêm). Test cũ cho box và polygon sống chung (0019) đã viết lại thành các ca bị từ chối.
+
+## Header to hơn và ghi chú có nhấn mạnh ở bước Chuẩn hóa (2026-11-20)
+
+- Style mới `Text.FieldHeader` (cỡ 15, đậm) thay `Text.Label` cho tiêu đề từng ô ở Chuẩn hóa. Giải thích của mỗi lựa chọn là khung `Help.Option` (`Themes/Components/Help.xaml`): viền trái xanh, "Khi chọn" xanh dương, "Lợi ích" xanh lá, "Bất lợi" vàng, đậm và cỡ lớn hơn nội dung. `MethodHelp`, `MaxEdgeHelp`, `FormatHelp`, `MonoHelp` giờ là `OptionHelp` thay vì chuỗi.
+- Chạy app thật trên bản sao project, xem ảnh chụp bước Chuẩn hóa: đúng ý. Chưa đổi Export, Dataset và các màn khác (còn dùng `Text.Label`).

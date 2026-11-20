@@ -138,10 +138,10 @@ public sealed partial class NormalizeStepViewModel : PrepareStepViewModel
     public string ProfileHelp => NormalizeHelp.Profile;
     public string MinObjectHelp => NormalizeHelp.MinObject;
     public string LockedHelp => NormalizeHelp.Locked;
-    public string MethodHelp => NormalizeHelp.Method(SelectedMethod.Value).Text;
-    public string MaxEdgeHelp => NormalizeHelp.MaxEdge(SelectedMaxEdge).Text;
-    public string FormatHelp => NormalizeHelp.Format(SelectedFormat.Value).Text;
-    public string MonoHelp => NormalizeHelp.Mono(SelectedMono.Value).Text;
+    public OptionHelp MethodHelp => NormalizeHelp.Method(SelectedMethod.Value);
+    public OptionHelp MaxEdgeHelp => NormalizeHelp.MaxEdge(SelectedMaxEdge);
+    public OptionHelp FormatHelp => NormalizeHelp.Format(SelectedFormat.Value);
+    public OptionHelp MonoHelp => NormalizeHelp.Mono(SelectedMono.Value);
 
     public bool IsDownscale => SelectedMethod.Value == GeometryMethod.Downscale;
     public bool IsTile => SelectedMethod.Value == GeometryMethod.Tile;
