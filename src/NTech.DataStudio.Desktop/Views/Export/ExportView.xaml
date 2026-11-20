@@ -44,8 +44,7 @@
                             IsEnabled="{Binding CanExport}" Command="{Binding ExportCommand}" />
                     <StackPanel>
                         <TextBlock Style="{StaticResource Text.PageTitle}" Text="Export" />
-                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                                   Text="Chọn một version và một model profile. Dataset được kiểm tra rồi ghi ra thư mục train được ngay. Có lỗi thì không xuất; chỉ có cảnh báo thì vẫn xuất được." />
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap" Foreground="{StaticResource Brush.Text.Secondary}">Chọn một version và một model profile. Dataset được kiểm tra rồi ghi ra thư mục train được ngay. <Run FontWeight="Bold" Foreground="{StaticResource Brush.Status.Error}" Text="Có lỗi thì không xuất" />; <Run FontWeight="Bold" Foreground="{StaticResource Brush.Status.Warning}" Text="chỉ có cảnh báo thì vẫn xuất được" />.</TextBlock>
                     </StackPanel>
                 </DockPanel>
 
@@ -98,7 +97,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <TextBlock Style="{StaticResource Text.Label}" HorizontalAlignment="Center"
+                                            <TextBlock Style="{StaticResource Text.FieldHeader}" HorizontalAlignment="Center"
                                                        FontWeight="Bold" Foreground="{StaticResource Brush.Background.App}"
                                                        Text="{Binding Label}" />
                                         </Border>
@@ -147,12 +146,12 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Bản xuất" />
 
-                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Version" />
+                            <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Version" />
                             <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                       AutomationProperties.Name="Version"
                                       ItemsSource="{Binding Versions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedVersion}" />
 
-                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Model profile" />
+                            <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Model profile" />
                             <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                       AutomationProperties.Name="Model profile"
                                       ItemsSource="{Binding Profiles}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedProfile}" />
@@ -163,15 +162,15 @@
                                 <TextBlock Style="{StaticResource Text.Body}" VerticalAlignment="Center" Text="imgsz khi train (px)" />
                             </DockPanel>
 
-                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Định dạng ảnh đã chỉnh" />
+                            <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Định dạng ảnh đã chỉnh" />
                             <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                       AutomationProperties.Name="Định dạng ảnh"
                                       ItemsSource="{Binding ImageFormats}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedImageFormat}" />
-                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                        Text="Ảnh không bị chỉnh gì được chép nguyên từ master, không nén lại." />
 
-                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Thư mục sẽ ghi" />
-                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                            <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Thư mục sẽ ghi" />
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="ExportTarget" Text="{Binding TargetFolder}" />
                             <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.SM}">
                                 <Button Style="{StaticResource Button.Secondary}" Content="Chọn thư mục..." Command="{Binding ChooseFolderCommand}" />
@@ -198,7 +197,7 @@
                                        AutomationProperties.AutomationId="ExportValidating"
                                        Visibility="{Binding IsValidating, Converter={StaticResource BoolToVisibility}}"
                                        Text="Đang kiểm tra..." />
-                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
                                        Visibility="{Binding HasIssues, Converter={StaticResource BoolToVisibility}}"
                                        Text="Chi tiết lỗi và cảnh báo nằm ở khung phía trên." />
                         </StackPanel>

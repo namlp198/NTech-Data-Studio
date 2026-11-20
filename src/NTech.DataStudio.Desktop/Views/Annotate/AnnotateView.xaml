@@ -317,7 +317,7 @@
                                     Command="{Binding DeleteSelectedCommand}" />
                         </StackPanel>
 
-                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Độ trong suốt của nhãn" />
+                        <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Độ trong suốt của nhãn" />
                         <Slider Minimum="0.2" Maximum="1" Value="{Binding LabelOpacity}" AutomationProperties.Name="Độ trong suốt" />
                     </StackPanel>
                 </ScrollViewer>

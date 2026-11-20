@@ -211,3 +211,9 @@ Bàn giao của NTech Trainer nằm ở `handoff/trainer.md`. File này chỉ d�
 
 - Style mới `Text.FieldHeader` (cỡ 15, đậm) thay `Text.Label` cho tiêu đề từng ô ở Chuẩn hóa. Giải thích của mỗi lựa chọn là khung `Help.Option` (`Themes/Components/Help.xaml`): viền trái xanh, "Khi chọn" xanh dương, "Lợi ích" xanh lá, "Bất lợi" vàng, đậm và cỡ lớn hơn nội dung. `MethodHelp`, `MaxEdgeHelp`, `FormatHelp`, `MonoHelp` giờ là `OptionHelp` thay vì chuỗi.
 - Chạy app thật trên bản sao project, xem ảnh chụp bước Chuẩn hóa: đúng ý. Chưa đổi Export, Dataset và các màn khác (còn dùng `Text.Label`).
+
+## Áp kiểu header và ghi chú nổi bật cho các màn khác (2026-11-20)
+
+- `Text.FieldHeader` (đậm, cỡ 15) thay `Text.Label` ở tiêu đề các ô của Annotate, Dataset, Export, Import, Project và Cài đặt. Các ghi chú giải thích dài (trước là `Text.Caption`, cỡ 11 và mờ) đổi sang `Text.Secondary` ở Dataset, Export, Project và Cài đặt.
+- Nhấn mạnh bằng chữ đậm có màu: Export ("Có lỗi thì không xuất" đỏ, "chỉ có cảnh báo thì vẫn xuất được" vàng), Dataset ("không lật nếu vật thể có hướng" vàng), Project ("đổi task không xóa hay sửa nhãn đã có" xanh lá), và ghi chú Telex ở Cài đặt thành khung `Notice.Warning` với "Lưu ý:" vàng.
+- Chạy app thật trên bản sao project, xem ảnh chụp Project, Dataset, Export, Cài đặt (mục Gán nhãn tự động): đúng ý. **Chưa xem**: mục Phím tắt (khung Telex), Annotate, các bước Import, Audit, Làm sạch. Lỗi đỏ ở preview là do bản sao không có ảnh.

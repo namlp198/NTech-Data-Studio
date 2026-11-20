@@ -35,7 +35,7 @@
                                TextTrimming="CharacterEllipsis" ToolTip="{Binding Current.RootPath}"
                                Text="{Binding Current.RootPath}" />
 
-                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}" Text="Task mục tiêu" />
+                    <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Task mục tiêu" />
                     <ItemsControl Margin="{StaticResource Gap.Top.XS}" ItemsSource="{Binding CurrentTasks}"
                                   AutomationProperties.AutomationId="CurrentProjectTasks">
                         <ItemsControl.ItemTemplate>
@@ -46,8 +46,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                               Text="Tích nhiều task nếu project cần cả box và polygon. Task quyết định công cụ vẽ ở Annotate; đổi task không xóa hay sửa nhãn đã có." />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap">Tích nhiều task nếu project cần cả box và polygon. Task quyết định công cụ vẽ ở Annotate; <Run FontWeight="Bold" Foreground="{StaticResource Brush.Status.Success}" Text="đổi task không xóa hay sửa nhãn đã có" />.</TextBlock>
 
                     <Grid Margin="{StaticResource Gap.Top.LG}">
                         <Grid.ColumnDefinitions>
@@ -103,7 +102,7 @@
                     <CheckBox Margin="{StaticResource Gap.Top.XS}" Content="{Binding ExportsText}"
                               AutomationProperties.AutomationId="PackageIncludeExports" AutomationProperties.Name="Kèm dataset đã xuất"
                               IsEnabled="{Binding CanEdit}" IsChecked="{Binding IncludeExports}" />
-                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
                                AutomationProperties.AutomationId="PackageSize" Text="{Binding SizeText}" />
 
                     <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.MD}">
@@ -122,7 +121,7 @@
 
                     <ProgressBar Margin="{StaticResource Gap.Top.MD}" Maximum="100" Value="{Binding ProgressPercent, Mode=OneWay}"
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
-                    <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                    <TextBlock Margin="{StaticResource Gap.Top.SM}" Style="{StaticResource Text.Secondary}" TextWrapping="Wrap"
                                AutomationProperties.AutomationId="PackageProgress"
                                Visibility="{Binding ProgressText, Converter={StaticResource NullToCollapsed}}"
                                Text="{Binding ProgressText}" />
@@ -145,13 +144,13 @@
                     <StackPanel>
                         <TextBlock Style="{StaticResource Text.SectionHeader}" Text="Tạo project mới" />
 
-                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.LG}" Text="Tên project" />
+                        <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.LG}" Text="Tên project" />
                         <TextBox Style="{StaticResource Input.Text}" Margin="{StaticResource Gap.Top.XS}"
                                  HorizontalAlignment="Left" Width="{StaticResource Layout.FormFieldWidth}"
                                  AutomationProperties.Name="Tên project"
                                  Text="{Binding NewProjectName, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Thư mục đặt project" />
+                        <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Thư mục đặt project" />
                         <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}">
                             <TextBox Style="{StaticResource Input.Text}" Width="{StaticResource Layout.FormFieldWidth}"
                                      AutomationProperties.Name="Thư mục đặt project"
@@ -161,7 +160,7 @@
                                     Command="{Binding BrowseParentFolderCommand}" />
                         </StackPanel>
 
-                        <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Task mục tiêu" />
+                        <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Task mục tiêu" />
                         <ItemsControl Margin="{StaticResource Gap.Top.XS}" ItemsSource="{Binding NewTasks}"
                                       AutomationProperties.AutomationId="NewProjectTasks">
                             <ItemsControl.ItemTemplate>
@@ -172,7 +171,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                    Text="Tích một hoặc nhiều task. Segment (polygon) xuất được cả Segment lẫn Detect; chọn Detect nếu chỉ cần box và muốn vẽ nhanh. Đổi được sau." />
 
                         <Button Style="{StaticResource Button.Primary}" Content="Tạo project"

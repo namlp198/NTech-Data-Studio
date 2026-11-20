@@ -16,7 +16,7 @@
                             <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="{Binding ModelLabel}" />
+                        <TextBlock Grid.Column="0" Style="{StaticResource Text.FieldHeader}" Text="{Binding ModelLabel}" />
                         <StackPanel Grid.Column="1">
                             <TextBlock Style="{StaticResource Text.MetricSmall}" TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="AutoLabelModelPath"
@@ -40,7 +40,7 @@
                             <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="Trạng thái" />
+                        <TextBlock Grid.Column="0" Style="{StaticResource Text.FieldHeader}" Text="Trạng thái" />
                         <TextBlock Grid.Column="1" TextWrapping="Wrap" Style="{StaticResource Text.Body}"
                                    AutomationProperties.AutomationId="AutoLabelStatus"
                                    Text="{Binding StatusText}" />
@@ -54,7 +54,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource Text.Label}" Text="Ngưỡng tin cậy" />
+                            <TextBlock Style="{StaticResource Text.FieldHeader}" Text="Ngưỡng tin cậy" />
                         </StackPanel>
                         <Slider Grid.Column="1" Minimum="5" Maximum="95" SmallChange="1" LargeChange="5" TickFrequency="5" IsSnapToTickEnabled="True"
                                 Width="{StaticResource Layout.SettingsSliderWidth}" VerticalAlignment="Center"
@@ -64,7 +64,7 @@
                                    Margin="{StaticResource Gap.Left.MD}" Text="{Binding MinScoreText}" />
                     </Grid>
                 </Border>
-                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap"
                            Text="Model chỉ giữ vật thể có điểm từ mức này trở lên." />
             </StackPanel>
         </DataTemplate>
@@ -171,13 +171,13 @@
                                                 <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Text="Cách gán" />
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Text.FieldHeader}" VerticalAlignment="Center" Text="Cách gán" />
                                             <StackPanel Grid.Column="1">
                                                 <ComboBox Style="{StaticResource Input.Combo}" HorizontalAlignment="Left"
                                                           AutomationProperties.AutomationId="AutoLabelMode" AutomationProperties.Name="Cách gán nhãn tự động"
                                                           ItemsSource="{x:Static vm:AutoLabelSettingsViewModel.Modes}"
                                                           DisplayMemberPath="Label" SelectedItem="{Binding ModeOption}" />
-                                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                                                <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
                                                            AutomationProperties.AutomationId="AutoLabelModeHelp" Text="{Binding ModeHelp}" />
                                             </StackPanel>
                                         </Grid>
@@ -207,7 +207,7 @@
                                         <ColumnDefinition Width="{StaticResource Layout.SettingsLabelWidth}" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Style="{StaticResource Text.Label}" Text="Thư mục model" />
+                                    <TextBlock Grid.Column="0" Style="{StaticResource Text.FieldHeader}" Text="Thư mục model" />
                                     <TextBlock Grid.Column="1" Style="{StaticResource Text.MetricSmall}" TextWrapping="Wrap"
                                                ToolTip="{Binding ModelFolder}" Text="{Binding ModelFolder}" />
                                 </Grid>
@@ -233,7 +233,7 @@
                                         AutomationProperties.Name="Mở thư mục model"
                                         Command="{Binding OpenModelFolderCommand}" />
                             </StackPanel>
-                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
+                            <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" TextWrapping="Wrap"
                                        Text="Tải từ huggingface.co/Acly/MobileSAM (MobileSAM, giấy phép MIT/Apache-2.0), kiểm SHA-256 sau khi tải. Máy không có mạng: chép hai file mobile_sam_image_encoder.onnx và sam_mask_decoder_single.onnx vào thư mục trên. Cách gán detect + SAM ở mục Gán nhãn tự động cũng dùng model này." />
                         </StackPanel>
                     </Border>
@@ -250,8 +250,7 @@
                             </DockPanel>
                             <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                        Text="Bấm Đổi phím rồi nhấn phím hoặc tổ hợp Ctrl/Shift mới; Esc để hủy. Thay đổi được lưu ngay và dùng được ngay ở Annotate. Mỗi phím chỉ làm một việc; phím đang dùng cho việc khác sẽ bị từ chối. Phím số 1 đến 9 (chọn class) cố định. Space gán được, nhưng chạy khi nhả phím và chỉ khi bạn không kéo pan (giữ Space + kéo chuột) trong lúc giữ." />
-                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                                       Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." />
+                            <Border Style="{StaticResource Notice.Warning}" Margin="{StaticResource Gap.Top.SM}"><TextBlock Style="{StaticResource Text.Body}" TextWrapping="Wrap"><Run FontWeight="Bold" Foreground="{StaticResource Brush.Status.Warning}" Text="Lưu ý: " /><Run Text="Bộ gõ tiếng Việt Telex có thể làm hỏng phím chữ lặp lại (a, e, o, d, w, s, f, r, x, j, z); nếu hay gõ tiếng Việt, hãy dùng Ctrl hoặc phím khác cho việc cần nhấn liên tiếp." /></TextBlock></Border>
 
                             <!-- Feedback for the last change -->
                             <TextBlock Margin="{StaticResource Gap.Top.MD}" TextWrapping="Wrap" Style="{StaticResource Text.Secondary}"
@@ -262,7 +261,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="{StaticResource Gap.Top.LG}">
-                                            <TextBlock Style="{StaticResource Text.Label}" Text="{Binding Title}" />
+                                            <TextBlock Style="{StaticResource Text.FieldHeader}" Text="{Binding Title}" />
                                             <ItemsControl ItemsSource="{Binding Rows}" Margin="{StaticResource Gap.Top.XS}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -277,7 +276,7 @@
                                                                 </Grid.ColumnDefinitions>
                                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                                     <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Label}" />
-                                                                    <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                                                                    <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap"
                                                                                Foreground="{StaticResource Brush.Status.Error}"
                                                                                AutomationProperties.AutomationId="SettingsError"
                                                                                Visibility="{Binding ErrorText, Converter={StaticResource NullToCollapsed}}"

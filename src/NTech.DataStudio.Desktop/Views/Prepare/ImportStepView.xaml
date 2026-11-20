@@ -11,7 +11,7 @@
 
             <Border Style="{StaticResource Surface.Card}" Margin="{StaticResource Gap.Top.LG}" Padding="{StaticResource Inset.XL}">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource Text.Label}" Text="Thư mục ảnh" />
+                    <TextBlock Style="{StaticResource Text.FieldHeader}" Text="Thư mục ảnh" />
                     <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}">
                         <TextBox Style="{StaticResource Input.Text}" Width="{StaticResource Layout.FormFieldWidth}"
                                  AutomationProperties.Name="Thư mục ảnh"
@@ -20,7 +20,7 @@
                                 Margin="{StaticResource Gap.Left.SM}" Command="{Binding BrowseCommand}" />
                     </StackPanel>
 
-                    <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Cách lưu ảnh gốc" />
+                    <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Cách lưu ảnh gốc" />
                     <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                               HorizontalAlignment="Left" Width="{StaticResource Layout.FormFieldWidth}"
                               AutomationProperties.Name="Cách lưu ảnh gốc"

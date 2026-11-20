@@ -119,7 +119,7 @@
                         <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" Margin="{StaticResource Gap.Top.LG}">
                             <StackPanel>
                                 <TextBlock Style="{StaticResource Text.SectionHeader}" Text="2. Preprocessing (mọi tập)" />
-                                <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Kích thước" />
+                                <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Kích thước" />
                                 <ComboBox Style="{StaticResource Input.Combo}" Margin="{StaticResource Gap.Top.XS}"
                                           AutomationProperties.Name="Cách resize"
                                           ItemsSource="{Binding ResizeOptions}" DisplayMemberPath="Label"
@@ -143,8 +143,8 @@
                                     <TextBlock Style="{StaticResource Text.Body}" VerticalAlignment="Center" Text="Bỏ ảnh không nhãn (%)" />
                                 </DockPanel>
 
-                                <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}" Text="Class" />
-                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                <TextBlock Style="{StaticResource Text.FieldHeader}" Margin="{StaticResource Gap.Top.MD}" Text="Class" />
+                                <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                            Visibility="{Binding HasClasses, Converter={StaticResource InverseBoolToVisibility}}"
                                            Text="Project chưa có class nào." />
                                 <ItemsControl ItemsSource="{Binding ClassMapRows}" AutomationProperties.AutomationId="ClassMapList">
@@ -171,8 +171,7 @@
                         <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.LG}" Margin="{StaticResource Gap.Top.LG}">
                             <StackPanel>
                                 <TextBlock Style="{StaticResource Text.SectionHeader}" Text="3. Tăng cường (chỉ tập train)" />
-                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
-                                           Text="YOLO tự tăng cường khi train. Với YOLO26 nên nhân ×2–×3 và ưu tiên ánh sáng, blur, nhiễu; không lật nếu vật thể có hướng." />
+                                <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap">YOLO tự tăng cường khi train. Với YOLO26 nên nhân ×2–×3 và ưu tiên ánh sáng, blur, nhiễu; <Run FontWeight="Bold" Foreground="{StaticResource Brush.Status.Warning}" Text="không lật nếu vật thể có hướng" />.</TextBlock>
                                 <DockPanel Margin="{StaticResource Gap.Top.MD}">
                                     <TextBox DockPanel.Dock="Right" Style="{StaticResource Input.Text}" Width="{StaticResource Layout.PercentFieldWidth}"
                                              AutomationProperties.Name="Hệ số nhân" Text="{Binding MultiplierText, UpdateSourceTrigger=PropertyChanged}" />
@@ -236,9 +235,9 @@
                                     <Border Style="{StaticResource Surface.Card}" Padding="{StaticResource Inset.MD}" Margin="{StaticResource Gap.Left.SM}"
                                             AutomationProperties.Name="{Binding Label}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource Text.Label}" Text="{Binding Label}" />
+                                            <TextBlock Style="{StaticResource Text.FieldHeader}" Text="{Binding Label}" />
                                             <TextBlock Style="{StaticResource Text.Metric}" Text="{Binding Value}" />
-                                            <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="{Binding Caption}" />
+                                            <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap" Text="{Binding Caption}" />
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
@@ -271,7 +270,7 @@
                                         <DataGridTextColumn Header="Tổng nhãn" Width="*" Binding="{Binding Total}" ElementStyle="{StaticResource DataGrid.NumericCell}" HeaderStyle="{StaticResource DataGrid.NumericHeader}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
-                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}"
+                                <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}"
                                            Text="Mỗi ô là số ảnh / số nhãn. Hàng màu cảnh báo: class ít nhãn hoặc thiếu ở val." />
 
                                 <ItemsControl ItemsSource="{Binding Notes}" Margin="{StaticResource Gap.Top.SM}" AutomationProperties.AutomationId="DatasetNotes">
@@ -300,7 +299,7 @@
                                             AutomationProperties.AutomationId="ShufflePreview" Command="{Binding ShufflePreviewCommand}" />
                                     <TextBlock Style="{StaticResource Text.SectionHeader}" VerticalAlignment="Center" Text="Preview 3×3" />
                                 </DockPanel>
-                                <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
+                                <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.XS}" TextWrapping="Wrap"
                                            AutomationProperties.AutomationId="PreviewNote" Text="{Binding PreviewNote}" />
                                 <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top.SM}" Text="Đang dựng preview..."
                                            AutomationProperties.AutomationId="PreviewLoading"
@@ -352,7 +351,7 @@
                                                         CommandParameter="{Binding}" />
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Name}" />
-                                                    <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="{Binding Summary}" />
+                                                    <TextBlock Style="{StaticResource Text.Secondary}" TextWrapping="Wrap" Text="{Binding Summary}" />
                                                 </StackPanel>
                                             </DockPanel>
                                         </DataTemplate>
