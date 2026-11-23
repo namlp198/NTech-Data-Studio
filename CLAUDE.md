@@ -108,3 +108,7 @@ Báo đúng những gì đã chạy và kết quả, cùng những gì còn cầ
 - `AppId` trong `.iss` không bao giờ đổi, vì installer mới dùng nó để nhận ra bản đã cài và nâng cấp.
 - File `.ps1` giữ ASCII, vì Windows PowerShell 5.1 đọc file không có BOM theo bảng mã ANSI. File `.bat` giữ CRLF (`.gitattributes` đã quy định).
 - Thêm file vào thư mục cài (profile mới, native DLL) thì phải khớp với danh sách kiểm tra ở cuối `scripts\build.ps1`.
+
+## Git workflow
+
+**Bắt buộc:** xem mục "Git workflow" trong AGENTS.md và chuẩn tại 06_Repositories/_standards/GIT-WORKFLOW.md (chỉ làm trên develop/feature/fix/hotfix, không động vào main/release/*).
